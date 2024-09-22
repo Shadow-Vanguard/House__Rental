@@ -1,0 +1,75 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
+    <style>
+        /* Add some styling for the dropdown */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 220px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            left: 0; 
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            text-align: left; 
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3a733a;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Hi, {{user_name }}!</h1>
+        <div class="nav-links">
+            <a href="{%url 'propertypage'%}">Properties</a>
+            <a href="#">Feedback</a>
+            <a href="#">Search Properties</a>
+            <a href="#">Service Provider</a>
+            <!-- <a href="">My Profile</a>  -->
+            <div class="dropdown">
+                <a href="#" class="dropbtn">My Profile</a>
+                <div class="dropdown-content">
+                    <a href="{% url 'ownerupdate' %}">Update Profile</a>
+                    <a href="{% url 'index' %}">Logout</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <center>
+    <div class="content">
+        <h1>Welcome</h1>
+        <!-- Content for the user dashboard goes here -->
+        <p>Here you can manage your properties, leave feedback, search for properties, and update your profile.</p>
+    </div>
+</center>
+
+    <script src="{% static 'js/scriptuser.js' %}"></script>
+</body>
+</html>

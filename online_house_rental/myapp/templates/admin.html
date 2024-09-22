@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/adminstyle.css' %}">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h2>Admin Dashboard</h2>
+            </div>
+            <ul class="list-unstyled components">
+                <li><a href="#manage-users" onclick="showSection('manage-users')">Manage Users</a></li>
+                <li><a href="#manage-owners" onclick="showSection('manage-owners')">Manage Property Owners</a></li>
+                <li><a href="#feedback-analysis" onclick="showSection('feedback-analysis')">Feedback Analysis</a></li>
+                <li><a href="{% url 'login' %}">Logout</a></li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <div id="manage-users" class="content-section">
+                <h2>Manage Users</h2>
+                <!-- Content for managing users goes here -->
+                <p>Here you can view, edit, and delete users.</p>
+            </div>
+            <div id="manage-owners" class="content-section">
+                <h2>Manage Property Owners</h2>
+                <!-- Content for managing property owners goes here -->
+                <p>Here you can view, edit, and delete property owners.</p>
+            </div>
+            <div id="feedback-analysis" class="content-section">
+                <h2>Feedback Analysis</h2>
+                <!-- Content for feedback analysis goes here -->
+                <p>Analyze feedback received from users and property owners.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            var sections = document.querySelectorAll('.content-section');
+            sections.forEach(function (section) {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
+    </script>
+</body>
+</html>

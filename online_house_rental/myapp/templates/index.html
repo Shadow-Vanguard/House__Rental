@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online House Rental System</title>
+    <link rel="stylesheet" href="{% static 'css\style2.css'%}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <a href="#">HouseRental</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#">Home</a></li>
+                <li><a href="{%url 'about'%}">About</a></li>
+                <li><a href="{%url 'contact'%}">contact</a></li>
+                <li><a href="{%url 'login'%}">login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Find Your Dream Home</h1>
+            <p>Browse through our extensive list of properties to find the perfect place to call home.</p>
+            <a href="{%url 'house'%}" class="btn">Explore Properties</a>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script src="scriptsindex.js"></script>
+</body>
+</html>

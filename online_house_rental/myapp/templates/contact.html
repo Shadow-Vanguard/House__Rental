@@ -1,0 +1,166 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Online House Rental</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            background-color: #ebd7d7;
+            background-image: url('https://img.freepik.com/free-vector/bright-wavy-dark-blue-background_1035-6303.jpg?size=626&ext=jpg&ga=GA1.1.1252962384.1704117497&semt=ais_hybrid');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        /* Navigation Bar Styles */
+        .navbar {
+            background-color: #333;
+            color: #fff;
+            padding: 15px 0;
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .nav-links {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links li {
+            display: inline;
+        }
+
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            font-size: 16px;
+            padding: 5px 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-links a:hover {
+            background-color: #555;
+            border-radius: 5px;
+        }
+
+        /* Contact Section Styles */
+        .contact-section {
+            padding: 50px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .contact-section .container {
+            width: 90%;
+            max-width: 800px;
+            margin: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .contact-info {
+            background: #fff;
+            padding: 20px;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .contact-info h2 {
+            margin-top: 0;
+        }
+
+        .contact-info p {
+            margin: 10px 0;
+        }
+
+        /* Footer Styles */
+        footer {
+            text-align: center;
+            padding: 10px 0;
+            background-color: #333;
+            color: #fff;
+            position: fixed;
+            width: 100%;
+            bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <a href="#">HouseRental</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+                <li><a href="{% url 'login' %}">Login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Contact Section -->
+    <section class="contact-section">
+        <div class="container">
+            <div class="contact-info">
+                <h2>Contact Us</h2>
+                <p>If you have any questions or need assistance, please reach out to us. We're here to help you with any inquiries regarding our services or properties.</p>
+            </div>
+
+            <div class="contact-info">
+                <h2>Our Office</h2>
+                <p>123 Main Street, Suite 100<br>
+                Cityville, ST 12345<br>
+                Country</p>
+            </div>
+
+            <div class="contact-info">
+                <h2>Customer Service</h2>
+                <p>Email: support@example.com<br>
+                Phone: (123) 456-7890<br>
+                Fax: (123) 456-7891</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Online House Rental. All rights reserved.</p>
+    </footer>
+</body>
+</html>

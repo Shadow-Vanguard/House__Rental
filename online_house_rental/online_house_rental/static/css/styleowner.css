@@ -1,0 +1,111 @@
+/* General body styling */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image: url('https://media.istockphoto.com/id/853258138/photo/modern-interior.jpg?s=612x612&w=0&k=20&c=3H3Qr--b-TBFsXhYDZQnkgr3llL-ELbUnHMUfuw2tF4=');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    color: #fff;
+}
+
+/* Header styles */
+header {
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 20px;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Welcome text */
+.welcome h1 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+    color: #f1f1f1;
+}
+
+/* Navigation */
+nav {
+    margin-right: 30px;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+}
+
+nav ul li {
+    margin-left: 20px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    color: #f1f1f1;
+    background-color: rgba(116, 113, 113, 0.1);
+    transition: background-color 0.3s ease;
+}
+
+nav ul li a:hover {
+    background-color: #677183;
+}
+
+/* Main content styles */
+main {
+    padding: 100px 50px;
+    text-align: center;
+    color: #050505;
+}
+
+main h2 {
+    font-size: 28px;
+    margin-bottom: 20px;
+}
+
+main p {
+    font-size: 18px;
+    margin-bottom: 40px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    
+    nav ul li {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .welcome h1 {
+        font-size: 20px;
+    }
+
+    main {
+        padding: 100px 20px;
+    }
+
+    main h2 {
+        font-size: 24px;
+    }
+}
+
+

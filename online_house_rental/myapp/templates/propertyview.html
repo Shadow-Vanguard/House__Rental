@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ property.property_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/propertyview.css' %}">
+</head>
+<body>
+    <div class="top-right">
+        <button><a href="{% url 'propertypage' %}" class="back-button">Back to Properties</a></button>
+    </div>
+    
+    <div class="container">
+        <h1 id="propertyName">{{ property.property_name }}</h1>
+        <div class="property-details">
+            <div class="property-images">
+                <img id="propertyImage" src="{{ property.images.first.image.url }}" alt="{{ property.property_name }}" class="property-img-large">
+            </div>
+            <div class="property-info">
+                <p><strong>Description:</strong> <span id="propertyDescription">{{ property.description }}</span></p>
+                <p><strong>Address:</strong> <span id="propertyAddress">{{ property.address }}</span></p>
+                <p><strong>City:</strong> <span id="propertyCity">{{ property.city }}</span></p>
+                <p><strong>State:</strong> <span id="propertyState">{{ property.state }}</span></p>
+                <p><strong>Price:</strong> <span id="propertyPrice">${{ property.price }}</span></p>
+                <p><strong>Available Date:</strong> <span id="propertyAvailableDate">{{ property.available_date }}</span></p>
+                <p><strong>Posted Date:</strong> <span id="propertyPostedDate">{{ property.posted_date }}</span></p>
+                <p><strong>Property Type:</strong> <span id="propertyType">{{ property.property_type }}</span></p>
+            </div>
+        </div>
+        <div class="action-buttons">
+            {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}
+                <button class="btn buy-btn">Buy</button>
+            {% endif %}
+            {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
+                <button class="btn rent-btn">Rent</button>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

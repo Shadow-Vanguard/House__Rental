@@ -1,0 +1,92 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Owner Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/styleowner.css' %}">
+    <style>
+        /* Add some styling for the dropdown */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 250px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            left: 0; 
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 10px;
+            text-decoration: none;
+            display: block;
+            text-align: left; 
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="welcome">
+            <h1>Hi, {{owner_name }}!</h1> <!-- Display the property owner's name -->
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'propertyadd' %}">Add Property</a></li>
+                <li><a href="{% url 'updateproperty' %}">Update Property</a></li>
+                <li><a href="#">View Feedback</a></li>
+                <li><a href="#">View Rental Agreement</a></li>
+                <!-- <li><a href="{% url 'index' %}">Logout</a></li> -->
+                <li>
+                    <div class="dropdown">
+                    <a href="#" class="dropbtn">My Profile</a>
+                    <div class="dropdown-content">
+                        <a href="{% url 'ownerupdate' %}">Update Profile</a>
+                        <a href="{% url 'index' %}">Logout</a>
+                    </div>
+                </li>
+            </div>
+            </ul>
+        </nav>
+    </header>
+    <center>
+    <main>
+        <section id="property-actions">
+            <h2>Manage Your Properties</h2>
+            <p>Use the options above to add, edit, or update your properties.</p>
+        </section>
+
+        <section id="feedback">
+            <h2>View Feedback</h2>
+            <p>Check out the feedback from your tenants to improve your services.</p>
+        </section>
+
+        <section id="rental-agreement">
+            <h2>View Rental Agreements</h2>
+            <p>Review the rental agreements you have with your tenants.</p>
+        </section>
+    </main>
+</center>
+
+    <script src="{% static 'js/property_owner.js' %}"></script>
+</body>
+</html>

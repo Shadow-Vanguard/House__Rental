@@ -1,0 +1,47 @@
+/* General styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-image:url('https://media.istockphoto.com/id/1155103273/photo/modern-luxury-house-with-private-swimming-pool-at-dusk.jpg?s=612x612&w=0&k=20&c=oSf5Br4ImnkTx4I0E0NUc-2w4NJV50DydnBD-BRK1Pw=');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.header {
+    background-color: #0e0d0d;
+    color: #cab8b8;
+    padding: 10px 15px;  /* Adjusted padding for better size */
+    position: fixed;
+    width: 98%;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+.header h1 {
+    margin: 0;
+    font-size: 22px;  /* Adjusted font size for better readability */
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}
+.nav-links {
+    text-align: right;
+}
+
+.nav-links a {
+    color: #d9d2e0;
+    text-decoration: none;
+    padding: 12px 10px;
+    margin: 0 9px;
+    border-radius: 5px;
+}
+
+.nav-links a:hover {
+    background-color: #677183;
+}
+.content {
+    padding: 120px 50px 50px;
+    color: rgba(245, 241, 241, 0.9);
+    font-size: 20px;
+    font-family: Georgia, 'Times New Roman', Times, serif;
+}

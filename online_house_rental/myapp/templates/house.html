@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Listing</title>
+    <link rel="stylesheet" href="{% static 'css/hstyle.css' %}">
+</head>
+<body>
+    <div class="top-right">
+        <button><a href="{% url 'index' %}" class="home-button">Home</a></button>
+   </div>
+    <div class="container">
+        <h1>Explore the Houses Here</h1>
+        <div class="grid">
+            <div class="house-card">
+                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dmlsbGF8ZW58MHx8MHx8fDA%3D/300x200" alt="House 1">
+                <div class="details">
+                    <p>Beautiful Villa</p>
+                    <p>Price: $500,000</p>
+                </div>
+            </div>
+
+            <div class="house-card">
+                <img src="https://images.pexels.com/photos/439391/pexels-photo-439391.jpeg?auto=compress&cs=tinysrgb&w=600/300x200" alt="House 2">
+                <div class="details">
+                    <p>Modern Apartment</p>
+                    <p>Price: $300,000</p>
+                </div>
+            </div>
+
+            <div class="house-card">
+                <img src="https://plus.unsplash.com/premium_photo-1661883982941-50af7720a6ff?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8bWFuc2lvbnxlbnwwfHwwfHx8MA%3D%3D/300x200" alt="House 3">
+                <div class="details">
+                    <p>Luxury Mansion</p>
+                    <p>Price: $1,200,000</p>
+                </div>
+            </div>
+
+            <div class="house-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRBysNZS2WHU_cDZRFePx5kKdMLJ-Whsi0Xsw&s/300x200" alt="House 4">
+                <div class="details">
+                    <p>Cozy Cottage</p>
+                    <p>Price: $150,000</p>
+                </div>
+            </div>
+
+            <div class="house-card">
+                <img src="https://plus.unsplash.com/premium_photo-1661883964999-c1bcb57a7357?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTd8fGx1eHVyeSUyMGhvdXNlfGVufDB8fDB8fHww/300x200" alt="House 5">
+                <div class="details">
+                    <p>Spacious Townhouse</p>
+                    <p>Price: $400,000</p>
+                </div>
+            </div>
+            <div class="house-card">
+                <img src="https://img.freepik.com/premium-photo/contemporary-home-clean-white-background_485374-17891.jpg?size=626&ext=jpg&ga=GA1.1.354769000.1726785457&semt=ais_hybrid/300x200" alt="House 4">
+                <div class="details">
+                    <p>Modern Houses</p>
+                    <p>Price: $2250,000</p>
+                </div>
+            </div>
+            <div class="house-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRb-FPG8Rpl5qBV2-JhFeahKfJ5BlEn0HgHqA&s/300x200" alt="House 4">
+                <div class="details">
+                    <p>Traditional Houses</p>
+                    <p>Price: $2250,000</p>
+                </div>
+            </div>
+            <div class="house-card">
+                <img src="https://images.pexels.com/photos/323780/pexels-photo-323780.jpeg?auto=compress&cs=tinysrgb&w=600/300x200" alt="House 4">
+                <div class="details">
+                    <p>Beautiful Houses</p>
+                    <p>Price: $5150,000</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

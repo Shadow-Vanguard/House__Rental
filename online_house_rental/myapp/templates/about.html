@@ -1,0 +1,48 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us - Online House Rental</title>
+    <link rel="stylesheet" href="{% static 'css\style4.css'%}">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="logo">
+                <a href="#">HouseRental</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{%url 'index'%}">Home</a></li>
+                <li><a href="{%url 'about'%}">About</a></li>
+                <li><a href="{%url 'contact'%}">contact</a></li>
+                <li><a href="{%url 'login'%}">login</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section class="about-section">
+        <div class="container">
+            <h1>About Us</h1>
+            <p>Welcome to Online House Rental, where we simplify the process of finding and renting homes. Our mission is to provide a seamless and user-friendly platform that connects property owners with potential renters.</p>
+            <h2>Our Story</h2>
+            <p>Founded with the vision to solve the challenges faced by renters and property owners, our platform offers a comprehensive solution to find the perfect home or tenant.</p>
+
+            <h2>Our Team</h2>
+            <p>We are a team of passionate individuals committed to making your rental experience smooth and hassle-free.</p>
+
+            <h2>Our Vision</h2>
+            <p>We aim to continually improve our platform, expand our services, and make renting easier for everyone.</p>
+
+            <h2>User Testimonials</h2>
+            <p>"Online House Rental made it so easy for me to find my new home. I highly recommend it!"</p>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Online House Rental. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
+

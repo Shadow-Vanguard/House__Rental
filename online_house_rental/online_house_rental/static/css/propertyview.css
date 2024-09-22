@@ -1,0 +1,104 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #2f8179;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: 10px auto;
+}
+
+.top-right {
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.back-button {
+    display: inline-block;
+    padding: 20px 40px; /* Adjust width by increasing padding */
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border: 2px solid transparent;
+    border-radius: 12px; /* Make corners more rounded */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+    font-size: 16px; /* Increase font size */
+    font-weight: bold; /* Make text bold */
+    cursor: pointer;
+    text-align: center;
+}
+
+.back-button:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Increase shadow on hover */
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.property-details {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.property-images {
+    flex: 1;
+    margin-right: 20px;
+}
+
+.property-img-large {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+.property-info {
+    flex: 2;
+}
+
+.property-info p {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.action-buttons {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #218838;
+}
+
+.buy-btn {
+    background-color: #007bff;
+}
+
+.buy-btn:hover {
+    background-color: #0056b3;
+}
+
+.rent-btn {
+    background-color: #28a745;
+}
+
+.rent-btn:hover {
+    background-color: #218838;
+}

@@ -1,0 +1,104 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Property</title>
+    <link rel="stylesheet" href="{% static 'css/updateproperty.css' %}">
+    <style>
+        .image-thumbnail {
+            display: inline-block;
+            margin: 5px;
+            text-align: center;
+        }
+        .thumbnail-img {
+            max-width: 100px;
+            max-height: 100px;
+            border-radius: 5px;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'owner' %}" class="back-btn">Back to Home</a>
+    <div class="container">
+        <h2>Update Property</h2>
+        <form id="search-property-form" method="GET">
+            <div class="form-group">
+                <label for="search_property_name">Search Property Name:</label>
+                <input type="text" id="search_property_name" name="search_property_name" placeholder="Enter property name to search" required>
+                <button type="submit" class="search-btn">Search</button>
+            </div>
+        </form>
+        {% if property %}
+        <form id="update-property-form" method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="property_name">Property Name:</label>
+                <input type="text" id="property_name" name="property_name" value="{{ property.property_name }}" required>
+            </div>
+            <div class="form-group">
+                <label for="property_type">Property Type:</label>
+                <select id="property_type" name="property_type" required>
+                    <option value="Apartment" {% if property.property_type == 'Apartment' %}selected{% endif %}>Apartment</option>
+                    <option value="House" {% if property.property_type == 'House' %}selected{% endif %}>House</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="listing_type">Listing Type:</label>
+                <select id="listing_type" name="listing_type" required>
+                    <option value="Rent" {% if property.listing_type == 'Rent' %}selected{% endif %}>Rent</option>
+                    <option value="Sale" {% if property.listing_type == 'Sale' %}selected{% endif %}>Sale</option>
+                    <option value="Both" {% if property.listing_type == 'Both' %}selected{% endif %}>Rent and Sale</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="description">Description:</label>
+                <textarea id="description" name="description" rows="4" required>{{ property.description }}</textarea>
+            </div>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" value="{{ property.address }}" required>
+            </div>
+            <div class="form-group">
+                <label for="city">City:</label>
+                <input type="text" id="city" name="city" value="{{ property.city }}" required>
+            </div>
+            <div class="form-group">
+                <label for="state">State:</label>
+                <input type="text" id="state" name="state" value="{{ property.state }}" required>
+            </div>
+            <div class="form-group">
+                <label for="price">Price:</label>
+                <input type="number" id="price" name="price" value="{{ property.price }}" required>
+            </div>
+            <div class="form-group">
+                <label for="existing_images">Existing Images:</label>
+                <div class="image-gallery">
+                    {% for image in property.images.all %}
+                    <div class="image-thumbnail">
+                        <img src="{{ image.image.url }}" alt="Property Image" class="thumbnail-img">
+                        <button type="submit" name="delete_image" value="{{ image.id }}">Delete</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="new_images">Upload New Image(s):</label>
+                <input type="file" id="new_images" name="new_images" multiple>
+            </div>
+            <button type="submit" class="submit-btn">Update Property</button>
+        </form>
+        {% endif %}
+    </div>
+</body>
+</html>

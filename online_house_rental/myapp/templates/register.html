@@ -1,0 +1,109 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Page</title>
+    <link rel="stylesheet" href="{% static 'css/style3.css' %}">
+</head>
+<body>
+    <div class="container">
+        <form id="registrationForm" method="POST" onsubmit="return validateForm()">
+            <div class="form-group">
+                {% csrf_token %}
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required onblur="checkIfEmpty('name')">
+                <span id="nameError" style="color: red; display: none;">Please fill out this field.</span>
+            </div>
+            <div class="form-group">
+                <label for="address">Address:</label>
+                <input type="text" id="address" name="address" required onblur="checkIfEmpty('address')">
+                <span id="addressError" style="color: red; display: none;">Please fill out this field.</span>
+            </div>
+            <div class="form-group">
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" required onblur="checkIfEmpty('email')">
+                <span id="emailError" style="color: red; display: none;">Please enter a valid email address.</span>
+            </div>
+            <div class="form-group">
+                <label for="contact">Contact No:</label>
+                <input type="text" id="contact" name="contact" required onblur="checkIfEmpty('contact')">
+                <span id="contactError" style="color: red; display: none;">Please enter a valid 10-digit phone number.</span>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required onblur="checkIfEmpty('password')">
+                <span id="passwordError" style="color: red; display: none;">Please fill out this field.</span>
+            </div>
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password:</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required onblur="checkIfEmpty('confirmPassword')">
+                <span id="confirmPasswordError" style="color: red; display: none;">Please fill out this field.</span>
+            </div>
+            <div class="form-group">
+                <label for="role">Register as:</label>
+                <select id="role" name="role" required onblur="checkIfEmpty('role')">
+                    <option value="user">User</option>
+                    <option value="owner">Property Owner</option>
+                </select>
+                <span id="roleError" style="color: red; display: none;">Please fill out this field.</span>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+        
+        <script>
+            function checkIfEmpty(fieldId) {
+                const field = document.getElementById(fieldId);
+                const errorSpan = document.getElementById(fieldId + 'Error');
+                if (field.value.trim() === '') {
+                    errorSpan.style.display = 'inline';
+                    field.focus();
+                } else {
+                    errorSpan.style.display = 'none';
+                }
+            }
+            function validateForm() {
+                let isValid = true;
+                const fields = ['name', 'address', 'email', 'contact', 'password', 'confirmPassword', 'role'];
+
+                fields.forEach(function(field) {
+                    if (document.getElementById(field).value.trim() === '') {
+                        document.getElementById(field + 'Error').style.display = 'inline';
+                        isValid = false;
+                    }
+                });
+
+                const email = document.getElementById('email').value;
+                const emailError = document.getElementById('emailError');
+                if (!email.includes('@')) {
+                    emailError.style.display = 'inline';
+                    isValid = false;
+                } else {
+                    emailError.style.display = 'none';
+                }
+
+                const contact = document.getElementById('contact').value;
+                const contactError = document.getElementById('contactError');
+                if (!/^\d{10}$/.test(contact)) {
+                    contactError.style.display = 'inline';
+                    isValid = false;
+                } else {
+                    contactError.style.display = 'none';
+                }
+
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                if (password !== confirmPassword) {
+                    alert('Passwords do not match');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+        </script>
+        <p>Already have an account? <a href="/login">Login here</a></p>
+    </div>
+    <!-- <script src="script1.js"></script> -->
+</body>
+</html>
