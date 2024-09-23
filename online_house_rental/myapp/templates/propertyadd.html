@@ -10,6 +10,13 @@
 <body>
     <div class="container">
         <h1>Add New Property</h1>
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <div class="alert alert-success">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">

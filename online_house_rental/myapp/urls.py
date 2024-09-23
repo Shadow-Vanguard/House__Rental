@@ -21,6 +21,9 @@ urlpatterns = [
     path('ownerupdate' ,views.ownerupdate, name='ownerupdate'),
     path('propertyadd' ,views.propertyadd, name='propertyadd'),
     path('updateproperty' ,views.updateproperty, name='updateproperty'),
+    path('ownerproperty' ,views.ownerproperty, name='ownerproperty'),
+
+    
 
 
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

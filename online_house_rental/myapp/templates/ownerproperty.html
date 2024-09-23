@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Properties</title>
+    <link rel="stylesheet" href="{% static 'css/ownerproperty.css' %}">
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" type="image/x-icon">
+</head>
+<body>
+    <div class="header">
+        <h1>Properties Added</h1>
+        <a href="{% url 'owner' %}" class="back-button">
+            <img src="{% static 'image/back_icon.png' %}" alt="Back">
+        </a>
+    </div>
+
+    <div class="properties-list">
+        {% for property in properties %}
+        <div class="property-item">
+            <!-- <a href="{% url 'propertyview' property.id %}"> -->
+                <img src="{{ property.images.first.image.url }}" alt="{{ property.property_name }}" class="property-image">
+                <h2>{{ property.property_name }}</h2>
+                <p>{{ property.description|truncatewords:20 }}</p>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

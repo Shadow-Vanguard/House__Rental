@@ -6,10 +6,16 @@ import logging
 from django.utils.crypto import get_random_string
 from django.urls import reverse
 from django.core.mail import send_mail
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import cache_control
+
+
 
 
 def index(request):
     return render(request, 'index.html')
+
+
 def login(request):
     if request.method == 'POST':
         email = request.POST.get('email')
@@ -30,6 +36,8 @@ def login(request):
         else:
             return render(request, 'login.html', {'error': 'Invalid email or password'})
     return render(request, 'login.html')
+
+
 def register(request):
     if request.method == 'POST':
         name =request.POST.get('name')
@@ -46,6 +54,8 @@ def register(request):
         messages.success(request, 'Registration successful')
         return redirect('login')
     return render(request, 'register.html')
+
+
 def about(request):
     return render(request, 'about.html')
 def contact(request):
@@ -73,6 +83,10 @@ def forgotpass(request):
         else:
             messages.error(request, 'No account found with that email.')
     return render(request, 'forgotpass.html')  # This should be inside the POST block
+
+
+# @login_required(login_url='login')
+# @never_cache
 def userpage(request):
         if request.session.get('user_id'):
             user_name = request.session.get('name')  # Get user's name from session
@@ -81,6 +95,9 @@ def userpage(request):
             return redirect('login')
 
     # return render(request, 'userpage.html')
+
+# @login_required(login_url='login')
+
 def owner(request):
     if request.session.get('user_id'):
         owner_name = request.session.get('name')  # Get owner's name from session
@@ -88,6 +105,8 @@ def owner(request):
     else:
         return redirect('login') 
     # return render(request, 'owner.html')
+
+
 def admin(request):
     return render(request, 'admin.html')
 def reset_password(request, token):
@@ -148,6 +167,7 @@ def ownerupdate(request):
         return redirect('owner')
     else:
         return render(request, 'ownerupdate.html', {'user': user})
+
 def propertyadd(request):
     if request.method == 'POST':
         property_name = request.POST.get('property_name')
@@ -167,8 +187,13 @@ def propertyadd(request):
         property_photos = request.FILES.getlist('property_photos')
         for photo in property_photos:
             PropertyImage.objects.create(property=property_instance, image=photo)
+        messages.success(request, 'Property added successfully!')
+
+        # Render the same page with the success message
+        # return render(request, 'propertyadd.html')
         return redirect('owner')
     return render(request, 'propertyadd.html')
+
 def updateproperty(request):
     property_instance = None
     search_property_name = request.GET.get('search_property_name')
@@ -194,6 +219,10 @@ def updateproperty(request):
             PropertyImage.objects.create(property=property_instance, image=image)
         return redirect(f"{reverse('owner')}?search_property_name={property_instance.property_name}")
     return render(request, 'updateproperty.html', {'property': property_instance})
-    
+
+
+def ownerproperty(request):
+    properties = Property.objects.all()  # Fetch all properties
+    return render(request, 'ownerproperty.html', {'properties': properties})
 
 
