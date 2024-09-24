@@ -51,57 +51,92 @@
             </div>
             <button type="submit">Register</button>
         </form>
-        
         <script>
-            function checkIfEmpty(fieldId) {
-                const field = document.getElementById(fieldId);
-                const errorSpan = document.getElementById(fieldId + 'Error');
-                if (field.value.trim() === '') {
-                    errorSpan.style.display = 'inline';
-                    field.focus();
-                } else {
-                    errorSpan.style.display = 'none';
-                }
+        function validateForm() {
+            let isValid = true;
+
+            // Name validation
+            if (!checkIfEmpty('name')) isValid = false;
+            const name = document.getElementById("name").value;
+            const namePattern = /^[A-Z][a-zA-Z\s]*$/;
+            if (!namePattern.test(name)) {
+                document.getElementById("nameError").innerText = "Name should start with a capital letter.";
+                document.getElementById("nameError").style.display = "block";
+                isValid = false;
+            } else {
+                document.getElementById("nameError").style.display = "none";
             }
-            function validateForm() {
-                let isValid = true;
-                const fields = ['name', 'address', 'email', 'contact', 'password', 'confirmPassword', 'role'];
 
-                fields.forEach(function(field) {
-                    if (document.getElementById(field).value.trim() === '') {
-                        document.getElementById(field + 'Error').style.display = 'inline';
-                        isValid = false;
-                    }
-                });
-
-                const email = document.getElementById('email').value;
-                const emailError = document.getElementById('emailError');
-                if (!email.includes('@')) {
-                    emailError.style.display = 'inline';
-                    isValid = false;
-                } else {
-                    emailError.style.display = 'none';
-                }
-
-                const contact = document.getElementById('contact').value;
-                const contactError = document.getElementById('contactError');
-                if (!/^\d{10}$/.test(contact)) {
-                    contactError.style.display = 'inline';
-                    isValid = false;
-                } else {
-                    contactError.style.display = 'none';
-                }
-
-                const password = document.getElementById('password').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                if (password !== confirmPassword) {
-                    alert('Passwords do not match');
-                    isValid = false;
-                }
-
-                return isValid;
+            // Address validation
+            if (!checkIfEmpty('address')) isValid = false;
+            const address = document.getElementById("address").value;
+            const addressPattern = /^[A-Z][a-zA-Z0-9\s,.-]*$/;
+            if (!addressPattern.test(address)) {
+                document.getElementById("addressError").innerText = "Address should start with a capital letter.";
+                document.getElementById("addressError").style.display = "block";
+                isValid = false;
+            } else {
+                document.getElementById("addressError").style.display = "none";
             }
-        </script>
+
+            // Email validation
+            const email = document.getElementById("email").value;
+            const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+            if (!emailPattern.test(email)) {
+                document.getElementById("emailError").innerText = "Please enter a valid email format (e.g., email@gmail.com).";
+                document.getElementById("emailError").style.display = "block";
+                isValid = false;
+            } else {
+                document.getElementById("emailError").style.display = "none";
+            }
+
+            // Phone number validation
+            const phone = document.getElementById("contact").value;
+            const phonePattern = /^[789]\d{9}$/;
+            if (!phonePattern.test(phone)) {
+                document.getElementById("contactError").innerText = "Please enter a valid 10-digit phone number starting with 7, 8, or 9.";
+                document.getElementById("contactError").style.display = "block";
+                isValid = false;
+            } else {
+                document.getElementById("contactError").style.display = "none";
+            }
+
+            // Password validation
+            const password = document.getElementById("password").value;
+            const passwordPattern = /^(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/;
+            if (!passwordPattern.test(password)) {
+                document.getElementById("passwordError").innerText = "Password must be at least 8 characters long with at least one special character.";
+                document.getElementById("passwordError").style.display = "block";
+                isValid = false;
+            } else {
+                document.getElementById("passwordError").style.display = "none";
+            }
+
+            // Confirm password validation
+            const confirmPassword = document.getElementById("confirmPassword").value;
+            if (password !== confirmPassword) {
+                document.getElementById("confirmPasswordError").innerText = "Passwords do not match.";
+                document.getElementById("confirmPasswordError").style.display = "block";
+                isValid = false;
+            } else {
+                document.getElementById("confirmPasswordError").style.display = "none";
+            }
+
+            return isValid;
+        }
+
+        // Helper function to check if a field is empty
+        function checkIfEmpty(fieldId) {
+            const value = document.getElementById(fieldId).value;
+            if (!value) {
+                document.getElementById(fieldId + "Error").style.display = "block";
+                return false;
+            } else {
+                document.getElementById(fieldId + "Error").style.display = "none";
+                return true;
+            }
+        }
+    </script>
         <p>Already have an account? <a href="/login">Login here</a></p>
     </div>
     <!-- <script src="script1.js"></script> -->

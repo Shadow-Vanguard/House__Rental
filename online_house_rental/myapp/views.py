@@ -90,22 +90,36 @@ def forgotpass(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def userpage(request):
-        if request.session.get('user_id'):
-            user_name = request.session.get('name')  # Get user's name from session
-            return render(request, 'userpage.html', {'user_name': user_name})
-        else:
+    if request.session.get('user_id'):
+        user_id = request.session.get('user_id')  # Get user_id from session
+        try:
+            user = User.objects.get(id=user_id)  # Fetch user details
+        except User.DoesNotExist:
             return redirect('login')
 
-    # return render(request, 'userpage.html')
+        # Render the user page template with user context
+        return render(request, 'userpage.html', {
+            'user': user,  # Pass the user object to access user details in the template
+            'user_name': user.name,  # You can still keep the user name if needed
+        })
+    else:
+        return redirect('login')
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def owner(request):
     if request.session.get('user_id'):
+        user_id = request.session.get('user_id')  # Get user_id from session
+        user = get_object_or_404(User, id=user_id)  # Fetch the user details
+
         owner_name = request.session.get('name')  # Get owner's name from session
-        return render(request, 'owner.html', {'owner_name': owner_name})
+
+        return render(request, 'owner.html', {
+            'owner_name': owner_name,
+            'user': user,  # Pass the user object to the template
+        })
     else:
-        return redirect('login') 
-    # return render(request, 'owner.html')
+        return redirect('login')
 
 
 def admin(request):
@@ -170,6 +184,9 @@ def ownerupdate(request):
         return render(request, 'ownerupdate.html', {'user': user})
 
 def propertyadd(request):
+    # Fetch all property names for client-side validation
+    property_names = Property.objects.values_list('property_name', flat=True)
+
     if request.method == 'POST':
         property_name = request.POST.get('property_name')
         description = request.POST.get('description')
@@ -180,21 +197,47 @@ def propertyadd(request):
         property_type = request.POST.get('property_type')
         listing_type = request.POST.get('listing_type')
         owner_id = request.session.get('user_id')
+
+        # Validate property name uniqueness
+        if Property.objects.filter(property_name=property_name).exists():
+            messages.error(request, 'Property name already exists. Please choose another name.')
+            return render(request, 'propertyadd.html', {'property_names': list(property_names)})
+
+        # Validate price
+        if float(price) <= 0:
+            messages.error(request, 'Price must be a positive value greater than zero.')
+            return render(request, 'propertyadd.html', {'property_names': list(property_names)})
+
+        # Check owner existence
         owner = User.objects.get(id=owner_id)
+
+        # Create the property
         property_instance = Property.objects.create(
-            property_name=property_name,description=description,address=address,city=city,state=state,
-            price=price,property_type=property_type,listing_type=listing_type,owner=owner
+            property_name=property_name,
+            description=description,
+            address=address,
+            city=city,
+            state=state,
+            price=price,
+            property_type=property_type,
+            listing_type=listing_type,
+            owner=owner
         )
+
+        # Handle file upload and ensure JPEG validation
         property_photos = request.FILES.getlist('property_photos')
         for photo in property_photos:
+            if not photo.content_type == 'image/jpeg':
+                messages.error(request, 'Only JPEG images are allowed.')
+                return render(request, 'propertyadd.html', {'property_names': list(property_names)})
             PropertyImage.objects.create(property=property_instance, image=photo)
+
         messages.success(request, 'Property added successfully!')
-
-        # Render the same page with the success message
-        # return render(request, 'propertyadd.html')
         return redirect('owner')
-    return render(request, 'propertyadd.html')
 
+    return render(request, 'propertyadd.html', {'property_names': list(property_names)})
+
+    
 def updateproperty(request):
     property_instance = None
     search_property_name = request.GET.get('search_property_name')
@@ -234,6 +277,15 @@ def manage_users(request, role):
     users = User.objects.filter(role=role)
     context = {'users': users, 'role': role}
     return render(request, 'manage_users.html', context)
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.delete()
+    return redirect('manage_users', user.role)
+
+
+def view_profile(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'view_profile.html', {'user': user})
 
 
 

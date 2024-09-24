@@ -25,6 +25,8 @@ urlpatterns = [
     path('logout',views.logout, name='logout'),
     path('manageproperty' ,views.manageproperty, name='manageproperty'),
     path('manage-users/<str:role>/', views.manage_users, name='manage_users'),
+    path('delete-user/<int:user_id>/', views.delete_user, name='delete_user'),
+    path('view_profile/<int:user_id>/', views.view_profile, name='view_profile'),
 
     
 

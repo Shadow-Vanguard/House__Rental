@@ -33,9 +33,9 @@
                     <td>{{ user.address }}</td>
                     <td>{{ user.email }}</td>
                     <td>{{ user.phone }}</td>
+                
                     <td>
-                         <a href="{% url 'update_user' user.id %}" class="edit-btn">Edit</a>
-                        <a href="{% url 'delete_user' user.id %}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a> {% endcomment %}
+                        <a href="{% url 'delete_user' user.id %}" class="delete-btn" onclick="return confirm('Are you sure you want to delete this user?');">Delete</a>
                     </td>
                 </tr>
                 {% endfor %}

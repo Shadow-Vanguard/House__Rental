@@ -4,20 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - Online House Rental</title>
-    <link rel="stylesheet" href="{% static 'css\style4.css'%}">
+    <title>About Us - Find Your Perfect Home</title>
+    <link rel="stylesheet" href="{% static 'css/style4.css' %}">
 </head>
 <body>
     <nav class="navbar">
         <div class="container">
             <div class="logo">
-                <a href="#">HouseRental</a>
+                <a href="#">HomeFinder</a>
             </div>
             <ul class="nav-links">
-                <li><a href="{%url 'index'%}">Home</a></li>
-                <li><a href="{%url 'about'%}">About</a></li>
-                <li><a href="{%url 'contact'%}">contact</a></li>
-                <li><a href="{%url 'login'%}">login</a></li>
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'contact' %}">Contact</a></li>
+                <li><a href="{% url 'login' %}">Login</a></li>
             </ul>
         </div>
     </nav>
@@ -25,24 +25,35 @@
     <section class="about-section">
         <div class="container">
             <h1>About Us</h1>
-            <p>Welcome to Online House Rental, where we simplify the process of finding and renting homes. Our mission is to provide a seamless and user-friendly platform that connects property owners with potential renters.</p>
-            <h2>Our Story</h2>
-            <p>Founded with the vision to solve the challenges faced by renters and property owners, our platform offers a comprehensive solution to find the perfect home or tenant.</p>
-
-            <h2>Our Team</h2>
-            <p>We are a team of passionate individuals committed to making your rental experience smooth and hassle-free.</p>
+            <p>Welcome to <strong>HomeFinder</strong>, your go-to platform for finding the perfect rental home. Whether you're a property owner or a tenant, we make renting easier, faster, and stress-free.</p>
+            
+            <h2>Who We Are</h2>
+            <p>At HomeFinder, we believe in the power of technology to transform the rental experience. Our platform is designed to offer seamless interactions between property owners and tenants, providing a wide variety of homes at your fingertips.</p>
+            
+            <h2>Our Mission</h2>
+            <p>We are dedicated to bridging the gap between homeowners and renters, offering innovative tools and resources that make the entire process smooth and transparent. Our mission is to revolutionize the property rental landscape by delivering exceptional service and making property rental a breeze.</p>
+            
+            <h2>Why Choose Us?</h2>
+            <ul>
+                <li><strong>Comprehensive Listings:</strong> Access a diverse range of properties from apartments to luxury homes.</li>
+                <li><strong>User-Friendly Experience:</strong> Our platform is intuitive and easy to navigate, making the rental process simple.</li>
+                <li><strong>Secure Transactions:</strong> Safety and security are our top priorities, ensuring peace of mind for both owners and renters.</li>
+                <li><strong>Supportive Team:</strong> Our dedicated team is here to assist you at every step of your rental journey.</li>
+            </ul>
 
             <h2>Our Vision</h2>
-            <p>We aim to continually improve our platform, expand our services, and make renting easier for everyone.</p>
+            <p>We aim to become the most trusted rental platform in the country by providing smart and reliable solutions to connect renters and property owners. Our vision is to make renting homes as simple as possible by continuing to innovate and expand our services.</p>
 
-            <h2>User Testimonials</h2>
-            <p>"Online House Rental made it so easy for me to find my new home. I highly recommend it!"</p>
+            <h2>What Our Clients Say</h2>
+            <blockquote>"I found my ideal home within days! HomeFinder made the entire process straightforward and efficient."</blockquote>
+            <blockquote>"As a property owner, listing my homes has never been easier. The site’s features make it so convenient."</blockquote>
         </div>
     </section>
 
     <footer>
-        <p>&copy; 2024 Online House Rental. All Rights Reserved.</p>
+        <div class="container">
+            <p>&copy; 2024 HomeFinder - Your Trusted Rental Solution. All Rights Reserved.</p>
+        </div>
     </footer>
 </body>
 </html>
-

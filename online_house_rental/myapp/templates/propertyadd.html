@@ -10,13 +10,16 @@
 <body>
     <div class="container">
         <h1>Add New Property</h1>
+
+        <!-- Display Messages if Any -->
         {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <div class="form-group">
@@ -70,11 +73,52 @@
 
             <div class="form-group">
                 <label for="propertyPhotos">Property Photos</label>
-                <input type="file" id="propertyPhotos" name="property_photos" multiple accept="image/*" required>
+                <input type="file" id="propertyPhotos" name="property_photos" multiple accept="image/jpeg" required>
             </div>
 
             <button type="submit" class="btn">Submit Property</button>
         </form>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const propertyNameInput = document.getElementById('propertyName');
+                const priceInput = document.getElementById('price');
+                const photosInput = document.getElementById('propertyPhotos');
+                let propertyExists = false;
+
+                // Property name uniqueness validation
+                propertyNameInput.addEventListener('blur', function() {
+                    const enteredName = propertyNameInput.value.trim();
+                    const existingNames = JSON.parse('{{ property_names|escapejs }}'); // Property names from view context
+
+                    if (existingNames.includes(enteredName)) {
+                        alert('Property name already exists! Please choose another.');
+                        propertyNameInput.value = '';
+                        propertyExists = true;
+                    }
+                });
+
+                // Price validation (positive value only)
+                priceInput.addEventListener('input', function() { 
+                    if (parseFloat(priceInput.value) <= 0) {
+                        alert('Price must be greater than 0.');
+                        priceInput.value = '';
+                    }
+                });
+
+                // Image validation (JPEG only)
+                photosInput.addEventListener('change', function() {
+                    const files = photosInput.files;
+                    for (let i = 0; i < files.length; i++) {
+                        if (!files[i].name.toLowerCase().endsWith('.jpg') && !files[i].name.toLowerCase().endsWith('.jpeg')) {
+                            alert('Only JPEG images are allowed.');
+                            photosInput.value = '';
+                            break;
+                        }
+                    }
+                });
+            });
+        </script>
     </div>
 </body>
 </html>
