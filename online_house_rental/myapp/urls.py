@@ -22,6 +22,9 @@ urlpatterns = [
     path('propertyadd' ,views.propertyadd, name='propertyadd'),
     path('updateproperty' ,views.updateproperty, name='updateproperty'),
     path('ownerproperty' ,views.ownerproperty, name='ownerproperty'),
+    path('logout',views.logout, name='logout'),
+    path('manageproperty' ,views.manageproperty, name='manageproperty'),
+    path('manage-users/<str:role>/', views.manage_users, name='manage_users'),
 
     
 

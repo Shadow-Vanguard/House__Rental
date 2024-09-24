@@ -1,0 +1,153 @@
+/* Global styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+.header {
+    background-color: #4CAF50;
+    color: white;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header h1 {
+    margin: 0;
+    font-size: 28px;
+}
+
+.back-button {
+    position: absolute;
+    top: 50%;
+    left: 20px;
+    transform: translateY(-50%);
+    background-color: #333;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.back-button:hover {
+    background-color: #555;
+}
+
+/* Table styles */
+.users-list {
+    width: 80%;
+    margin: 40px auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    padding: 15px;
+    text-align: left;
+}
+
+table thead {
+    background-color: #4CAF50;
+    color: white;
+}
+
+table tbody tr {
+    border-bottom: 1px solid #ddd;
+}
+
+table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+table th {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 14px;
+}
+
+table td {
+    font-size: 16px;
+    color: #555;
+}
+
+/* Button styles */
+.edit-btn, .delete-btn {
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 14px;
+    color: white;
+    text-decoration: none;
+}
+
+.edit-btn {
+    background-color: #4CAF50;
+}
+
+.edit-btn:hover {
+    background-color: #45a049;
+}
+
+.delete-btn {
+    background-color: #f44336;
+    margin-left: 8px;
+}
+
+.delete-btn:hover {
+    background-color: #e53935;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .users-list {
+        width: 95%;
+    }
+
+    table thead {
+        display: none;
+    }
+
+    table, table tbody, table tr, table td {
+        display: block;
+        width: 100%;
+    }
+
+    table tr {
+        margin-bottom: 15px;
+    }
+
+    table td {
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+    }
+
+    table td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 0;
+        padding-left: 15px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    table td:last-child {
+        text-align: center;
+        padding-top: 10px;
+    }
+}

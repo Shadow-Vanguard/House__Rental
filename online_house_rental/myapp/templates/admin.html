@@ -15,8 +15,11 @@
                 <h2>Admin Dashboard</h2>
             </div>
             <ul class="list-unstyled components">
-                <li><a href="#manage-users" onclick="showSection('manage-users')">Manage Users</a></li>
-                <li><a href="#manage-owners" onclick="showSection('manage-owners')">Manage Property Owners</a></li>
+                <li><a href="{% url 'manageproperty' %}" onclick="showSection('manage-properties')">Manage Properties</a></li>
+                <!-- <li><a href="#" onclick="showSection('manage-users')">Manage Users</a></li> -->
+                <li><a href="{% url 'manage_users' 'user' %}">Manage Users</a></li>
+                <li><a href="{% url 'manage_users' 'owner' %}">Manage Property Owners</a></li>
+                <!-- <li><a href="#manage-owners" onclick="showSection('manage-owners')">Manage Property Owners</a></li> -->
                 <li><a href="#feedback-analysis" onclick="showSection('feedback-analysis')">Feedback Analysis</a></li>
                 <li><a href="{% url 'login' %}">Logout</a></li>
             </ul>

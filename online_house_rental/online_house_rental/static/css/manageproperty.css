@@ -3,7 +3,10 @@ body {
     margin: 0;
     padding: 0;
     background-color: rgb(22, 100, 69);
-    
+    background-image: url('https://media.istockphoto.com/id/1049411218/photo/white-tunnel-corridor.webp?a=1&b=1&s=612x612&w=0&k=20&c=sX4Cq0k3D3gDhhHVquayu3Abjj9ITgKICymCrVsb3cw=');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 .header {

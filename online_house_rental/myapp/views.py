@@ -9,7 +9,10 @@ from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
 
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def logout(request):
+    request.session.flush()  # This clears the session data
+    return redirect('login') 
 
 
 def index(request):
@@ -85,8 +88,7 @@ def forgotpass(request):
     return render(request, 'forgotpass.html')  # This should be inside the POST block
 
 
-# @login_required(login_url='login')
-# @never_cache
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def userpage(request):
         if request.session.get('user_id'):
             user_name = request.session.get('name')  # Get user's name from session
@@ -96,8 +98,7 @@ def userpage(request):
 
     # return render(request, 'userpage.html')
 
-# @login_required(login_url='login')
-
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def owner(request):
     if request.session.get('user_id'):
         owner_name = request.session.get('name')  # Get owner's name from session
@@ -224,5 +225,16 @@ def updateproperty(request):
 def ownerproperty(request):
     properties = Property.objects.all()  # Fetch all properties
     return render(request, 'ownerproperty.html', {'properties': properties})
+
+def manageproperty(request):
+    properties = Property.objects.all()  # Fetch all properties
+    return render(request, 'manageproperty.html', {'properties': properties})
+
+def manage_users(request, role):
+    users = User.objects.filter(role=role)
+    context = {'users': users, 'role': role}
+    return render(request, 'manage_users.html', context)
+
+
 
 
