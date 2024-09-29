@@ -4,41 +4,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Owner's Properties</title>
-    <link rel="stylesheet" href="{% static 'css/ownerview.css' %}">
+    <title>Properties</title>
+    <link rel="stylesheet" href="{% static 'css/ownerproperty.css' %}">
+    <link rel="icon" href="{% static 'image/favicon.ico' %}" type="image/x-icon">
+    <script>
+        function toggleForm(propertyId) {
+            var form = document.getElementById('update-form-' + propertyId);
+            form.style.display = form.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
 </head>
 <body>
-    <div class="container">
-        <h1>Properties Listed by You</h1>
+    <div class="header">
+        <h1>Properties Added</h1>
+        <a href="{% url 'owner' %}" class="back-button">
+            <img src="{% static 'image/back_icon.png' %}" alt="Back">
+        </a>
+    </div>
 
-        {% if properties %}
-            <div class="property-list">
-                {% for property in properties %}
-                    <div class="property-item">
-                        <!-- Property Image -->
-                        <div class="property-image">
-                            <img src="{{ property.image.url }}" alt="{{ property.property_name }}">
-                        </div>
+    <div class="properties-list">
+        {% for property in properties %}
+        <div class="property-item">
+            <img src="{{ property.images.first.image.url }}" alt="{{ property.property_name }}" class="property-image">
+            <h2>{{ property.property_name }}</h2>
+            <p>{{ property.description|truncatewords:20 }}</p>
+            <button type="button" onclick="toggleForm({{property.id}})">Update</button>
+            <button type="submit" class="submit-btn">Delete</button>
 
-                        <!-- Property Details -->
-                        <div class="property-details">
-                            <h2>{{ property.property_name }}</h2>
-                            <p><strong>Description:</strong> {{ property.description }}</p>
-                            <p><strong>Price:</strong> ₹{{ property.price }}</p>
-                            <p><strong>Bedrooms:</strong> {{ property.beds }}</p>
-                            <p><strong>Bathrooms:</strong> {{ property.baths }}</p>
-                            <p><strong>Area:</strong> {{ property.area }} sq. ft.</p>
-                            <p><strong>Property Type:</strong> {{ property.property_type }}</p>
-                            <p><strong>Listing Type:</strong> {{ property.listing_type }}</p>
+
+            <!-- Update form, initially hidden -->
+            <div id="update-form-{{ property.id }}" class="update-form">
+                <h3>Update {{ property.property_name }}</h3>
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="property_name">Property Name:</label>
+                        <input type="text" id="property_name" name="property_name" value="{{ property.property_name }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="property_type">Property Type:</label>
+                        <select id="property_type" name="property_type" required>
+                            <option value="Apartment" {% if property.property_type == 'Apartment' %}selected{% endif %}>Apartment</option>
+                            <option value="House" {% if property.property_type == 'House' %}selected{% endif %}>House</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="listing_type">Listing Type:</label>
+                        <select id="listing_type" name="listing_type" required>
+                            <option value="Rent" {% if property.listing_type == 'Rent' %}selected{% endif %}>Rent</option>
+                            <option value="Sale" {% if property.listing_type == 'Sale' %}selected{% endif %}>Sale</option>
+                            <option value="Both" {% if property.listing_type == 'Both' %}selected{% endif %}>Rent and Sale</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <textarea id="description" name="description" rows="4" required>{{ property.description }}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address:</label>
+                        <input type="text" id="address" name="address" value="{{ property.address }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">City:</label>
+                        <input type="text" id="city" name="city" value="{{ property.city }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="state">State:</label>
+                        <input type="text" id="state" name="state" value="{{ property.state }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price:</label>
+                        <input type="number" id="price" name="price" value="{{ property.price }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="existing_images">Existing Images:</label>
+                        <div class="image-gallery">
+                            {% for image in property.images.all %}
+                            <div class="image-thumbnail">
+                                <img src="{{ image.image.url }}" alt="Property Image" class="thumbnail-img">
+                                <button type="submit" name="delete_image" value="{{ image.id }}">Delete</button>
+                            </div>
+                            {% endfor %}
                         </div>
                     </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p>You have not added any properties yet.</p>
-        {% endif %}
+                    <div class="form-group">
+                        <label for="new_images">Upload New Image(s):</label>
+                        <input type="file" id="new_images" name="new_images" multiple>
+                    </div>
+                    <button type="submit" class="submit-btn">Update Property</button>
 
-        <a href="{% url 'propertyadd' %}" class="btn">Add New Property</a>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
     </div>
 </body>
 </html>

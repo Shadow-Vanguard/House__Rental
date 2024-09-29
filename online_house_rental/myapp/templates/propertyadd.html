@@ -9,7 +9,7 @@
 </head>
 <body>
     <style>
-.error {
+        .error {
             color: red;
             font-weight: bold;
             margin-top: 5px;
@@ -23,6 +23,18 @@
             text-decoration: none;
             border-radius: 5px;
         }
+        .success {
+            color: green;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .success-message {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: none; /* Hidden by default */
+        }
     </style>
 
     <a href="{% url 'owner' %}" class="back-btn">Back to Home</a>
@@ -30,74 +42,65 @@
     <div class="container">
         <h1>Add New Property</h1>
 
-        <!-- Display Messages if Any -->
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="alert {{ message.tags }}">{{ message }}</div>
-                {% endfor %}
-            </div>
-        {% endif %}
+        <div class="success-message" id="successMessage">Property added successfully!</div>
 
-        <form method="post" enctype="multipart/form-data">
+        <form id="propertyForm" method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- Property Name -->
             <div class="form-group">
                 <label for="propertyName">Property Name</label>
                 <input type="text" id="propertyName" name="property_name" required>
+                <div class="error" id="nameError"></div>
             </div>
 
-            <!-- Description -->
             <div class="form-group">
                 <label for="description">Description</label>
                 <textarea id="description" name="description" rows="4" required></textarea>
             </div>
 
-            <!-- Address -->
             <div class="form-group">
-                <label for="Address">Address</label>
+                <label for="address">Address</label>
                 <input type="text" id="address" name="address" required>
+                <div class="error" id="addressError"></div>
             </div>
 
-            <!-- city -->
             <div class="form-group">
-                <label for="City">City</label>
+                <label for="city">City</label>
                 <input type="text" id="city" name="city" required>
+                <div class="error" id="cityError"></div>
             </div>
 
-            <!-- state -->
             <div class="form-group">
                 <label for="state">State</label>
                 <input type="text" id="state" name="state" required>
+                <div class="error" id="stateError"></div>
             </div>
 
-            <!-- Number of Bedrooms (Beds) -->
             <div class="form-group">
                 <label for="beds">Number of Bedrooms</label>
                 <input type="number" id="beds" name="beds" required>
+                <div class="error" id="bedsError"></div>
             </div>
 
-            <!-- Number of Bathrooms (Baths) -->
             <div class="form-group">
                 <label for="baths">Number of Bathrooms</label>
                 <input type="number" id="baths" name="baths" required>
+                <div class="error" id="bathsError"></div>
             </div>
 
-            <!-- Area in Square Feet -->
             <div class="form-group">
                 <label for="area">Area (sq. ft.)</label>
                 <input type="number" id="area" name="area" required>
-                <small>Area in square feet</small> <!-- Help text for area field -->
+                <small>Area in square feet</small>
+                <div class="error" id="areaError"></div>
             </div>
 
-            <!-- Price -->
             <div class="form-group">
                 <label for="price">Price (₹)</label>
                 <input type="number" id="price" name="price" step="0.01" required>
+                <div class="error" id="priceError"></div>
             </div>
 
-            <!-- Property Type -->
             <div class="form-group">
                 <label for="propertyType">Property Type</label>
                 <select id="propertyType" name="property_type" required>
@@ -107,7 +110,6 @@
                 </select>
             </div>
 
-            <!-- Listing Type -->
             <div class="form-group">
                 <label for="listingType">Listing Type</label>
                 <select id="listingType" name="listing_type" required>
@@ -118,72 +120,147 @@
                 </select>
             </div>
 
-            <!-- Property Photos (JPEG only) -->
             <div class="form-group">
                 <label for="propertyPhotos">Property Photos (JPEG only)</label>
-                <input type="file" id="propertyPhotos" name="image" accept="image/jpeg" required>
+                <input type="file" id="propertyPhotos" name="image" accept="image/jpeg" required multiple>
+                <div class="error" id="photoError"></div>
             </div>
 
             <button type="submit" class="btn">Submit Property</button>
         </form>
 
-        <!-- JavaScript Validation -->
-         <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const bedsInput = document.getElementById('beds');
-                const bathsInput = document.getElementById('baths');
-                const areaInput = document.getElementById('area');
-                const locationInput = document.getElementById('location');
-                const priceInput = document.getElementById('price');
-                const photosInput = document.getElementById('propertyPhotos');
+        <script>
+        document.addEventListener('DOMContentLoaded', function() {
+        const propertyForm = document.getElementById('propertyForm');
+        const nameInput = document.getElementById('propertyName');
+        const addressInput = document.getElementById('address');
+        const cityInput = document.getElementById('city');
+        const stateInput = document.getElementById('state');
+        const bedsInput = document.getElementById('beds');
+        const bathsInput = document.getElementById('baths');
+        const areaInput = document.getElementById('area');
+        const priceInput = document.getElementById('price');
+        const photosInput = document.getElementById('propertyPhotos');
+        const successMessage = document.getElementById('successMessage');
 
-                // Bedrooms validation (positive integer only)
-                bedsInput.addEventListener('input', function() {
-                    if (parseInt(bedsInput.value) <= 0) {
-                        alert('Number of bedrooms must be greater than zero.');
-                        bedsInput.value = '';
-                    }
-                });
+        nameInput.addEventListener('input', function() {
+            const value = nameInput.value.trim();
+            const nameError = document.getElementById('nameError');
+            nameError.textContent = '';
+            if (value.length > 0 && value.length < 3) {
+                nameError.textContent = 'Property name must be at least 3 letters.';
+            }
+            if (value.length > 0 && !/^[A-Z]/.test(value)) {
+                nameError.textContent = 'Property name must start with a capital letter.';
+            }
+            if (value.length > 0 && /^\s/.test(value)) {
+                nameError.textContent = 'No leading whitespace allowed.';
+            }
+        });
 
-                // Bathrooms validation (positive integer only)
-                bathsInput.addEventListener('input', function() {
-                    if (parseInt(bathsInput.value) <= 0) {
-                        alert('Number of bathrooms must be greater than zero.');
-                        bathsInput.value = '';
-                    }
-                });
+        addressInput.addEventListener('input', function() {
+            const value = addressInput.value;
+            const addressError = document.getElementById('addressError');
+            addressError.textContent = '';
+            if (value.length > 0 && !/[a-zA-Z0-9]/.test(value)) {
+                addressError.textContent = 'Address must contain letters and numbers.';
+            }
+        });
 
-                // Area validation (positive number greater than zero)
-                areaInput.addEventListener('input', function() {
-                    if (parseFloat(areaInput.value) <= 0) {
-                        alert('Area must be a positive number greater than zero.');
-                        areaInput.value = '';
-                    }
-                });
+        cityInput.addEventListener('input', function() {
+            const value = cityInput.value;
+            const cityError = document.getElementById('cityError');
+            cityError.textContent = '';
+            if (value.length > 0 && !/[a-zA-Z0-9]/.test(value)) {
+                cityError.textContent = 'City must contain letters and numbers.';
+            }
+        });
 
-                // Price validation (positive value only)
-                priceInput.addEventListener('input', function() {
-                    if (parseFloat(priceInput.value) <= 0) {
-                        alert('Price must be greater than zero.');
-                        priceInput.value = '';
-                    }
-                });
+        stateInput.addEventListener('input', function() {
+            const value = stateInput.value;
+            const stateError = document.getElementById('stateError');
+            stateError.textContent = '';
+            if (value.length > 0 && !/^[a-zA-Z]+$/.test(value)) {
+                stateError.textContent = 'State must only contain letters.';
+            }
+        });
 
-                // Image validation (JPEG only)
-                photosInput.addEventListener('change', function() {
-                    const files = photosInput.files;
-                    for (let i = 0; i < files.length; i++) {
-                        if (!files[i].name.toLowerCase().endsWith('.jpg') && !files[i].name.toLowerCase().endsWith('.jpeg')) {
-                            alert('Only JPEG images are allowed.');
-                            photosInput.value = '';
-                            break;
-                        }
-                    }
-                });
-            });
-        </script>
+        bedsInput.addEventListener('input', function() {
+            const value = parseInt(bedsInput.value);
+            const bedsError = document.getElementById('bedsError');
+            bedsError.textContent = '';
+            if (value < 0) {
+                bedsError.textContent = 'Number of bedrooms cannot be negative.';
+            }
+            if (value > 10) {
+                bedsError.textContent = 'Number of bedrooms cannot exceed 10.';
+            }
+        });
+
+        bathsInput.addEventListener('input', function() {
+            const value = parseInt(bathsInput.value);
+            const bathsError = document.getElementById('bathsError');
+            bathsError.textContent = '';
+            if (value < 0) {
+                bathsError.textContent = 'Number of bathrooms cannot be negative.';
+            }
+            if (value > 10) {
+                bathsError.textContent = 'Number of bathrooms cannot exceed 10.';
+            }
+        });
+
+        areaInput.addEventListener('input', function() {
+            const value = parseInt(areaInput.value);
+            const areaError = document.getElementById('areaError');
+            areaError.textContent = '';
+            if (value < 0) {
+                areaError.textContent = 'Area cannot be negative.';
+            }
+        });
+
+        priceInput.addEventListener('input', function() {
+            const value = parseFloat(priceInput.value);
+            const priceError = document.getElementById('priceError');
+            priceError.textContent = '';
+            if (value < 0) {
+                priceError.textContent = 'Price cannot be negative.';
+            }
+        });
+
+        photosInput.addEventListener('change', function() {
+            const files = photosInput.files;
+            const photoError = document.getElementById('photoError');
+            photoError.textContent = '';
+            let hasInvalidFile = false;
+
+            for (let i = 0; i < files.length; i++) {
+                // Check if the file is neither .jpeg nor .jpg
+                if (!files[i].name.endsWith('.jpeg') && !files[i].name.endsWith('.jpg')) {
+                    hasInvalidFile = true;
+                    break; // Exit the loop if an invalid file is detected
+                }
+            }
+            if (hasInvalidFile) {
+                photoError.textContent = 'Only JPEG files are allowed.';
+            }
+        });
+
+
+        propertyForm.addEventListener('submit', function(event) {
+            const hasErrors = document.querySelector('.error:empty') === null;
+            if (hasErrors) {
+                event.preventDefault();
+                successMessage.style.display = 'none'; // Hide success message if errors are present
+            } else {
+                successMessage.style.display = 'block'; // Show success message
+                setTimeout(() => {
+                    successMessage.style.display = 'none'; // Hide after 1 second
+                }, 1000);
+            }
+        });
+    });
+</script>
+
     </div>
 </body>
 </html>
-
-

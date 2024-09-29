@@ -225,9 +225,6 @@ def ownerupdate(request):
         return render(request, 'ownerupdate.html', {'user': user})
 
 def propertyadd(request):
-    # Fetch all property names for client-side validation
-    property_names = Property.objects.values_list('property_name', flat=True)
-
     if request.method == 'POST':
         property_name = request.POST.get('property_name')
         description = request.POST.get('description')
@@ -237,53 +234,24 @@ def propertyadd(request):
         price = request.POST.get('price')
         property_type = request.POST.get('property_type')
         listing_type = request.POST.get('listing_type')
+        beds = request.POST.get('beds')
+        baths = request.POST.get('baths')
+        area = request.POST.get('area')
         owner_id = request.session.get('user_id')
-
-        # Validate property name uniqueness
-        if Property.objects.filter(property_name=property_name).exists():
-            messages.error(request, 'Property name already exists. Please choose another name.')
-            return render(request, 'propertyadd.html', {'property_names': list(property_names)})
-
-        # Validate price
-        if float(price) <= 0:
-            messages.error(request, 'Price must be a positive value greater than zero.')
-            return render(request, 'propertyadd.html', {'property_names': list(property_names)})
-
-        # Check owner existence
         owner = User.objects.get(id=owner_id)
-        if float(price) <= 0:
-            messages.error(request, "Price must be a positive value greater than zero.")
+        if Property.objects.filter(property_name=property_name).exists():
+            messages.error(request, "Property name already exists. Please choose another name.")
             return render(request, 'propertyadd.html')
         property_instance = Property.objects.create(
-            property_name=property_name, description=description, address=address,
-            city=city, state=state, price=price, property_type=property_type,
-            listing_type=listing_type, owner=owner)
-       # Create the property
-        property_instance = Property.objects.create(
-            property_name=property_name,
-            description=description,
-            address=address,
-            city=city,
-            state=state,
-            price=price,
-            property_type=property_type,
-            listing_type=listing_type,
-            owner=owner
+            property_name=property_name,description=description,address=address,city=city,state=state,price=price,
+            property_type=property_type,listing_type=listing_type,beds=beds,baths=baths,area=area,owner=owner
         )
-
-        # Handle file upload and ensure JPEG validation
-        property_photos = request.FILES.getlist('property_photos')
+        property_photos = request.FILES.getlist('image')
         for photo in property_photos:
-            if not photo.content_type == 'image/jpeg':
-                messages.error(request, 'Only JPEG images are allowed.')
-                return render(request, 'propertyadd.html', {'property_names': list(property_names)})
             PropertyImage.objects.create(property=property_instance, image=photo)
-
         messages.success(request, 'Property added successfully!')
         return redirect('owner')
-
-    return render(request, 'propertyadd.html', {'property_names': list(property_names)})
-
+    return render(request, 'propertyadd.html')
     
 def updateproperty(request):
     property_instance = None
@@ -313,8 +281,31 @@ def updateproperty(request):
 
 
 def ownerproperty(request):
-    properties = Property.objects.all()  # Fetch all properties
-    return render(request, 'ownerproperty.html', {'properties': properties})
+    properties = Property.objects.all()
+    property_instance = None
+    search_property_name = request.GET.get('search_property_name')
+    if search_property_name:
+        property_instance = Property.objects.filter(property_name=search_property_name).first()
+    if request.method == 'POST' and property_instance:
+        property_instance.property_name = request.POST.get('property_name')
+        property_instance.description = request.POST.get('description')
+        property_instance.address = request.POST.get('address')
+        property_instance.city = request.POST.get('city')
+        property_instance.state = request.POST.get('state')
+        property_instance.price = request.POST.get('price')
+        property_instance.property_type = request.POST.get('property_type')
+        property_instance.listing_type = request.POST.get('listing_type')
+        property_instance.save()
+        delete_image_id = request.POST.get('delete_image')
+        if delete_image_id:
+            image_to_delete = PropertyImage.objects.filter(id=delete_image_id, property=property_instance).first()
+            if image_to_delete:
+                image_to_delete.delete()
+        new_images = request.FILES.getlist('new_images')
+        for image in new_images:
+            PropertyImage.objects.create(property=property_instance, image=image)
+        return redirect(f"{reverse('ownerproperty')}?search_property_name={property_instance.property_name}")
+    return render(request, 'ownerproperty.html', {'properties': properties, 'property': property_instance})
 
 def manageproperty(request):
     properties = Property.objects.all()  # Fetch all properties

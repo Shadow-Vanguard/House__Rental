@@ -20,7 +20,6 @@ urlpatterns = [
   path('updateprofile', views.updateprofile, name='updateprofile'),
   path('ownerupdate', views.ownerupdate, name='ownerupdate'),
   path('propertyadd', views.propertyadd, name='propertyadd'),
-  path('updateproperty', views.updateproperty, name='updateproperty'),
   path('ownerproperty', views.ownerproperty, name='ownerproperty'),
   path('logout', views.logout, name='logout'),
   path('manageproperty', views.manageproperty, name='manageproperty'),
