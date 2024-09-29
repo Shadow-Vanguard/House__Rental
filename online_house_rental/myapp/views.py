@@ -54,7 +54,6 @@ def register(request):
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirmPassword')
         role = request.POST.get('role')
-
         # Check if the email already exists
         if User.objects.filter(email=email).exists():
             return render(request, 'register.html', {
@@ -64,7 +63,6 @@ def register(request):
                 'contact': phone,
                 'role': role,
             })
-
         # Check if the passwords match
         if password != confirm_password:
             return render(request, 'register.html', {
@@ -127,18 +125,24 @@ def forgotpass(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def userpage(request):
     if request.session.get('user_id'):
-        user_id = request.session.get('user_id')
+        user_id = request.session.get('user_id')  # Get user_id from session
         try:
-            user = User.objects.get(id=user_id)
-            properties = Property.objects.filter(owner=user)
+            user = User.objects.get(id=user_id)  # Fetch user from the database
+            properties = Property.objects.filter(owner=user)  # Fetch properties of the user
+
+            # Render the user page template with user and properties context
+            return render(request, 'userpage.html', {
+                'user': user,
+                'properties': properties,
+                'user_name': user.name,  # Pass the user name to the template if needed
+            })
+
         except User.DoesNotExist:
-            return redirect('login')
-        return render(request, 'userpage.html', {
-            'user': user,
-            'properties': properties,
-        })
+            return redirect('login')  # Redirect if user doesn't exist in the database
+
     else:
-        return redirect('login')
+        return redirect('login')  # Redirect if user_id not found in session
+
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -221,6 +225,9 @@ def ownerupdate(request):
         return render(request, 'ownerupdate.html', {'user': user})
 
 def propertyadd(request):
+    # Fetch all property names for client-side validation
+    property_names = Property.objects.values_list('property_name', flat=True)
+
     if request.method == 'POST':
         property_name = request.POST.get('property_name')
         description = request.POST.get('description')
@@ -231,6 +238,18 @@ def propertyadd(request):
         property_type = request.POST.get('property_type')
         listing_type = request.POST.get('listing_type')
         owner_id = request.session.get('user_id')
+
+        # Validate property name uniqueness
+        if Property.objects.filter(property_name=property_name).exists():
+            messages.error(request, 'Property name already exists. Please choose another name.')
+            return render(request, 'propertyadd.html', {'property_names': list(property_names)})
+
+        # Validate price
+        if float(price) <= 0:
+            messages.error(request, 'Price must be a positive value greater than zero.')
+            return render(request, 'propertyadd.html', {'property_names': list(property_names)})
+
+        # Check owner existence
         owner = User.objects.get(id=owner_id)
         if float(price) <= 0:
             messages.error(request, "Price must be a positive value greater than zero.")
@@ -238,15 +257,34 @@ def propertyadd(request):
         property_instance = Property.objects.create(
             property_name=property_name, description=description, address=address,
             city=city, state=state, price=price, property_type=property_type,
-            listing_type=listing_type, owner=owner
+            listing_type=listing_type, owner=owner)
+       # Create the property
+        property_instance = Property.objects.create(
+            property_name=property_name,
+            description=description,
+            address=address,
+            city=city,
+            state=state,
+            price=price,
+            property_type=property_type,
+            listing_type=listing_type,
+            owner=owner
         )
+
+        # Handle file upload and ensure JPEG validation
         property_photos = request.FILES.getlist('property_photos')
         for photo in property_photos:
+            if not photo.content_type == 'image/jpeg':
+                messages.error(request, 'Only JPEG images are allowed.')
+                return render(request, 'propertyadd.html', {'property_names': list(property_names)})
             PropertyImage.objects.create(property=property_instance, image=photo)
+
         messages.success(request, 'Property added successfully!')
         return redirect('owner')
-    return render(request, 'propertyadd.html')
 
+    return render(request, 'propertyadd.html', {'property_names': list(property_names)})
+
+    
 def updateproperty(request):
     property_instance = None
     search_property_name = request.GET.get('search_property_name')
@@ -291,6 +329,9 @@ def delete_user(request, user_id):
     user.delete()
     return redirect('manage_users', user.role)
 
+def view_profile(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'view_profile.html', {'user': user})
 
 def view_profile(request, user_id):
     user = get_object_or_404(User, id=user_id)

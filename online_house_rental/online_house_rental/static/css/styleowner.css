@@ -7,12 +7,12 @@ body {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    color: #fff;
+    color: #0e0d0d;
 }
 
 /* Header styles */
 header {
-    background-color: rgba(1, 1, 1, 0.7);
+    background-color: rgba(19, 7, 62, 0.7);
     padding: 20px;
     position: fixed;
     width: 100%;
@@ -65,12 +65,13 @@ nav ul li a:hover {
 main {
     padding: 100px 50px;
     text-align: center;
-    color: #050505;
+    color: #181818;
 }
 
 main h2 {
-    font-size: 28px;
+    font-size: 30px;
     margin-bottom: 20px;
+    font-weight: bold;
 }
 
 main p {
