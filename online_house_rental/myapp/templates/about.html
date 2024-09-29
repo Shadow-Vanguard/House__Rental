@@ -1,31 +1,115 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - Online House Rental</title>
-    <link rel="stylesheet" href="{% static 'css\style4.css'%}">
+    <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'template_landingpage/lib/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'template_landingpage/css/style.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #171818;
+        }
+
+        .navbar {
+            background-color: #f3f7f7;
+        }
+
+        .navbar-brand {
+            color: #0d0d0d !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: #1f1e1e !important;
+        }
+
+        .about-section {
+            padding: 60px 0;
+            text-align: center;
+        }
+
+        .about-section h1 {
+            font-size: 2.5rem;
+            margin-bottom: 30px;
+            color: #dc3545;
+        }
+
+        .about-section h2 {
+            font-size: 1.8rem;
+            margin: 30px 0 20px;
+        }
+
+        .about-section p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .testimonials {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin: 30px 0;
+        }
+
+        .testimonial-item {
+            margin: 20px 0;
+            font-style: italic;
+            font-weight: 300;
+        }
+
+        footer {
+            background-color: #343a40;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 0;
+        }
+    </style>
 </head>
+
 <body>
-    <nav class="navbar">
+
+    <!-- Nav Start -->
+    <nav class="navbar navbar-default navbar-trans navbar-expand-lg fixed-top">
         <div class="container">
-            <div class="logo">
-                <a href="#">HouseRental</a>
-            </div>
-            <ul class="nav-links">
-                <li><a href="{%url 'index'%}">Home</a></li>
-                <li><a href="{%url 'about'%}">About</a></li>
-                <li><a href="{%url 'contact'%}">contact</a></li>
-                <li><a href="{%url 'login'%}">login</a></li>
+          <button class="navbar-toggler collapsed" type="button" data-toggle="collapse" data-target="#navbarDefault"
+            aria-controls="navbarDefault" aria-expanded="false" aria-label="Toggle navigation">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <a class="navbar-brand text-brand" href="#">Estate<span class="color-b">Agency</span></a>
+          <div class="navbar-collapse collapse justify-content-center" id="navbarDefault">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'index' %}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'about' %}">About</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="{% url 'contact' %}">Contact</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">Login</a>
+              </li>
             </ul>
+          </div>
         </div>
-    </nav>
+      </nav>
+      <!--/ Nav End /-->
+    
 
     <section class="about-section">
         <div class="container">
             <h1>About Us</h1>
             <p>Welcome to Online House Rental, where we simplify the process of finding and renting homes. Our mission is to provide a seamless and user-friendly platform that connects property owners with potential renters.</p>
+
             <h2>Our Story</h2>
             <p>Founded with the vision to solve the challenges faced by renters and property owners, our platform offers a comprehensive solution to find the perfect home or tenant.</p>
 
@@ -35,14 +119,23 @@
             <h2>Our Vision</h2>
             <p>We aim to continually improve our platform, expand our services, and make renting easier for everyone.</p>
 
-            <h2>User Testimonials</h2>
-            <p>"Online House Rental made it so easy for me to find my new home. I highly recommend it!"</p>
+            <div class="testimonials">
+                <h2>User Testimonials</h2>
+                <div class="testimonial-item">"Online House Rental made it so easy for me to find my new home. I highly recommend it!"</div>
+                <div class="testimonial-item">"A fantastic experience from start to finish! The support team was incredibly helpful."</div>
+                <div class="testimonial-item">"I found my dream apartment thanks to this platform. User-friendly and effective!"</div>
+            </div>
         </div>
     </section>
 
     <footer>
         <p>&copy; 2024 Online House Rental. All Rights Reserved.</p>
     </footer>
-</body>
-</html>
 
+    <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'template_landingpage/lib/bootstrap/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'template_landingpage/js/main.js' %}"></script>
+
+</body>
+
+</html>

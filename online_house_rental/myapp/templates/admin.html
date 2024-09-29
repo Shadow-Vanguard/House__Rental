@@ -6,50 +6,48 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="{% static 'css/adminstyle.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha384-k6RqeWeci5ZR/Lv4MR0sA0FfDOMt23d8IuFqP9n6l5yQ3Dx3gF8ydzCRF44w2o" crossorigin="anonymous">
 </head>
 <body>
-    <div class="wrapper">
-        <!-- Sidebar -->
-        <nav class="sidebar">
-            <div class="sidebar-header">
-                <h2>Admin Dashboard</h2>
-            </div>
-            <ul class="list-unstyled components">
-                <li><a href="{% url 'manageproperty' %}" onclick="showSection('manage-properties')">Manage Properties</a></li>
-                <!-- <li><a href="#" onclick="showSection('manage-users')">Manage Users</a></li> -->
-                <li><a href="{% url 'manage_users' 'user' %}">Manage Users</a></li>
-                <li><a href="{% url 'manage_users' 'owner' %}">Manage Property Owners</a></li>
-                <!-- <li><a href="#manage-owners" onclick="showSection('manage-owners')">Manage Property Owners</a></li> -->
-                <li><a href="#feedback-analysis" onclick="showSection('feedback-analysis')">Feedback Analysis</a></li>
-                <li><a href="{% url 'login' %}">Logout</a></li>
-            </ul>
-        </nav>
+    <div class="dashboard-container">
+        <!-- Top Navigation -->
+        <header class="top-nav">
+            <h1>Admin Dashboard</h1>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'manageproperty' %}"><i class="fas fa-building"></i> Manage Properties</a></li>
+                    <li><a href="{% url 'manage_users' 'user' %}"><i class="fas fa-users"></i> Manage Users</a></li>
+                    <li><a href="{% url 'manage_users' 'owner' %}"><i class="fas fa-user-shield"></i> Manage Property Owners</a></li>
+                    <li><a href="#feedback-analysis" onclick="showSection('feedback-analysis')"><i class="fas fa-chart-line"></i> Feedback Analysis</a></li>
+                    <li><a href="{% url 'login' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </header>
 
-        <!-- Page Content -->
-        <div id="content">
-            <div id="manage-users" class="content-section">
-                <h2>Manage Users</h2>
-                <!-- Content for managing users goes here -->
-                <p>Here you can view, edit, and delete users.</p>
+        <!-- Main Content -->
+        <main class="content">
+            <div class="cards">
+                <div class="card active" id="manage-users">
+                    <h2>Manage Users</h2>
+                    <p>Here you can view, edit, and delete users.</p>
+                </div>
+                <div class="card" id="manage-owners">
+                    <h2>Manage Property Owners</h2>
+                    <p>Here you can view, edit, and delete property owners.</p>
+                </div>
+                <div class="card" id="feedback-analysis">
+                    <h2>Feedback Analysis</h2>
+                    <p>Analyze feedback received from users and property owners.</p>
+                </div>
             </div>
-            <div id="manage-owners" class="content-section">
-                <h2>Manage Property Owners</h2>
-                <!-- Content for managing property owners goes here -->
-                <p>Here you can view, edit, and delete property owners.</p>
-            </div>
-            <div id="feedback-analysis" class="content-section">
-                <h2>Feedback Analysis</h2>
-                <!-- Content for feedback analysis goes here -->
-                <p>Analyze feedback received from users and property owners.</p>
-            </div>
-        </div>
+        </main>
     </div>
 
     <script>
         function showSection(sectionId) {
-            var sections = document.querySelectorAll('.content-section');
-            sections.forEach(function (section) {
-                section.classList.remove('active');
+            var cards = document.querySelectorAll('.card');
+            cards.forEach(function (card) {
+                card.classList.remove('active');
             });
             document.getElementById(sectionId).classList.add('active');
         }

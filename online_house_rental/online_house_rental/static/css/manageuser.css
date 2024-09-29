@@ -63,7 +63,7 @@ table th, table td {
 }
 
 table thead {
-    background-color: #4CAF50;
+    background-color: #5a09e7;
     color: white;
 }
 
@@ -87,29 +87,37 @@ table td {
 }
 
 /* Button styles */
-.edit-btn, .delete-btn {
-    padding: 8px 12px;
-    border-radius: 4px;
-    font-size: 14px;
+.action-buttons {
+    display: flex;
+    gap: 10px; /* Space between buttons */
+}
+
+.deactivate-btn, .reactivate-btn {
+    padding: 10px 15px;
     color: white;
     text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+    transition: background-color 0.3s, transform 0.2s;
+    border: none; /* Remove border for a cleaner look */
 }
 
-.edit-btn {
-    background-color: #4CAF50;
+.deactivate-btn {
+    background-color: #f44336; /* Red */
 }
 
-.edit-btn:hover {
-    background-color: #45a049;
+.reactivate-btn {
+    background-color: #4CAF50; /* Green */
 }
 
-.delete-btn {
-    background-color: #f44336;
-    margin-left: 8px;
+.deactivate-btn:hover {
+    background-color: #d32f2f; /* Darker red */
+    transform: scale(1.05); /* Slightly enlarge on hover */
 }
 
-.delete-btn:hover {
-    background-color: #e53935;
+.reactivate-btn:hover {
+    background-color: #388e3c; /* Darker green */
+    transform: scale(1.05); /* Slightly enlarge on hover */
 }
 
 /* Mobile responsiveness */

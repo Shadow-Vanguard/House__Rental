@@ -1,0 +1,65 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4; /* Light gray background */
+    margin: 0;
+    padding: 0;
+}
+
+/* Header styling */
+.header {
+    background-color: #007BFF; /* Blue background */
+    color: white; /* White text color */
+    padding: 20px;
+    text-align: center;
+}
+
+.back-button {
+    background-color: white; /* White background for the button */
+    color: #007BFF; /* Blue text color */
+    padding: 10px 20px;
+    text-decoration: none;
+    border-radius: 5px;
+    margin-top: 10px;
+    display: inline-block;
+    transition: background-color 0.3s;
+}
+
+.back-button:hover {
+    background-color: #e0e0e0; /* Light gray background on hover */
+}
+
+/* Profile details container */
+.profile-details {
+    background-color: white; /* White background */
+    max-width: 600px; /* Maximum width of the container */
+    margin: 20px auto; /* Center the container */
+    padding: 20px; /* Padding inside the container */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+h2 {
+    text-align: center; /* Center the heading */
+    color: #333; /* Dark text color */
+}
+
+p {
+    font-size: 16px; /* Font size for paragraph */
+    line-height: 1.6; /* Line height for better readability */
+    color: #555; /* Dark gray text color */
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .profile-details {
+        padding: 15px; /* Reduce padding on smaller screens */
+    }
+    
+    h1 {
+        font-size: 24px; /* Smaller font size for heading */
+    }
+    
+    p {
+        font-size: 14px; /* Smaller font size for paragraphs */
+    }
+}

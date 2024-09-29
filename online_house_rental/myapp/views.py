@@ -1,4 +1,4 @@
-# Create your views here.
+
 from django.shortcuts import render,redirect,get_object_or_404
 from .models import User,Property,PropertyImage,Adminm
 from django.contrib import messages
@@ -12,7 +12,7 @@ from django.views.decorators.cache import cache_control
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout(request):
     request.session.flush()  # This clears the session data
-    return redirect('login') 
+    return redirect('login')
 
 
 def index(request):
@@ -21,42 +21,78 @@ def index(request):
 
 def login(request):
     if request.method == 'POST':
-        email = request.POST.get('email')
+        email = request.POST.get('email').strip().lower()
         password = request.POST.get('password')
-        admin = Adminm.objects.filter(email=email, password=password).first() 
+        admin = Adminm.objects.filter(email=email).first()
         if admin:
-            request.session['admin_email'] = admin.email
-            return redirect('admin')
-        user = User.objects.filter(email=email, password=password).first()
+            if admin.password == password:
+                request.session['admin_email'] = admin.email
+                return redirect('admin')
+            else:
+                return render(request, 'login.html', {'error': 'Incorrect password for admin'})
+        user = User.objects.filter(email=email).first()
         if user:
-            request.session['user_id'] = user.id
-            request.session['name'] = user.name
-            request.session['role'] = user.role
-            if user.role == 'owner':
-                return redirect('owner')
-            elif user.role == 'user':
-                return redirect('userpage')
-        else:
-            return render(request, 'login.html', {'error': 'Invalid email or password'})
+            if user.password == password:
+                request.session['user_id'] = user.id
+                request.session['name'] = user.name
+                request.session['role'] = user.role
+                if user.role == 'owner':
+                    return redirect('owner')
+                elif user.role == 'user':
+                    return redirect('userpage')
+            else:
+                return render(request, 'rename_login.html', {'error': 'Incorrect password'})
+        return render(request, 'login.html', {'error': 'Email does not exist'})
     return render(request, 'login.html')
-
 
 def register(request):
     if request.method == 'POST':
-        name =request.POST.get('name')
-        address=request.POST.get('address')
-        email =request.POST.get('email')
-        phone=request.POST.get('contact')
-        password =request.POST.get('password')
-        confirm_password =request.POST.get('confirmPassword')
+        name = request.POST.get('name')
+        address = request.POST.get('address')
+        email = request.POST.get('email')
+        phone = request.POST.get('contact')
+        password = request.POST.get('password')
+        confirm_password = request.POST.get('confirmPassword')
         role = request.POST.get('role')
+
+        # Check if the email already exists
+        if User.objects.filter(email=email).exists():
+            return render(request, 'register.html', {
+                'email_error': 'An account with this email already exists.',
+                'name': name,
+                'address': address,
+                'contact': phone,
+                'role': role,
+            })
+
+        # Check if the passwords match
         if password != confirm_password:
-            return render(request, 'register.html', {'error': 'Passwords do not match'})
+            return render(request, 'register.html', {
+                'error': 'Passwords do not match.',
+                'name': name,
+                'address': address,
+                'contact': phone,
+                'email': email,
+                'role': role,
+            })
+
+        # Create and save the new user
         user = User(name=name, address=address, email=email, phone=phone, password=password, role=role)
         user.save()
-        messages.success(request, 'Registration successful')
+
+        # Send registration success email
+        send_mail(
+            'Registration Successful',
+            f'Hello {name},\n\nThank you for registering!\n\nBest regards,\nYour Team',
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        )
+
         return redirect('login')
+
     return render(request, 'register.html')
+
 
 
 def about(request):
@@ -90,22 +126,35 @@ def forgotpass(request):
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def userpage(request):
-        if request.session.get('user_id'):
-            user_name = request.session.get('name')  # Get user's name from session
-            return render(request, 'userpage.html', {'user_name': user_name})
-        else:
+    if request.session.get('user_id'):
+        user_id = request.session.get('user_id')
+        try:
+            user = User.objects.get(id=user_id)
+            properties = Property.objects.filter(owner=user)
+        except User.DoesNotExist:
             return redirect('login')
+        return render(request, 'userpage.html', {
+            'user': user,
+            'properties': properties,
+        })
+    else:
+        return redirect('login')
 
-    # return render(request, 'userpage.html')
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def owner(request):
     if request.session.get('user_id'):
+        user_id = request.session.get('user_id')  # Get user_id from session
+        user = get_object_or_404(User, id=user_id)  # Fetch the user details
+
         owner_name = request.session.get('name')  # Get owner's name from session
-        return render(request, 'owner.html', {'owner_name': owner_name})
+
+        return render(request, 'owner.html', {
+            'owner_name': owner_name,
+            'user': user,  # Pass the user object to the template
+        })
     else:
-        return redirect('login') 
-    # return render(request, 'owner.html')
+        return redirect('login')
 
 
 def admin(request):
@@ -136,6 +185,7 @@ def propertypage(request):
     return render(request, 'propertypage.html', {'properties': properties})
 def house(request):
     return render(request, 'house.html')
+
 def updateprofile(request):
     if not request.session.get('user_id'):
         return redirect('login')
@@ -152,6 +202,7 @@ def updateprofile(request):
         return redirect('userpage')
     else:
         return render(request, 'updateprofile.html', {'user': user})
+        
 def ownerupdate(request):
     if not request.session.get('user_id'):
         return redirect('login')
@@ -181,17 +232,18 @@ def propertyadd(request):
         listing_type = request.POST.get('listing_type')
         owner_id = request.session.get('user_id')
         owner = User.objects.get(id=owner_id)
+        if float(price) <= 0:
+            messages.error(request, "Price must be a positive value greater than zero.")
+            return render(request, 'propertyadd.html')
         property_instance = Property.objects.create(
-            property_name=property_name,description=description,address=address,city=city,state=state,
-            price=price,property_type=property_type,listing_type=listing_type,owner=owner
+            property_name=property_name, description=description, address=address,
+            city=city, state=state, price=price, property_type=property_type,
+            listing_type=listing_type, owner=owner
         )
         property_photos = request.FILES.getlist('property_photos')
         for photo in property_photos:
             PropertyImage.objects.create(property=property_instance, image=photo)
         messages.success(request, 'Property added successfully!')
-
-        # Render the same page with the success message
-        # return render(request, 'propertyadd.html')
         return redirect('owner')
     return render(request, 'propertyadd.html')
 
@@ -234,7 +286,51 @@ def manage_users(request, role):
     users = User.objects.filter(role=role)
     context = {'users': users, 'role': role}
     return render(request, 'manage_users.html', context)
+def delete_user(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    user.delete()
+    return redirect('manage_users', user.role)
 
 
+def view_profile(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    return render(request, 'view_profile.html', {'user': user})
 
+def deactivate_user(request, id):
+    user = get_object_or_404(User, id=id)
+    user.status = False  # Set the status to inactive
+    user.save()
+
+    # Send an email notification
+    send_mail(
+        'Account Deactivation',
+        f'Hello {user.name},\n\nYour account has been deactivated. If you have any questions, please contact support.',
+        'your_email@example.com',  # Replace with your email or from_email
+        [user.email],
+        fail_silently=False,
+    )
+
+    messages.success(request, 'User has been deactivated and notified via email.')
+    
+    # Redirect to manage_users with the role parameter
+    return redirect('manage_users', role=user.role)  # Adjust user.role based on how you retrieve it
+
+def activate_user(request, id):
+    user = get_object_or_404(User, id=id)
+    user.status = True  # Set the status to active
+    user.save()
+
+    # Send an email notification
+    send_mail(
+        'Account Activation',
+        f'Hello {user.name},\n\nYour account has been activated. You can now log in and use our services.',
+        'your_email@example.com',  # Replace with your email or from_email
+        [user.email],
+        fail_silently=False,
+    )
+
+    messages.success(request, 'User has been activated and notified via email.')
+
+    # Redirect to manage_users with the role parameter
+    return redirect('manage_users', role=user.role)  # Adjust user.role based on how you retrieve it
 

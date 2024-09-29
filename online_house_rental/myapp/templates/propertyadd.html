@@ -8,47 +8,96 @@
     <link rel="stylesheet" href="{% static 'css/propertyreg.css' %}">
 </head>
 <body>
+    <style>
+.error {
+            color: red;
+            font-weight: bold;
+            margin-top: 5px;
+        }
+        .back-btn {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 15px;
+            background-color: #130fa065;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+
+    <a href="{% url 'owner' %}" class="back-btn">Back to Home</a>
+
     <div class="container">
         <h1>Add New Property</h1>
+
+        <!-- Display Messages if Any -->
         {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-        </div>
-    {% endif %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
         <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
+
+            <!-- Property Name -->
             <div class="form-group">
                 <label for="propertyName">Property Name</label>
                 <input type="text" id="propertyName" name="property_name" required>
             </div>
 
+            <!-- Description -->
             <div class="form-group">
                 <label for="description">Description</label>
                 <textarea id="description" name="description" rows="4" required></textarea>
             </div>
 
+            <!-- Address -->
             <div class="form-group">
-                <label for="address">Address</label>
+                <label for="Address">Address</label>
                 <input type="text" id="address" name="address" required>
             </div>
 
+            <!-- city -->
             <div class="form-group">
-                <label for="city">City</label>
+                <label for="City">City</label>
                 <input type="text" id="city" name="city" required>
             </div>
 
+            <!-- state -->
             <div class="form-group">
                 <label for="state">State</label>
                 <input type="text" id="state" name="state" required>
             </div>
 
+            <!-- Number of Bedrooms (Beds) -->
             <div class="form-group">
-                <label for="price">Price</label>
-                <input type="number" id="price" name="price" required>
+                <label for="beds">Number of Bedrooms</label>
+                <input type="number" id="beds" name="beds" required>
             </div>
 
+            <!-- Number of Bathrooms (Baths) -->
+            <div class="form-group">
+                <label for="baths">Number of Bathrooms</label>
+                <input type="number" id="baths" name="baths" required>
+            </div>
+
+            <!-- Area in Square Feet -->
+            <div class="form-group">
+                <label for="area">Area (sq. ft.)</label>
+                <input type="number" id="area" name="area" required>
+                <small>Area in square feet</small> <!-- Help text for area field -->
+            </div>
+
+            <!-- Price -->
+            <div class="form-group">
+                <label for="price">Price (₹)</label>
+                <input type="number" id="price" name="price" step="0.01" required>
+            </div>
+
+            <!-- Property Type -->
             <div class="form-group">
                 <label for="propertyType">Property Type</label>
                 <select id="propertyType" name="property_type" required>
@@ -58,6 +107,7 @@
                 </select>
             </div>
 
+            <!-- Listing Type -->
             <div class="form-group">
                 <label for="listingType">Listing Type</label>
                 <select id="listingType" name="listing_type" required>
@@ -68,13 +118,72 @@
                 </select>
             </div>
 
+            <!-- Property Photos (JPEG only) -->
             <div class="form-group">
-                <label for="propertyPhotos">Property Photos</label>
-                <input type="file" id="propertyPhotos" name="property_photos" multiple accept="image/*" required>
+                <label for="propertyPhotos">Property Photos (JPEG only)</label>
+                <input type="file" id="propertyPhotos" name="image" accept="image/jpeg" required>
             </div>
 
             <button type="submit" class="btn">Submit Property</button>
         </form>
+
+        <!-- JavaScript Validation -->
+         <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const bedsInput = document.getElementById('beds');
+                const bathsInput = document.getElementById('baths');
+                const areaInput = document.getElementById('area');
+                const locationInput = document.getElementById('location');
+                const priceInput = document.getElementById('price');
+                const photosInput = document.getElementById('propertyPhotos');
+
+                // Bedrooms validation (positive integer only)
+                bedsInput.addEventListener('input', function() {
+                    if (parseInt(bedsInput.value) <= 0) {
+                        alert('Number of bedrooms must be greater than zero.');
+                        bedsInput.value = '';
+                    }
+                });
+
+                // Bathrooms validation (positive integer only)
+                bathsInput.addEventListener('input', function() {
+                    if (parseInt(bathsInput.value) <= 0) {
+                        alert('Number of bathrooms must be greater than zero.');
+                        bathsInput.value = '';
+                    }
+                });
+
+                // Area validation (positive number greater than zero)
+                areaInput.addEventListener('input', function() {
+                    if (parseFloat(areaInput.value) <= 0) {
+                        alert('Area must be a positive number greater than zero.');
+                        areaInput.value = '';
+                    }
+                });
+
+                // Price validation (positive value only)
+                priceInput.addEventListener('input', function() {
+                    if (parseFloat(priceInput.value) <= 0) {
+                        alert('Price must be greater than zero.');
+                        priceInput.value = '';
+                    }
+                });
+
+                // Image validation (JPEG only)
+                photosInput.addEventListener('change', function() {
+                    const files = photosInput.files;
+                    for (let i = 0; i < files.length; i++) {
+                        if (!files[i].name.toLowerCase().endsWith('.jpg') && !files[i].name.toLowerCase().endsWith('.jpeg')) {
+                            alert('Only JPEG images are allowed.');
+                            photosInput.value = '';
+                            break;
+                        }
+                    }
+                });
+            });
+        </script>
     </div>
 </body>
 </html>
+
+

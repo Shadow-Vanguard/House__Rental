@@ -1,18 +1,23 @@
 from django.db import models
 from django.utils import timezone
 
+
 class User(models.Model):
     ROLE_CHOICES = [
         ('owner', 'Property Owner'),
         ('user', 'User'),
     ]
     name = models.CharField(max_length=150, unique=True)
-    address = models.TextField(blank=True, null=True) 
-    email = models.EmailField(max_length=254, unique=True) 
-    phone= models.CharField(max_length=10, blank=True, null=True)
+    address = models.TextField(blank=True, null=True)
+    email = models.EmailField(max_length=254, unique=True)
+    phone = models.CharField(max_length=10, blank=True, null=True)
     password = models.CharField(max_length=128)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
-    reset_token = models.CharField(max_length=50, blank=True, null=True)  # Add this line
+    reset_token = models.CharField(max_length=50, blank=True, null=True)
+    status = models.BooleanField(default=True)  # Boolean field, defaulting to True (e.g., for active users)
+
+
+
 class Property(models.Model):
     PROPERTY_TYPES = [
         ('Apartment', 'Apartment'),
@@ -31,11 +36,14 @@ class Property(models.Model):
     city = models.CharField(max_length=100, null=False)
     state = models.CharField(max_length=100, null=False)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=False)
+    beds = models.IntegerField(default=0, null=False, )
+    baths = models.IntegerField(default=1, null=False, )
+    area = models.IntegerField(default=500, null=False, )
     posted_date = models.DateTimeField(default=timezone.now, null=False)
-    status = models.BooleanField(default=True)  # True for available, False for not available
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False)  # Owner of the property
+    status = models.BooleanField(default=True)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
 
-    def str(self):
+    def __str__(self):
         return self.property_name
 
 
@@ -45,7 +53,9 @@ class PropertyImage(models.Model):
 
     def str(self):
         return f"Image for {self.property.property_name}"
+
+
 class Adminm(models.Model):
     email = models.EmailField(max_length=254, unique=True)
     password = models.CharField(max_length=128)
-    
+

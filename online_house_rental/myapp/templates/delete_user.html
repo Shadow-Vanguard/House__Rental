@@ -1,0 +1,32 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete User - {{ user.name }}</title>
+    <link rel="stylesheet" href="{% static 'css/manageuser.css' %}"> <!-- Link to your CSS file -->
+</head>
+<body>
+    <div class="header">
+        <h1>Delete User: {{ user.name }}</h1>
+        <a href="{% url 'manage_users' user.role %}" class="back-button">
+            <span>Back to Users</span>
+        </a>
+    </div>
+
+    <div class="confirmation">
+        <p>Are you sure you want to delete this user?</p>
+        <p><strong>Name:</strong> {{ user.name }}</p>
+        <p><strong>Contact:</strong> {{ user.contact }}</p>
+        <p><strong>Place:</strong> {{ user.place }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+
+        <form method="POST" action="{% url 'delete_user' user.user_id %}">
+            {% csrf_token %}
+            <button type="submit" class="confirm-btn">Yes, Delete User</button>
+            <a href="{% url 'manage_users' user.role %}" class="cancel-btn">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

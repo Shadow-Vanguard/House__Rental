@@ -1,5 +1,4 @@
-{% load static %}
-<!DOCTYPE html>
+<!DOCTYPE html>{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,7 +7,34 @@
     <link rel="stylesheet" href="{% static 'css/updateprofile.css' %}">
 </head>
 <body>
-    <div class="container">
+    <header>
+        <nav class="navbar">
+            <div class="logo">
+                <span class="estate">Estate</span><span class="agency">Agency</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{% url 'userpage' %}">Home</a></li>
+                <li><a href="{% url 'updateprofile' %}">Profile</a></li>
+                <li><a href="#">Contact</a></li>
+                <li><a href="#">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Profile Details Section -->
+    <div class="container" id="profileDetails">
+        <h1>Profile Details</h1>
+        <p><strong>Name:</strong> {{ user.name }}</p>
+        <p><strong>Phone Number:</strong> {{ user.phone }}</p>
+        <p><strong>Address:</strong> {{ user.address }}</p>
+        <p><strong>Email:</strong> {{ user.email }}</p>
+
+        <!-- Edit Button -->
+        <button class="btn" id="editProfileBtn">Edit Profile</button>
+    </div>
+
+    <!-- Update Profile Form (Hidden by Default) -->
+    <div class="container" id="updateProfileFormContainer" style="display: none;">
         <h1>Update Profile</h1>
         <form id="updateProfileForm" action="{% url 'updateprofile' %}" method="POST">
             {% csrf_token %}
@@ -16,16 +42,6 @@
                 <label for="name">Name:</label>
                 <input type="text" id="name" name="name" value="{{ user.name }}" required>
             </div>
-
-            <!-- <div class="form-group">
-                <label for="last_name">Last Name:</label>
-                <input type="text" id="last_name" name="last_name" value="{{ user.last_name }}" required>
-            </div> -->
-<!-- 
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="{{ user.email }}" required>
-            </div> -->
 
             <div class="form-group">
                 <label for="phone">Phone Number:</label>
@@ -37,20 +53,24 @@
                 <input type="text" id="address" name="address" value="{{ user.address }}" required>
             </div>
 
-            <!-- <div class="form-group">
-                <label for="password">New Password:</label>
-                <input type="password" id="password" name="password">
-            </div>
-
             <div class="form-group">
-                <label for="confirm_password">Confirm Password:</label>
-                <input type="password" id="confirm_password" name="confirm_password">
-            </div> -->
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="{{ user.email }}" required>
+            </div>
 
             <button type="submit" class="btn">Update Profile</button>
         </form>
     </div>
 
     <script src="{% static 'js/updateprofile.js' %}"></script>
+    <script>
+        document.getElementById('editProfileBtn').addEventListener('click', function() {
+            document.getElementById('profileDetails').style.display = 'none';
+            document.getElementById('updateProfileFormContainer').style.display = 'block';
+        });
+
+        // After updating the profile, you can hide the form and show the details again.
+        // This part would be handled in your update logic.
+    </script>
 </body>
 </html>

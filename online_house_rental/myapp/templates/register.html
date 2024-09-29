@@ -1,109 +1,215 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Page</title>
-    <link rel="stylesheet" href="{% static 'css/style3.css' %}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Responsive Registration Form | CodingLab</title>
+  <link rel="stylesheet" href="{% static 'css/regstyle.css' %}">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <form id="registrationForm" method="POST" onsubmit="return validateForm()">
-            <div class="form-group">
-                {% csrf_token %}
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" required onblur="checkIfEmpty('name')">
-                <span id="nameError" style="color: red; display: none;">Please fill out this field.</span>
-            </div>
-            <div class="form-group">
-                <label for="address">Address:</label>
-                <input type="text" id="address" name="address" required onblur="checkIfEmpty('address')">
-                <span id="addressError" style="color: red; display: none;">Please fill out this field.</span>
-            </div>
-            <div class="form-group">
-                <label for="email">E-mail:</label>
-                <input type="email" id="email" name="email" required onblur="checkIfEmpty('email')">
-                <span id="emailError" style="color: red; display: none;">Please enter a valid email address.</span>
-            </div>
-            <div class="form-group">
-                <label for="contact">Contact No:</label>
-                <input type="text" id="contact" name="contact" required onblur="checkIfEmpty('contact')">
-                <span id="contactError" style="color: red; display: none;">Please enter a valid 10-digit phone number.</span>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required onblur="checkIfEmpty('password')">
-                <span id="passwordError" style="color: red; display: none;">Please fill out this field.</span>
-            </div>
-            <div class="form-group">
-                <label for="confirmPassword">Confirm Password:</label>
-                <input type="password" id="confirmPassword" name="confirmPassword" required onblur="checkIfEmpty('confirmPassword')">
-                <span id="confirmPasswordError" style="color: red; display: none;">Please fill out this field.</span>
-            </div>
-            <div class="form-group">
-                <label for="role">Register as:</label>
-                <select id="role" name="role" required onblur="checkIfEmpty('role')">
-                    <option value="user">User</option>
-                    <option value="owner">Property Owner</option>
-                </select>
-                <span id="roleError" style="color: red; display: none;">Please fill out this field.</span>
-            </div>
-            <button type="submit">Register</button>
-        </form>
-        
-        <script>
-            function checkIfEmpty(fieldId) {
-                const field = document.getElementById(fieldId);
-                const errorSpan = document.getElementById(fieldId + 'Error');
-                if (field.value.trim() === '') {
-                    errorSpan.style.display = 'inline';
-                    field.focus();
-                } else {
-                    errorSpan.style.display = 'none';
-                }
-            }
-            function validateForm() {
-                let isValid = true;
-                const fields = ['name', 'address', 'email', 'contact', 'password', 'confirmPassword', 'role'];
-
-                fields.forEach(function(field) {
-                    if (document.getElementById(field).value.trim() === '') {
-                        document.getElementById(field + 'Error').style.display = 'inline';
-                        isValid = false;
-                    }
-                });
-
-                const email = document.getElementById('email').value;
-                const emailError = document.getElementById('emailError');
-                if (!email.includes('@')) {
-                    emailError.style.display = 'inline';
-                    isValid = false;
-                } else {
-                    emailError.style.display = 'none';
-                }
-
-                const contact = document.getElementById('contact').value;
-                const contactError = document.getElementById('contactError');
-                if (!/^\d{10}$/.test(contact)) {
-                    contactError.style.display = 'inline';
-                    isValid = false;
-                } else {
-                    contactError.style.display = 'none';
-                }
-
-                const password = document.getElementById('password').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                if (password !== confirmPassword) {
-                    alert('Passwords do not match');
-                    isValid = false;
-                }
-
-                return isValid;
-            }
-        </script>
-        <p>Already have an account? <a href="/login">Login here</a></p>
+  <div class="container" style="background-image: url('{% static 'path/to/your/background/image.jpg' %}'); background-size: cover;">
+    <!-- Title section -->
+    <div class="title">Registration</div>
+    <div class="content">
+      <!-- Registration form -->
+      <form method="POST" action="{% url 'register' %}">
+        {% csrf_token %}
+        <div class="user-details">
+          <!-- Input for Full Name -->
+          <div class="input-box">
+            <span class="details">Name</span>
+            <input type="text" id="name" name="name" placeholder="Enter your name" required>
+            <span id="nameError" style="color: red; display: none;">Please fill out this field.</span>
+          </div>
+          <!-- Input for Address -->
+          <div class="input-box">
+            <span class="details">Address</span>
+            <input type="text" id="address" name="address" placeholder="Enter your address" required>
+            <span id="addressError" style="color: red; display: none;">Please fill out this field.</span>
+          </div>
+          <!-- Input for Email -->
+          <div class="input-box">
+            <span class="details">Email</span>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+            <!-- Error message placeholder -->
+            <span id="emailError" style="color: red;">
+              {% if email_error %}
+                {{ email_error }}
+              {% endif %}
+            </span>
+          </div>
+          <!-- Input for Phone Number -->
+          <div class="input-box">
+            <span class="details">Contact</span>
+            <input type="text" id="contact" name="contact" placeholder="Enter your number" required>
+            <span id="contactError" style="color: red; display: none;">Please enter a valid 10-digit phone number.</span>
+          </div>
+          <!-- Input for Password -->
+          <div class="input-box">
+            <span class="details">Password</span>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            <span id="passwordError" style="color: red; display: none;">Please fill out this field.</span>
+          </div>
+          <!-- Input for Confirm Password -->
+          <div class="input-box">
+            <span class="details">Confirm Password</span>
+            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
+            <span id="confirmPasswordError" style="color: red; display: none;">Please fill out this field.</span>
+          </div>
+          <!-- Dropdown for Role Selection -->
+          <div class="input-box">
+            <span class="details">Register as:</span>
+            <select id="role" name="role" required>
+              <option value="" disabled selected>Select your role</option>
+              <option value="owner">Property Owner</option>
+              <option value="user">User</option>
+            </select>
+            <span id="roleError" style="color: red; display: none;">Please select your role.</span>
+          </div>
+        </div>
+        <!-- Submit button -->
+        <div class="button">
+          <input type="submit" value="Register">
+        </div>
+      </form>
     </div>
-    <!-- <script src="script1.js"></script> -->
+  </div>
+
+<script>
+  jQuery.noConflict();
+  (function($) {
+    $(document).ready(function() {
+      setTimeout(function() {
+        $('#errorMessage').fadeOut('slow');
+      }, 1000);
+
+      // Live validation for email
+      document.getElementById('email').addEventListener('input', function() {
+        const emailField = document.getElementById('email');
+        const emailError = document.getElementById('emailError');
+        const emailValue = emailField.value.trim();
+
+        // Check if the email field is empty or invalid
+        if (emailValue === '') {
+          emailError.textContent = 'Please enter an email address.';
+          emailError.style.display = 'inline';
+        } else if (!emailValue.includes('@') || !emailValue.includes('.')) {
+          emailError.textContent = 'Please enter a valid email address.';
+          emailError.style.display = 'inline';
+        } else {
+          // Clear previous error message
+          emailError.textContent = '';
+          emailError.style.display = 'none';
+
+          // Check if email exists in the database
+          $.ajax({
+            type: 'POST',
+            url: '/check_email/', // Update with your email check URL
+            data: {
+              email: emailValue,
+              csrfmiddlewaretoken: '{{ csrf_token }}' // Use Django's CSRF token
+            },
+            success: function(response) {
+              if (response.exists) {
+                emailError.textContent = 'An account with this email already exists.';
+                emailError.style.display = 'inline';
+              }
+            }
+          });
+        }
+      });
+
+      // Other input validations (name, password, contact, address)
+      document.getElementById('name').addEventListener('input', function() {
+        const nameField = document.getElementById('name');
+        const nameError = document.getElementById('nameError');
+        const nameValue = nameField.value.trim(); // Trim whitespace from start and end
+
+        if (nameValue.length < 3) {
+          nameError.textContent = 'Name must be at least 3 characters long.';
+          nameError.style.display = 'inline';
+        } else if (!/^[A-Z][a-zA-Z]*( [A-Z][a-zA-Z]*)*$/.test(nameValue)) {
+          nameError.textContent = 'Name should start with a capital letter.';
+          nameError.style.display = 'inline';
+        } else {
+          nameError.textContent = '';
+          nameError.style.display = 'none'; // Hide error
+        }
+      });
+
+      document.getElementById('password').addEventListener('input', function() {
+        const passwordField = document.getElementById('password');
+        const passwordError = document.getElementById('passwordError');
+        const passwordValue = passwordField.value;
+
+        if (/\s/.test(passwordValue)) {
+          passwordError.textContent = 'Password should not contain whitespace.';
+          passwordError.style.display = 'inline';
+        } else if (passwordValue.length < 8) {
+          passwordError.textContent = 'Password must be at least 8 characters long.';
+          passwordError.style.display = 'inline';
+        } else if (!/[A-Z]/.test(passwordValue)) {
+          passwordError.textContent = 'Password must contain at least one uppercase letter.';
+          passwordError.style.display = 'inline';
+        } else if (!/[a-z]/.test(passwordValue)) {
+          passwordError.textContent = 'Password must contain at least one lowercase letter.';
+          passwordError.style.display = 'inline';
+        } else if (!/[^A-Za-z0-9]/.test(passwordValue)) {
+          passwordError.textContent = 'Password must contain at least one special character.';
+          passwordError.style.display = 'inline';
+        } else {
+          passwordError.textContent = '';
+          passwordError.style.display = 'none';
+        }
+      });
+
+      document.getElementById('contact').addEventListener('input', function() {
+        const contactField = document.getElementById('contact');
+        const contactError = document.getElementById('contactError');
+        const contactValue = contactField.value;
+
+        if (!/^[6-9]\d{9}$/.test(contactValue)) {
+          contactError.textContent = 'Enter a valid contact number.';
+          contactError.style.display = 'inline';
+        } else {
+          contactError.textContent = '';
+          contactError.style.display = 'none';
+        }
+      });
+
+      document.getElementById('address').addEventListener('input', function() {
+        const addressField = document.getElementById('address');
+        const addressError = document.getElementById('addressError');
+        const addressValue = addressField.value.trim();
+
+        if (addressValue === '') {
+          addressError.textContent = 'Please enter your address.';
+          addressError.style.display = 'inline';
+        } else if (/[^a-zA-Z0-9\s]/.test(addressValue)) {
+          addressError.textContent = 'Address should not contain special characters.';
+          addressError.style.display = 'inline';
+        } else {
+          addressError.textContent = '';
+          addressError.style.display = 'none';
+        }
+      });
+
+      document.querySelector('form').addEventListener('submit', function(event) {
+        const nameError = document.getElementById('nameError').textContent;
+        const emailError = document.getElementById('emailError').textContent;
+        const passwordError = document.getElementById('passwordError').textContent;
+        const contactError = document.getElementById('contactError').textContent;
+        const addressError = document.getElementById('addressError').textContent;
+
+        if (nameError || emailError || passwordError || contactError || addressError) {
+          event.preventDefault(); // Prevent form submission
+          alert('Please correct the errors in the form.');
+        }
+      });
+    });
+  })(jQuery);
+</script>
 </body>
 </html>

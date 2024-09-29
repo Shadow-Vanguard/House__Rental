@@ -2,43 +2,106 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+	<title>Login</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="icon" type="image/png" href="{% static 'template_loginpage/images/icons/favicon.ico' %}"/>
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/vendor/bootstrap/css/bootstrap.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/fonts/font-awesome-4.7.0/css/font-awesome.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/fonts/Linearicons-Free-v1.0.0/icon-font.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/vendor/animate/animate.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/vendor/css-hamburgers/hamburgers.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/vendor/animsition/css/animsition.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/vendor/select2/select2.min.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/vendor/daterangepicker/daterangepicker.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/css/util.css' %}">
+	<link rel="stylesheet" type="text/css" href="{% static 'template_loginpage/css/main.css' %}">
+	<style>
+		.back-btn {
+			position: absolute;
+			top: 20px;
+			right: 20px;
+			background-color: #25AD75;
+			color: white;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 5px;
+			display: flex;
+			align-items: center;
+			text-decoration: none;
+		}
+		.back-btn i {
+			margin-right: 10px;
+		}
+	</style>
 </head>
 <body>
-    <div class="top-right">
-        <button><a href="{% url 'index' %}" class="home-button">Home</a></button>
-   </div>
-   <div class="login-container">
-        <h2>Login</h2>
-        <form id="loginForm" method="POST">
-            <div class="input-group">
-                {% csrf_token %} 
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            <div class="input-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <div class="input-group">
-                <button type="submit">Login</button>
-            </div>
-            <div class="forgot-password">
-                <a href="{% url 'forgotpass' %}">Forgot Password?</a>
-            </div>
-            <div class="register-link">
-                <p>Not yet registered? <a href="{% url 'register' %}">Register here</a></p>
-            </div>
-            <hr> <!-- Added horizontal line separator -->
-            <div class="google-signin">
-                <button class="google-btn"> Sign in with Google</button>
-            </div>
-        </form>
-    </div>
 
-    <script src="{% static 'js/script.js' %}"></script>
+	<div class="limiter">
+		<div class="container-login100" style="background-image: url('{% static 'template_loginpage/images/bg-01.jpg' %}');">
+			<div class="wrap-login100 p-t-30 p-b-50">
+				<a href="{% url 'index' %}" class="back-btn">
+					<i class="fa fa-arrow-left"></i> Back
+				</a>
+				<span class="login100-form-title p-b-41">
+					Account Login
+				</span>
+				<form id="loginForm" method="POST" class="login100-form validate-form p-b-33 p-t-5">
+					{% csrf_token %}
+					<div class="wrap-input100 validate-input" data-validate="Enter email">
+						<input class="input100" type="email" id="email" name="email" placeholder="Email" required>
+						<span class="focus-input100" data-placeholder="&#xe82a;"></span>
+					</div>
+					<div class="wrap-input100 validate-input" data-validate="Enter password">
+						<input class="input100" type="password" id="password" name="password" placeholder="Password" required>
+						<span class="focus-input100" data-placeholder="&#xe80f;"></span>
+					</div>
+
+					{% if error %}
+						<div id="errorMessage" class="alert alert-danger" role="alert" style="color:red;">
+							{{ error }}
+						</div>
+					{% endif %}
+
+					<div class="container-login100-form-btn m-t-32">
+						<button class="login100-form-btn" type="submit">
+							Login
+						</button>
+					</div>
+					<div class="forgot-password text-center m-t-10">
+						<a href="{% url 'forgotpass' %}">Forgot Password?</a>
+					</div>
+					<div class="register-link text-center m-t-10">
+						<p>Not yet registered? <a href="{% url 'register' %}">Register here</a></p>
+					</div>
+					<hr>
+					<div class="google-signin text-center">
+						<center><button class="login100-form-btn google-btn"> Sign in with Google</button></center>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- jQuery -->
+	<script src="{% static 'template_loginpage/vendor/jquery/jquery-3.2.1.min.js' %}"></script>
+	<script src="{% static 'template_loginpage/vendor/animsition/js/animsition.min.js' %}"></script>
+	<script src="{% static 'template_loginpage/vendor/bootstrap/js/popper.js' %}"></script>
+	<script src="{% static 'template_loginpage/vendor/bootstrap/js/bootstrap.min.js' %}"></script>
+	<script src="{% static 'template_loginpage/vendor/select2/select2.min.js' %}"></script>
+	<script src="{% static 'template_loginpage/vendor/daterangepicker/moment.min.js' %}"></script>
+	<script src="{% static 'template_loginpage/vendor/daterangepicker/daterangepicker.js' %}"></script>
+	<script src="{% static 'template_loginpage/vendor/countdowntime/countdowntime.js' %}"></script>
+	<script src="{% static 'template_loginpage/js/main.js' %}"></script>
+    <script>
+        jQuery.noConflict();
+        (function($) {
+            $(document).ready(function() {
+                setTimeout(function() {
+                    $('#errorMessage').fadeOut('slow');
+                }, 1000);
+            });
+        })(jQuery);
+    </script>
 </body>
 </html>

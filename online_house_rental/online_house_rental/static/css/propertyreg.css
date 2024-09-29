@@ -1,53 +1,25 @@
-* {
-    box-sizing: border-box;
+/* Global Styles */
+body {
+    background-color: #660d0d; /* Light grey background */
+    font-family: 'Arial', sans-serif; /* Simple, clean font */
     margin: 0;
     padding: 0;
+    color: #333;
 }
 
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    padding: 20px;
-    background-image: url('https://plus.unsplash.com/premium_photo-1661778773089-8718bcedb39e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8aG9tZSUyMGludGVyaW9yfGVufDB8fDB8fHww');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-
-
-}
-.top-right { /* Corrected from 'top-right' to '.top-right' */
-    position: absolute;
-    top: 10px;
-    right: 10px;
-}
-
-button.home-button {
-    background-color: #2d0f61;
-    color: #2aad81;
-    padding: 20px 40px;
-    border: none;
-    border-radius: 4px;
-    font-size: 20px;
-    cursor: pointer;
-    text-decoration: none;
-}
-
-button.home-button:hover {
-    background-color: #321049;
-}
 .container {
-    max-width: 600px;
-    margin: 0 auto;
-    background-color: #fff;
-    padding: 30px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px; /* Restrict form width */
+    margin: 50px auto; /* Center the container */
+    padding: 20px;
+    background-color: #fff; /* White background for form */
+    border-radius: 10px; /* Rounded corners */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Light shadow */
 }
 
 h1 {
+    color: #333;
     text-align: center;
     margin-bottom: 20px;
-    color: #333;
 }
 
 .form-group {
@@ -55,40 +27,94 @@ h1 {
 }
 
 label {
-    display: block;
+    display: block; /* Make labels block elements */
     font-weight: bold;
     margin-bottom: 5px;
+    color: #555;
 }
 
-input[type="text"],
-input[type="number"],
-input[type="date"],
-textarea,
-select {
-    width: 100%;
+input[type="text"], input[type="number"], textarea, select {
+    width: 100%; /* Full width inputs */
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    border: 1px solid #ccc; /* Light grey border */
+    border-radius: 5px; /* Rounded corners */
+    box-sizing: border-box;
     font-size: 16px;
+    margin-top: 5px;
+}
+
+input[type="file"] {
+    margin-top: 10px;
 }
 
 textarea {
-    resize: vertical;
+    resize: vertical; /* Allow vertical resizing only */
 }
 
-button[type="submit"] {
-    background-color: #28a745;
-    color: #fff;
-    padding: 10px 15px;
-    font-size: 16px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
+    border-color: #007bff; /* Blue border on focus */
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Blue shadow on focus */
+}
+
+small {
     display: block;
-    width: 100%;
-    margin-top: 20px;
+    margin-top: 5px;
+    color: #888;
 }
 
-button[type="submit"]:hover {
-    background-color: #218838;
+.btn {
+    display: inline-block;
+    width: 100%; /* Full width button */
+    padding: 12px;
+    background-color: #007bff; /* Blue background */
+    color: white;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    border: none; /* Remove border */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.btn:hover {
+    background-color: #0056b3; /* Darker blue on hover */
+}
+
+/* Back Button */
+.back-btn {
+    display: inline-block;
+    margin-bottom: 20px;
+    padding: 10px 20px;
+    background-color: #343a40; /* Dark background for button */
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+.back-btn:hover {
+    background-color: #23272b; /* Darker background on hover */
+}
+
+/* Error Message */
+.error {
+    color: red;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    .container {
+        padding: 10px;
+        margin: 20px auto;
+    }
+
+    .back-btn {
+        width: 100%; /* Make back button full width on small screens */
+        text-align: center;
+    }
 }

@@ -1,27 +1,94 @@
+/* General Styles */
 body {
     font-family: Arial, sans-serif;
-    background-color: #f7f7f7;
     margin: 0;
     padding: 0;
-    background-image: url('https://media.istockphoto.com/id/1340367001/photo/abstract-curved-shapes.webp?a=1&b=1&s=612x612&w=0&k=20&c=BujGINmU_nsKHbgrtTb1cWWIs_c9zv8sJ9wIo7tt5sM=');
+    background-image: url("/mnt/data/213123.jpg"); /* Using the uploaded image as background */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-
 }
 
+/* Header Styles */
+header {
+    background-color: white; /* White header */
+    padding: 10px 20px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add shadow for depth */
+    height: 80px; /* Increased height for the header */
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px; /* Constrain the width of the navbar */
+    margin: 0 auto; /* Center the navbar */
+    width: 100%;
+    height: 100%; /* Ensure navbar fills header */
+}
+
+/* Logo Styles */
+.logo {
+    font-size: 36px; /* Increased font size for the agency name */
+    font-weight: bold;
+    line-height: 1.2; /* Adjust line height for spacing */
+    margin-top: 10px; /* Move the logo down slightly */
+}
+
+.logo .estate {
+    color: #25AD75; /* Green color for "Estate" */
+}
+
+.logo .agency {
+    color: black; /* Black color for "Agency" */
+}
+
+/* Navigation Links */
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: flex-end; /* Align links at the bottom */
+    justify-content: flex-end;
+}
+
+.nav-links li {
+    margin: 0 25px; /* Adjust spacing between links */
+}
+
+.nav-links li a {
+    text-decoration: none;
+    color: black;
+    font-weight: bold;
+    font-size: 18px; /* Smaller font size for navigation links */
+    padding-bottom: 5px;
+}
+
+.nav-links li a:hover {
+    color: #25AD75; /* Change link color on hover */
+}
+
+/* Move Links Down and Right */
+.nav-links {
+    margin-top: 15px; /* Move navigation links slightly down */
+    margin-right: 10px; /* Move navigation links slightly to the right */
+}
+
+/* Form Styles */
 .container {
-    width: 40%;
-    margin: 50px auto;
-    background-color: #ffffff;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    max-width: 700px; /* Increase form width */
+    margin: 150px auto; /* Adjust margin to avoid the header */
+    background-color: white;
+    padding: 30px; /* Increase padding for more space */
     border-radius: 8px;
-}
-
-h1 {
-    text-align: center;
-    color: #333;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    opacity: 0.95; /* Slight opacity for the form */
 }
 
 form {
@@ -47,21 +114,44 @@ form {
     width: 100%;
 }
 
+/* Button Styling */
 .btn {
     padding: 10px 20px;
     font-size: 18px;
     color: white;
-    background-color: #1c1946;
+    background-color: #25AD75;
     border: none;
     border-radius: 5px;
     cursor: pointer;
 }
 
 .btn:hover {
-    background-color: #45a049;
+    background-color: #1e895d;
 }
 
+/* Error Message */
 .error-message {
     color: red;
     font-size: 14px;
+}
+
+/* Media Query for Smaller Screens */
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .nav-links {
+        display: block;
+        text-align: left;
+    }
+
+    .nav-links li {
+        margin: 10px 0;
+    }
+
+    .container {
+        max-width: 90%; /* Reduce form width on smaller screens */
+    }
 }
