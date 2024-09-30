@@ -14,7 +14,7 @@ urlpatterns = [
   path('owner', views.owner, name='owner'),
   path('admin', views.admin, name='admin'),
   path('reset_password/<str:token>/', views.reset_password, name='reset_password'),
-  path('propertyview/<int:id>/', views.propertyview, name='propertyview'),
+  path('propertyview/<int:property_id>/', views.propertyview, name='propertyview'),
   path('propertypage', views.propertypage, name='propertypage'),
   path('house', views.house, name='house'),
   path('updateprofile', views.updateprofile, name='updateprofile'),
@@ -27,5 +27,12 @@ urlpatterns = [
   path('activate_user/<int:id>/', views.activate_user, name='activate_user'),
   path('manage_users/<str:role>/', views.manage_users, name='manage_users'),
   path('view_profile/<int:user_id>/', views.view_profile, name='view_profile'),
+  path('request', views.request, name='request'),
+  path('verify_property/<int:property_id>/', views.verify_property, name='verify_property'),
+  path('reject_property/<int:property_id>/', views.reject_property, name='reject_property'),
+
+
+  
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

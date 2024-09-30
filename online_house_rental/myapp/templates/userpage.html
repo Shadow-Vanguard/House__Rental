@@ -15,24 +15,17 @@
   <link href="{% static 'template_landingpage/lib/animate/animate.min.css' %}" rel="stylesheet">
   <link href="{% static 'template_landingpage/lib/ionicons/css/ionicons.min.css' %}" rel="stylesheet">
   <link href="{% static 'template_landingpage/lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
-
   <link href="{% static 'template_landingpage/css/style.css' %}" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
-
 </head>
 <body>
 
   <div class="click-closed"></div>
 
-
-  <!--/ Nav Star /-->
+  <!--/ Nav Start /-->
   <nav class="navbar navbar-default navbar-trans navbar-expand-lg fixed-top">
     <div class="container">
       <a class="navbar-brand text-brand" href="#">Estate<span class="color-b">Agency</span></a>
-      <button type="button" class="btn btn-link nav-search navbar-toggle-box-collapse d-md-none" data-toggle="collapse"
-        data-target="#navbarTogglerDemo01" aria-expanded="false">
-        <span class="fa fa-search" aria-hidden="true"></span>
-      </button>
       <div class="navbar-collapse collapse justify-content-center" id="navbarDefault">
         <ul class="navbar-nav">
           <li class="nav-item">
@@ -51,106 +44,108 @@
         </div>
         {% endif %}
       </div>
-
     </div>
   </nav>
   <!--/ Nav End /-->
 
-  <!--/ Intro Single star /-->
+  <!--/ Intro Single Start /-->
   <section class="intro-single">
     <div class="container">
       <div class="row">
         <div class="col-md-12 col-lg-8">
-        <div class="title-single-box">
+          <div class="title-single-box">
             <h1 class="title-single">Hi, {{ user.name }}</h1>
             <span class="color-text-a">Welcome!</span>
-        </div>
+          </div>
         </div>
       </div>
+
       <!-- Filter Section -->
       <div class="container">
-          <div class="row">
-              <div class="col-md-12">
-                  <div class="filter-section">
-                      <input type="text" placeholder="Enter Location (City, State)" id="location">
-                      <select id="category">
-                          <option value="">All</option>
-                          <option value="apartment">Apartment</option>
-                          <option value="villa">Villa</option>
-                          <option value="house">House</option>
-                      </select>
-                      <input type="number" placeholder="Max Price" id="price">
-                      <select id="bhk">
-                          <option value="">BHK</option>
-                          <option value="1">1 BHK</option>
-                          <option value="2">2 BHK</option>
-                          <option value="3">3 BHK</option>
-                          <option value="4">4 BHK</option>
-                          <option value="5">5 BHK</option>
-                      </select>
-                      <button class="btn">Search</button>
-                  </div>
-              </div>
+        <div class="row">
+          <div class="col-md-12">
+            <div class="filter-section">
+              <form method="GET" action="{% url 'userpage' %}">
+                <input type="text" placeholder="Enter Location (City, State)" name="location" id="location" value="{{ request.GET.location }}">
+                
+                <select name="category" id="category">
+                  <option value="">All</option>
+                  <option value="apartment" {% if request.GET.category == "apartment" %}selected{% endif %}>Apartment</option>
+                  <option value="villa" {% if request.GET.category == "villa" %}selected{% endif %}>Villa</option>
+                  <option value="house" {% if request.GET.category == "house" %}selected{% endif %}>House</option>
+                </select>
+                
+                <input type="number" name="price" placeholder="Max Price" id="price" value="{{ request.GET.price }}">
+                
+                <select name="bhk" id="bhk">
+                  <option value="">BHK</option>
+                  <option value="1" {% if request.GET.bhk == "1" %}selected{% endif %}>1 BHK</option>
+                  <option value="2" {% if request.GET.bhk == "2" %}selected{% endif %}>2 BHK</option>
+                  <option value="3" {% if request.GET.bhk == "3" %}selected{% endif %}>3 BHK</option>
+                  <option value="4" {% if request.GET.bhk == "4" %}selected{% endif %}>4 BHK</option>
+                  <option value="5" {% if request.GET.bhk == "5" %}selected{% endif %}>5 BHK</option>
+                </select>
+                
+                <button class="btn">Search</button>
+              </form>
+            </div>
           </div>
+        </div>
       </div>
       <!-- Filter Section End -->
     </div>
   </section>
   <!--/ Intro Single End /-->
 
-
-  <!--/ Property Grid Star /-->
-<section class="property-grid grid">
-  <div class="container">
-    <div class="row">
-      {% for property in properties %}
-      <div class="col-md-4">
-        <div class="card-box-a card-shadow">
-          <div class="img-box-a">
-            <!-- Display the first image of the property or a default image -->
-            <img src="{% if property.images.first %}{{ property.images.first.image.url }}{% else %}{% static 'template_landingpage/img/default-property.jpg' %}{% endif %}"
-                 alt="{{ property.property_name }}" class="img-a img-fluid">
-          </div>
-          <div class="card-overlay">
-            <div class="card-overlay-a-content">
-              <div class="card-header-a">
-                <h2 class="card-title-a">
-                  <a href="#">{{ property.property_name }}</a>
-                </h2>
-              </div>
-              <div class="card-body-a">
-                <div class="price-box d-flex">
-                  <!-- Display listing type -->
-                  <span class="price-a">{{ property.listing_type|lower }} | $ {{ property.price }}</span>
+  <!--/ Property Grid Start /-->
+  <section class="property-grid grid">
+    <div class="container">
+      <div class="row">
+        {% for property in properties %}
+        <div class="col-md-4">
+          <div class="card-box-a card-shadow">
+            <div class="img-box-a">
+              <img src="{% if property.images.first %}{{ property.images.first.image.url }}{% else %}{% static 'template_landingpage/img/default-property.jpg' %}{% endif %}" alt="{{ property.property_name }}" class="img-a img-fluid">
+            </div>
+            <div class="card-overlay">
+              <div class="card-overlay-a-content">
+                <div class="card-header-a">
+                  <h2 class="card-title-a">
+                    <a href="#">{{ property.property_name }}</a>
+                  </h2>
                 </div>
-                <a href="#" class="link-a">Click here to view
-                  <span class="ion-ios-arrow-forward"></span>
-                </a>
-              </div>
-              <div class="card-footer-a">
-                <ul class="card-info d-flex justify-content-around">
-                  <li>
-                    <h4 class="card-info-title">Area</h4>
-                    <span>{{ property.area }} m<sup>2</sup></span>
-                  </li>
-                  <li>
-                    <h4 class="card-info-title">Beds</h4>
-                    <span>{{ property.beds }}</span>
-                  </li>
-                  <li>
-                    <h4 class="card-info-title">Baths</h4>
-                    <span>{{ property.baths }}</span>
-                  </li>
-                </ul>
+                <div class="card-body-a">
+                  <div class="price-box d-flex">
+                    <span class="price-a">{{ property.listing_type|lower }} | $ {{ property.price }}</span>
+                  </div>
+                  <a href="{% url 'propertyview' property.id %}" class="link-a">Click here to view
+                    <span class="ion-ios-arrow-forward"></span>
+                  </a>
+                </div>
+                <div class="card-footer-a">
+                  <ul class="card-info d-flex justify-content-around">
+                    <li>
+                      <h4 class="card-info-title">Area</h4>
+                      <span>{{ property.area }} m<sup>2</sup></span>
+                    </li>
+                    <li>
+                      <h4 class="card-info-title">Beds</h4>
+                      <span>{{ property.beds }}</span>
+                    </li>
+                    <li>
+                      <h4 class="card-info-title">Baths</h4>
+                      <span>{{ property.baths }}</span>
+                    </li>
+                  </ul>
+                </div>
               </div>
             </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
     </div>
-  </div>
-</section>
+  </section>
   <!--/ Property Grid End /-->
 
   <!-- JavaScript Libraries -->
@@ -163,6 +158,5 @@
   <script src="{% static 'template_landingpage/lib/scrollreveal/scrollreveal.min.js' %}"></script>
   <script src="{% static 'template_landingpage/contactform/contactform.js' %}"></script>
   <script src="{% static 'template_landingpage/js/main.js' %}"></script>
-
 </body>
 </html>

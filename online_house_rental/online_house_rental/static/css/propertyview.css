@@ -1,104 +1,102 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #2f8179;
     margin: 0;
-    padding: 0;
+    padding: 20px;
 }
 
 .container {
-    width: 80%;
-    margin: 10px auto;
+    max-width: 1200px; /* Maximum width of the container */
+    margin: 0 auto; /* Center the container */
 }
 
 .top-right {
-    position: absolute;
-    top: 10px;
-    right: 20px;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
 }
 
 .back-button {
-    display: inline-block;
-    padding: 20px 40px; /* Adjust width by increasing padding */
-    background-color: #007bff;
-    color: white;
     text-decoration: none;
-    border: 2px solid transparent;
-    border-radius: 12px; /* Make corners more rounded */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
-    font-size: 16px; /* Increase font size */
-    font-weight: bold; /* Make text bold */
-    cursor: pointer;
-    text-align: center;
+    color: white;
+    background-color: #007bff; /* Button color */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.3s;
 }
 
 .back-button:hover {
-    background-color: #0056b3;
-    border-color: #004085;
-    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2); /* Increase shadow on hover */
-}
-
-h1 {
-    text-align: center;
-    margin-bottom: 20px;
+    background-color: #0056b3; /* Darker button color on hover */
 }
 
 .property-details {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 30px;
+    flex-direction: column;
+    gap: 20px; /* Space between images and info */
 }
 
 .property-images {
-    flex: 1;
-    margin-right: 20px;
+    display: grid; /* Use grid layout for images */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive columns */
+    gap: 10px; /* Space between images */
+    border: 1px solid #ccc; /* Border around images */
+    padding: 10px; /* Padding around images */
+    border-radius: 5px; /* Rounded corners */
 }
 
-.property-img-large {
-    width: 100%;
-    height: auto;
-    border-radius: 10px;
+.property-img {
+    width: 100%; /* Make images take full width of their grid cell */
+    height: auto; /* Maintain aspect ratio */
+    object-fit: cover; /* Crop images to fill space without stretching */
+    border-radius: 5px; /* Rounded corners for images */
 }
 
 .property-info {
-    flex: 2;
-}
-
-.property-info p {
-    font-size: 18px;
-    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #f9f9f9; /* Light background for info */
+    border: 1px solid #ccc; /* Border around info */
+    border-radius: 5px; /* Rounded corners */
 }
 
 .action-buttons {
-    text-align: center;
     margin-top: 20px;
 }
 
 .btn {
     padding: 10px 20px;
-    background-color: #28a745;
     color: white;
     border: none;
     border-radius: 5px;
-    margin: 5px;
     cursor: pointer;
-}
-
-.btn:hover {
-    background-color: #218838;
+    transition: background-color 0.3s;
 }
 
 .buy-btn {
-    background-color: #007bff;
+    background-color: #28a745; /* Green for buy */
 }
 
 .buy-btn:hover {
-    background-color: #0056b3;
+    background-color: #218838; /* Darker green on hover */
 }
 
 .rent-btn {
-    background-color: #28a745;
+    background-color: #ffc107; /* Yellow for rent */
 }
 
 .rent-btn:hover {
-    background-color: #218838;
+    background-color: #e0a800; /* Darker yellow on hover */
+}
+.book-btn {
+    background-color: #b5460f; /* Yellow for rent */
+}
+
+.book-btn:hover {
+    background-color: #d0661b; /* Darker yellow on hover */
+}
+.contact-btn {
+    background-color: #29c814; /* Yellow for rent */
+}
+
+.contact-btn:hover {
+    background-color: #16ae37; /* Darker yellow on hover */
 }

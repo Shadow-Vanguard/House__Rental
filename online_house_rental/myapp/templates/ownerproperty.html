@@ -31,6 +31,15 @@
             <button type="button" onclick="toggleForm({{property.id}})">Update</button>
             <button type="submit" class="submit-btn">Delete</button>
 
+            <!-- Display verification status -->
+            <p>Status: 
+                {% if property.is_verified %}
+                    <span class="verified">Verified</span>
+                {% else %}
+                    <span class="not-verified">Not Verified</span>
+                {% endif %}
+            </p>
+
 
             <!-- Update form, initially hidden -->
             <div id="update-form-{{ property.id }}" class="update-form">

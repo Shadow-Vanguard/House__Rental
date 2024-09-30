@@ -9,14 +9,17 @@
 </head>
 <body>
     <div class="top-right">
-        <button><a href="{% url 'propertypage' %}" class="back-button">Back to Properties</a></button>
+        <button><a href="{% url 'userpage' %}" class="back-button">Back to Properties</a></button>
     </div>
     
     <div class="container">
         <h1 id="propertyName">{{ property.property_name }}</h1>
         <div class="property-details">
             <div class="property-images">
-                <img id="propertyImage" src="{{ property.images.first.image.url }}" alt="{{ property.property_name }}" class="property-img-large">
+                <!-- Display all images -->
+                {% for image in property.images.all %}
+                    <img src="{{ image.image.url }}" alt="{{ property.property_name }}" class="property-img">
+                {% endfor %}
             </div>
             <div class="property-info">
                 <p><strong>Description:</strong> <span id="propertyDescription">{{ property.description }}</span></p>
@@ -27,6 +30,7 @@
                 <p><strong>Available Date:</strong> <span id="propertyAvailableDate">{{ property.available_date }}</span></p>
                 <p><strong>Posted Date:</strong> <span id="propertyPostedDate">{{ property.posted_date }}</span></p>
                 <p><strong>Property Type:</strong> <span id="propertyType">{{ property.property_type }}</span></p>
+                <p><strong>Owner:</strong> <span id="propertyOwner">{{ property.owner.name }}</span></p> <!-- Corrected line -->
             </div>
         </div>
         <div class="action-buttons">
@@ -35,6 +39,10 @@
             {% endif %}
             {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
                 <button class="btn rent-btn">Rent</button>
+                <button class="btn book-btn">Book Property</button>
+                <button class="btn contact-btn">contact Owner</button>
+
+                
             {% endif %}
         </div>
     </div>

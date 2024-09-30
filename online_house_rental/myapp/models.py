@@ -42,6 +42,7 @@ class Property(models.Model):
     posted_date = models.DateTimeField(default=timezone.now, null=False)
     status = models.BooleanField(default=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    is_verified = models.BooleanField(default=False)
 
     def __str__(self):
         return self.property_name

@@ -1,0 +1,74 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Properties</title>
+    <link rel="stylesheet" href="{% static 'css/request.css' %}">  <!-- Link to your CSS file -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            border: 1px solid #1d1d1d; /* Dark border */
+            text-align: left;
+        }
+        th {
+            background-color: #1a1919;
+            color: white; /* Ensure header text is white for contrast */
+        }
+        a {
+            margin-right: 10px;
+            text-decoration: none;
+            color: white;
+            background-color: #0c0ca0; /* Blue for actions */
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        a.reject-btn {
+            background-color: #76150e; /* Red for rejection */
+        }
+        a.verify-btn {
+            background-color: #0c0ca0; /* Green for verification */
+        }
+    </style>
+</head>
+<body>
+    <h2>Requests</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Property Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for property in properties %}
+                <tr>
+                    <td>{{ property.property_name }}</td>
+                    <td>{{ property.description }}</td>
+                    <td>${{ property.price }}</td>
+                    <td>{{ property.is_verified|yesno:"Verified,Not Verified" }}</td>
+                    <td>
+                        {% if not property.is_verified %}
+                            <a href="{% url 'verify_property' property.id %}" class="verify-btn" onclick="return confirm('Are you sure you want to verify this property?');">Verify</a>
+                        {% else %}
+                            <a href="{% url 'reject_property' property.id %}" class="reject-btn" onclick="return confirm('Are you sure you want to reject this property?');">Reject</a>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

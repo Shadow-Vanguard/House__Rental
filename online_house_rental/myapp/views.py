@@ -1,4 +1,3 @@
-
 from django.shortcuts import render,redirect,get_object_or_404
 from .models import User,Property,PropertyImage,Adminm
 from django.contrib import messages
@@ -125,23 +124,55 @@ def forgotpass(request):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def userpage(request):
     if request.session.get('user_id'):
-        user_id = request.session.get('user_id')  # Get user_id from session
+        user_id = request.session.get('user_id')
+        
+        # Retrieve the logged-in user
         try:
-            user = User.objects.get(id=user_id)  # Fetch user from the database
-            properties = Property.objects.filter(owner=user)  # Fetch properties of the user
-
-            # Render the user page template with user and properties context
-            return render(request, 'userpage.html', {
-                'user': user,
-                'properties': properties,
-                'user_name': user.name,  # Pass the user name to the template if needed
-            })
-
+            user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return redirect('login')  # Redirect if user doesn't exist in the database
+            return redirect('login')  # Redirect to login if user not found
+        properties = Property.objects.filter(is_verified=True)  # Only show verified properties
 
+        # # Retrieve all properties (or filter them later based on the owner)
+        # properties = Property.objects.all()
+
+        # Get search parameters from the GET request
+        location = request.GET.get('location', '')
+        category = request.GET.get('category', '')
+        price = request.GET.get('price', '')
+        bhk = request.GET.get('bhk', '')
+
+        # Filter properties based on the search criteria
+        if location:
+            properties = properties.filter(city__icontains=location) | properties.filter(state__icontains=location)
+        
+        if category:
+            properties = properties.filter(property_type__iexact=category)
+        
+        if price:
+            try:
+                max_price = float(price)
+                properties = properties.filter(price__lte=max_price)
+            except ValueError:
+                pass  # If price is not a valid number, skip this filter
+        
+        if bhk:
+            try:
+                bhk_value = int(bhk)
+                properties = properties.filter(beds=bhk_value)
+            except ValueError:
+                pass  # If bhk is not a valid number, skip this filter
+
+        # Pass the filtered properties to the template
+        context = {
+            'user': user,
+            'properties': properties,
+            'request': request  # Pass the request to the template for showing the form values
+        }
+        
+        return render(request, 'userpage.html', context)
     else:
-        return redirect('login')  # Redirect if user_id not found in session
+        return redirect('login')
 
 
 
@@ -181,9 +212,15 @@ def reset_password(request, token):
     else:
         messages.error(request, 'Invalid or expired reset token.')
         return redirect('forgotpass')
-def propertyview(request,id):
-    property_instance = Property.objects.get(id=id)
-    return render(request, 'propertyview.html',{'property': property_instance})
+def propertyview(request, property_id):
+    # Use select_related to get the owner information in the same query
+    property = get_object_or_404(Property,id=property_id)
+    print(f"Owner Name: {property.owner.name}")  #  
+    context = {
+        'property': property,
+    }
+    return render(request, 'propertyview.html', context)
+
 def propertypage(request):
     properties = Property.objects.all()  # Fetch all properties
     return render(request, 'propertypage.html', {'properties': properties})
@@ -366,3 +403,41 @@ def activate_user(request, id):
     # Redirect to manage_users with the role parameter
     return redirect('manage_users', role=user.role)  # Adjust user.role based on how you retrieve it
 
+def request(request):
+    properties = Property.objects.all()  # Retrieve all properties
+    return render(request, 'request.html', {'properties': properties})
+
+def verify_property(request, property_id):
+    property = get_object_or_404(Property, id=property_id)
+    property.is_verified = True  # Set is_verified to 1
+    property.save()
+
+    # Send verification email
+    send_mail(
+        'Property Verified',
+        f'Congratulations! Your property "{property.property_name}" has been verified by our team.',
+        'your_email@example.com',  # Replace with your email
+        [property.owner.email],  # Owner's email
+        fail_silently=False,
+    )
+
+    messages.success(request, f'Property "{property.property_name}" has been verified.')
+    return redirect('request')  # Redirect back to the request page
+
+
+def reject_property(request, property_id):
+    property = get_object_or_404(Property, id=property_id)
+    property.is_verified = False  # Set is_verified to 0
+    property.save()
+
+    # Send rejection email
+    send_mail(
+        'Property Rejected',
+        f'We regret to inform you that your property "{property.property_name}" has been rejected by our team.',
+        'your_email@example.com',  # Replace with your email
+        [property.owner.email],  # Owner's email
+        fail_silently=False,
+    )
+
+    messages.success(request, f'Property "{property.property_name}" has been rejected.')
+    return redirect('request')
