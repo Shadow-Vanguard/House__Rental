@@ -31,18 +31,17 @@
                 <p><strong>Posted Date:</strong> <span id="propertyPostedDate">{{ property.posted_date }}</span></p>
                 <p><strong>Property Type:</strong> <span id="propertyType">{{ property.property_type }}</span></p>
                 <p><strong>Owner:</strong> <span id="propertyOwner">{{ property.owner.name }}</span></p> <!-- Corrected line -->
-            </div>
-        </div>
+                <p>Click below to view the location on Google Maps.</p>
+<a href="https://www.google.com/maps/search/?api=1&query={{ property.address }},+{{ property.city }},+{{ property.state }}" target="_blank">
+    📍Location
+</a>
         <div class="action-buttons">
             {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}
-                <button class="btn buy-btn">Buy</button>
+                <button class="btn buy-btn">Buy Now</button>
             {% endif %}
             {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
-                <button class="btn rent-btn">Rent</button>
-                <button class="btn book-btn">Book Property</button>
-                <button class="btn contact-btn">contact Owner</button>
-
-                
+                <button class="btn rent-btn">Rent Now</button>
+                <button class="btn contact-btn"><a href="{% url 'contactowner'%}">Contact Owner</a></button>
             {% endif %}
         </div>
     </div>

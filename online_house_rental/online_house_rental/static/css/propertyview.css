@@ -58,7 +58,19 @@ body {
     border-radius: 5px; /* Rounded corners */
 }
 
+.location-img {
+    width: 150px;
+    height: auto;
+    cursor: pointer;
+}
+.location-img:hover {
+    opacity: 0.8;
+}
+/* Center the buttons horizontally */
 .action-buttons {
+    display: flex;
+    justify-content: center; /* Center the buttons horizontally */
+    gap: 10px; /* Add space between buttons */
     margin-top: 20px;
 }
 
@@ -86,17 +98,19 @@ body {
 .rent-btn:hover {
     background-color: #e0a800; /* Darker yellow on hover */
 }
+
 .book-btn {
-    background-color: #b5460f; /* Yellow for rent */
+    background-color: #b5460f; /* Brown for book */
 }
 
 .book-btn:hover {
-    background-color: #d0661b; /* Darker yellow on hover */
+    background-color: #d0661b; /* Darker brown on hover */
 }
+
 .contact-btn {
-    background-color: #29c814; /* Yellow for rent */
+    background-color: #29c814; /* Green for contact */
 }
 
 .contact-btn:hover {
-    background-color: #16ae37; /* Darker yellow on hover */
+    background-color: #16ae37; /* Darker green on hover */
 }

@@ -1,0 +1,51 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Wishlist</title>
+    <link rel="stylesheet" href="{% static 'css/wishlist.css' %}">
+</head>
+<body>
+
+<div class="container">
+    <!-- Back button -->
+    <div class="back-btn-container">
+        <a href="{% url 'property_list' %}" class="back-btn">Back to Properties</a>
+    </div>
+
+    <h1>My Wishlist</h1>
+
+    {% if wishlist_items %}
+    <ul class="wishlist-items">
+        {% for item in wishlist_items %}
+            <li class="wishlist-item">
+                <div class="property-image">
+                    {% if item.property.propertyimage_set.all %}
+                        <img src="{{ item.property.propertyimage_set.first.image.url }}" alt="{{ item.property.property_name }}">
+                    {% else %}
+                        <p>No image available</p>
+                    {% endif %}
+                </div>
+                <div class="property-info">
+                    <h2>{{ item.property.property_name }}</h2>
+                    <p>Location: {{ item.property.address }}, {{ item.property.city }}, {{ item.property.state }}</p>
+                    <p>{{ item.property.description }}</p>
+                    <span class="property-price">Price: Rs.{{ item.property.price }}</span>
+                </div>
+                <div class="actions">
+                    <a href="{% url 'remove_from_wishlist' item.property.id %}" class="remove-btn">Remove</a>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+    
+    {% else %}
+        <p class="empty-message">Your wishlist is empty.</p>
+    {% endif %}
+
+</div>
+
+</body>
+</html>

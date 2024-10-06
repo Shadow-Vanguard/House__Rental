@@ -6,13 +6,205 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Properties</title>
     <link rel="stylesheet" href="{% static 'css/ownerproperty.css' %}">
-    <link rel="icon" href="{% static 'image/favicon.ico' %}" type="image/x-icon">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Include jQuery -->
     <script>
         function toggleForm(propertyId) {
             var form = document.getElementById('update-form-' + propertyId);
             form.style.display = form.style.display === 'none' ? 'block' : 'none';
         }
+
+        function deleteImage(propertyId, imageId) {
+            $.ajax({
+                type: 'POST',
+                url: '{% url "ownerproperty" %}', // The URL for your view
+                data: {
+                    'delete_image': imageId,
+                    'property_id': propertyId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}' // Pass CSRF token
+                },
+                success: function(response) {
+                    // Remove the deleted image from the DOM
+                    $('#image-thumbnail-' + imageId).remove();
+                },
+                error: function(xhr) {
+                    alert('Error: ' + xhr.responseText);
+                }
+            });
+        }
+
+        function validateField(field, regex, errorMessages) {
+            const value = $(field).val().trim();
+            let errorDiv = $(field).siblings('.error'); // Get the error message div
+            errorDiv.remove(); // Clear previous error messages
+            let errorText = '';
+
+            if (!regex.test(value)) {
+                errorText = errorMessages[0];
+            } else if (value.length < 5) {
+                errorText = errorMessages[1];
+            } else if (/\s/.test(value)) {
+                errorText = errorMessages[2];
+            }
+
+            if (errorText) {
+                if (errorDiv.length === 0) { // Create error div if it doesn't exist
+                    errorDiv = $('<p class="error"></p>');
+                    $(field).after(errorDiv);
+                }
+                errorDiv.text(errorText); // Set the error message
+                return false;
+            } else {
+                errorDiv.remove(); // Remove error if valid
+                return true;
+            }
+        }
+
+        function validateForm(event) {
+            event.preventDefault(); // Prevent form submission
+
+            let isValid = true;
+            const newImages = $('#new_images')[0].files;
+
+            // Validations
+            isValid &= validateField('#property_name', /^[A-Z][a-zA-Z]{4,}$/, [
+                'Property name must start with a capital letter.',
+                'Property name must be at least 5 characters long.',
+                'Property name must not contain spaces.'
+            ]);
+            isValid &= validateField('#description', /^\S{5,}$/, [
+                'Description must be at least 5 characters long.',
+                'Description must not contain spaces.',
+                'Description can contain letters and numbers only.'
+            ]);
+            isValid &= validateField('#address', /^.*$/, [
+                'Address cannot be empty.',
+                'Address must not contain special characters.',
+                'Address must be at least 5 characters long.'
+            ]);
+            isValid &= validateField('#city', /^[a-zA-Z\s]{4,}$/, [
+                'City must not contain special characters.',
+                'City must be at least 5 characters long.',
+                'City must not contain spaces at the beginning or end.'
+            ]);
+            isValid &= validateField('#state', /^[a-zA-Z\s]{4,}$/, [
+                'State must not contain special characters.',
+                'State must be at least 5 characters long.',
+                'State must not contain spaces at the beginning or end.'
+            ]);
+
+            // Price validation
+            const price = parseFloat($('#price').val().trim());
+            let priceErrorDiv = $('#price').siblings('.error');
+            if (isNaN(price) || price < 0) {
+                if (priceErrorDiv.length === 0) {
+                    priceErrorDiv = $('<p class="error"></p>');
+                    $('#price').after(priceErrorDiv);
+                }
+                priceErrorDiv.text('Price must be a non-negative number.');
+                isValid = false;
+            } else {
+                priceErrorDiv.remove(); // Remove error if valid
+            }
+
+            // Image validation
+            if (newImages.length > 0) {
+                for (let i = 0; i < newImages.length; i++) {
+                    const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
+                    if (fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
+                        if ($('#new_images').siblings('.error').length === 0) {
+                            $('<p class="error"></p>').insertAfter('#new_images').text('Only JPG and JPEG image files are allowed.');
+                        }
+                        isValid = false;
+                        break;
+                    } else {
+                        $('#new_images').siblings('.error').remove(); // Remove error if valid
+                    }
+                }
+            }
+
+            if (isValid) {
+                // If valid, submit the form
+                event.target.submit();
+            }
+        }
+
+        $(document).ready(function() {
+            // Add event listeners for live validation
+            $('#property_name').on('input focusout', function() {
+                validateField(this, /^[A-Z][a-zA-Z]{4,}$/, [
+                    'Property name must start with a capital letter.',
+                    'Property name must be at least 5 characters long.',
+                    'Property name must not contain spaces.'
+                ]);
+            });
+            $('#description').on('input focusout', function() {
+                validateField(this, /^\S{5,}$/, [
+                    'Description must be at least 5 characters long.',
+                    'Description must not contain spaces.',
+                    'Description can contain letters and numbers only.'
+                ]);
+            });
+            $('#address').on('input focusout', function() {
+                validateField(this, /^.*$/, [
+                    'Address cannot be empty.',
+                    'Address must not contain special characters.',
+                    'Address must be at least 5 characters long.'
+                ]);
+            });
+            $('#city').on('input focusout', function() {
+                validateField(this, /^[a-zA-Z\s]{4,}$/, [
+                    'City must not contain special characters.',
+                    'City must be at least 5 characters long.',
+                    'City must not contain spaces at the beginning or end.'
+                ]);
+            });
+            $('#state').on('input focusout', function() {
+                validateField(this, /^[a-zA-Z\s]{4,}$/, [
+                    'State must not contain special characters.',
+                    'State must be at least 5 characters long.',
+                    'State must not contain spaces at the beginning or end.'
+                ]);
+            });
+            $('#price').on('input focusout', function() {
+                const price = parseFloat($(this).val().trim());
+                let priceErrorDiv = $(this).siblings('.error');
+                if (isNaN(price) || price < 0) {
+                    if (priceErrorDiv.length === 0) {
+                        priceErrorDiv = $('<p class="error"></p>');
+                        $(this).after(priceErrorDiv);
+                    }
+                    priceErrorDiv.text('Price must be a non-negative number.');
+                } else {
+                    priceErrorDiv.remove(); // Remove error if valid
+                }
+            });
+
+            $('#new_images').on('change', function() {
+                const newImages = this.files;
+                let errorDiv = $(this).siblings('.error');
+                if (errorDiv.length === 0) {
+                    errorDiv = $('<p class="error"></p>');
+                    $(this).after(errorDiv);
+                }
+                errorDiv.text(''); // Clear previous error
+                for (let i = 0; i < newImages.length; i++) {
+                    const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
+                    if (fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
+                        errorDiv.text('Only JPG and JPEG image files are allowed.');
+                        break;
+                    } else {
+                        errorDiv.remove(); // Remove error if valid
+                    }
+                }
+            });
+        });
     </script>
+    <style>
+        .error {
+            color: red;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -21,34 +213,34 @@
             <img src="{% static 'image/back_icon.png' %}" alt="Back">
         </a>
     </div>
-
     <div class="properties-list">
         {% for property in properties %}
         <div class="property-item">
             <img src="{{ property.images.first.image.url }}" alt="{{ property.property_name }}" class="property-image">
             <h2>{{ property.property_name }}</h2>
             <p>{{ property.description|truncatewords:20 }}</p>
-            <button type="button" onclick="toggleForm({{property.id}})">Update</button>
-            <button type="submit" class="submit-btn">Delete</button>
-
-            <!-- Display verification status -->
-            <p>Status: 
+            <button type="button" onclick="toggleForm({{ property.id }})">Update</button>
+            <form method="POST" action="{% url 'ownerproperty' %}" style="display:inline;">
+                {% csrf_token %}
+                <input type="hidden" name="delete_property" value="{{ property.id }}">
+                <button type="submit" class="submit-btn delete-btn">Delete</button>
+            </form>
+            <p>Status:
                 {% if property.is_verified %}
                     <span class="verified">Verified</span>
                 {% else %}
                     <span class="not-verified">Not Verified</span>
                 {% endif %}
             </p>
-
-
-            <!-- Update form, initially hidden -->
-            <div id="update-form-{{ property.id }}" class="update-form">
+            <div id="update-form-{{ property.id }}" class="update-form" style="display: none;">
                 <h3>Update {{ property.property_name }}</h3>
-                <form method="POST" enctype="multipart/form-data">
+                <form method="POST" action="{% url 'ownerproperty' %}" enctype="multipart/form-data" onsubmit="validateForm(event)">
                     {% csrf_token %}
+                    <input type="hidden" name="property_id" value="{{ property.id }}">
                     <div class="form-group">
                         <label for="property_name">Property Name:</label>
                         <input type="text" id="property_name" name="property_name" value="{{ property.property_name }}" required>
+                        <div class="error"></div>
                     </div>
                     <div class="form-group">
                         <label for="property_type">Property Type:</label>
@@ -68,30 +260,35 @@
                     <div class="form-group">
                         <label for="description">Description:</label>
                         <textarea id="description" name="description" rows="4" required>{{ property.description }}</textarea>
+                        <div class="error"></div>
                     </div>
                     <div class="form-group">
                         <label for="address">Address:</label>
                         <input type="text" id="address" name="address" value="{{ property.address }}" required>
+                        <div class="error"></div>
                     </div>
                     <div class="form-group">
                         <label for="city">City:</label>
                         <input type="text" id="city" name="city" value="{{ property.city }}" required>
+                        <div class="error"></div>
                     </div>
                     <div class="form-group">
                         <label for="state">State:</label>
                         <input type="text" id="state" name="state" value="{{ property.state }}" required>
+                        <div class="error"></div>
                     </div>
                     <div class="form-group">
                         <label for="price">Price:</label>
                         <input type="number" id="price" name="price" value="{{ property.price }}" required>
+                        <div class="error"></div>
                     </div>
                     <div class="form-group">
                         <label for="existing_images">Existing Images:</label>
                         <div class="image-gallery">
                             {% for image in property.images.all %}
-                            <div class="image-thumbnail">
+                            <div id="image-thumbnail-{{ image.id }}" class="image-thumbnail">
                                 <img src="{{ image.image.url }}" alt="Property Image" class="thumbnail-img">
-                                <button type="submit" name="delete_image" value="{{ image.id }}">Delete</button>
+                                <button type="button" onclick="deleteImage({{ property.id }}, {{ image.id }})">Delete</button>
                             </div>
                             {% endfor %}
                         </div>
@@ -99,9 +296,10 @@
                     <div class="form-group">
                         <label for="new_images">Upload New Image(s):</label>
                         <input type="file" id="new_images" name="new_images" multiple>
+                        <div class="error"></div>
                     </div>
                     <button type="submit" class="submit-btn">Update Property</button>
-
+                    <div id="form-errors"></div> 
                 </form>
             </div>
         </div>

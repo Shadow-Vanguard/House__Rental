@@ -60,3 +60,8 @@ class Adminm(models.Model):
     email = models.EmailField(max_length=254, unique=True)
     password = models.CharField(max_length=128)
 
+# class Wishlist(models.Model):
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist')
+#     property = models.ForeignKey(Property, on_delete=models.CASCADE)
+#     added_on = models.DateTimeField(auto_now_add=True)
+

@@ -7,6 +7,9 @@ from django.urls import reverse
 from django.core.mail import send_mail
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.cache import cache_control
+from django.http import JsonResponse
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout(request):
@@ -146,6 +149,7 @@ def userpage(request):
         if location:
             properties = properties.filter(city__icontains=location) | properties.filter(state__icontains=location)
         
+        
         if category:
             properties = properties.filter(property_type__iexact=category)
         
@@ -212,7 +216,7 @@ def reset_password(request, token):
     else:
         messages.error(request, 'Invalid or expired reset token.')
         return redirect('forgotpass')
-def propertyview(request, property_id):
+def propertyview(request,id):
     # Use select_related to get the owner information in the same query
     property = get_object_or_404(Property,id=property_id)
     print(f"Owner Name: {property.owner.name}")  #  
@@ -319,11 +323,17 @@ def updateproperty(request):
 
 def ownerproperty(request):
     properties = Property.objects.all()
-    property_instance = None
-    search_property_name = request.GET.get('search_property_name')
-    if search_property_name:
-        property_instance = Property.objects.filter(property_name=search_property_name).first()
-    if request.method == 'POST' and property_instance:
+    if request.method == 'POST':
+        delete_image_id = request.POST.get('delete_image')
+        delete_property_id = request.POST.get('delete_property')
+        property_id = request.POST.get('property_id')
+        if delete_image_id:
+            property_instance = get_object_or_404(Property, id=property_id)
+            image_to_delete = PropertyImage.objects.filter(id=delete_image_id, property=property_instance).first()
+            if image_to_delete:
+                image_to_delete.delete()
+                return JsonResponse({'status': 'success'})
+        property_instance = get_object_or_404(Property, id=property_id)
         property_instance.property_name = request.POST.get('property_name')
         property_instance.description = request.POST.get('description')
         property_instance.address = request.POST.get('address')
@@ -333,16 +343,11 @@ def ownerproperty(request):
         property_instance.property_type = request.POST.get('property_type')
         property_instance.listing_type = request.POST.get('listing_type')
         property_instance.save()
-        delete_image_id = request.POST.get('delete_image')
-        if delete_image_id:
-            image_to_delete = PropertyImage.objects.filter(id=delete_image_id, property=property_instance).first()
-            if image_to_delete:
-                image_to_delete.delete()
         new_images = request.FILES.getlist('new_images')
         for image in new_images:
             PropertyImage.objects.create(property=property_instance, image=image)
-        return redirect(f"{reverse('ownerproperty')}?search_property_name={property_instance.property_name}")
-    return render(request, 'ownerproperty.html', {'properties': properties, 'property': property_instance})
+        return redirect('ownerproperty')
+    return render(request, 'ownerproperty.html', {'properties': properties})
 
 def manageproperty(request):
     properties = Property.objects.all()  # Fetch all properties
@@ -441,3 +446,62 @@ def reject_property(request, property_id):
 
     messages.success(request, f'Property "{property.property_name}" has been rejected.')
     return redirect('request')
+
+
+def add_to_wishlist(request, property_id):
+    property = get_object_or_404(Property, id=property_id, status=1, is_verified=1)  # Only allow active and verified properties
+
+    # Get the wishlist from session or initialize an empty list
+    wishlist = request.session.get('wishlist', [])
+
+    # Add the property to wishlist if not already added
+    if property_id not in wishlist:
+        wishlist.append(property_id)
+        request.session['wishlist'] = wishlist  # Save the wishlist back to session
+
+    return redirect('wishlist')  # Redirect to the 
+
+def remove_from_wishlist(request, property_id):
+    wishlist = request.session.get('wishlist', [])
+
+    if property_id in wishlist:
+        wishlist.remove(property_id)
+        request.session['wishlist'] = wishlist  # Save the updated wishlist back to session
+
+    return redirect('wishlist')
+
+def wishlist(request):
+    # Get the wishlist from session
+    wishlist = request.session.get('wishlist', [])
+
+    # Fetch the properties from the wishlist
+    properties = Property.objects.filter(id__in=wishlist, status=1, is_verified=1)  # Only show active and verified properties
+
+    return render(request, 'wishlist.html', {'properties': properties})
+
+def bookproperty(request):
+    return render(request, 'bookproperty.html')
+def bookconf(request):
+    return render(request, 'bookconf.html')
+
+def contactowner(request, property_id):
+    # Retrieve the property and pass it to the template
+    property = get_object_or_404(Property, id=property_id)
+    context = {
+        'property': property,  # Pass the property object to access its id in the template
+    }
+    return render(request, 'contactowner.html', context)
+
+
+def owner_details(request, property_id):
+    property_obj = get_object_or_404(Property, id=property_id)
+    owner = property_obj.owner
+
+    context = {
+        'property_id': property_id,
+        'owner_name': owner.name,
+        'owner_phone': owner.phone,
+        'is_phone_verified': owner.is_verified,  # Assuming 'is_verified' is a field for phone verification
+    }
+
+    return render(request, 'owner_details.html', context)

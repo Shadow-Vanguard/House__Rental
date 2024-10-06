@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Owner Details</title>   
+    <link rel="stylesheet" href="{% static 'css/details.css' %}">
+</head>
+<body>
+    <h1>Owner Details for Property ID: {{ property_id }}</h1>
+    
+    <p><strong>Owner Name:</strong> {{ owner_name }}</p>
+    <p><strong>Owner Phone Number:</strong> {{ owner_phone }}</p>
+
+    {% if is_phone_verified %}
+        <p><strong>Status:</strong> Phone Number Verified</p>
+    {% else %}
+        <p><strong>Status:</strong> Phone Number Not Verified</p>
+    {% endif %}
+    
+    <!-- You can add more details about the property here if needed -->
+</body>
+</html>
