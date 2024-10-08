@@ -1,22 +1,22 @@
 {% load static %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Owner Details</title>   
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Details</title>
     <link rel="stylesheet" href="{% static 'css/details.css' %}">
 </head>
 <body>
-    <h1>Owner Details for Property ID: {{ property_id }}</h1>
-    
-    <p><strong>Owner Name:</strong> {{ owner_name }}</p>
-    <p><strong>Owner Phone Number:</strong> {{ owner_phone }}</p>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-button">← Back</a>
+        <h1>Owner Details for Property: {{ property.property_name }}</h1>
 
-    {% if is_phone_verified %}
-        <p><strong>Status:</strong> Phone Number Verified</p>
-    {% else %}
-        <p><strong>Status:</strong> Phone Number Not Verified</p>
-    {% endif %}
-    
-    <!-- You can add more details about the property here if needed -->
+        <p><strong>Property Address:</strong> {{ property.address }}</p>
+        <p><strong>Owner Name:</strong> {{ property.owner.name }}</p>
+        <p><strong>Owner Phone Number:</strong> {{ property.owner.phone }}</p>
+        <p><strong>Owner Email:</strong> {{ property.owner.email }}</p>
+    </div>
 </body>
 </html>
+

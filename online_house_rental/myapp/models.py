@@ -43,6 +43,7 @@ class Property(models.Model):
     status = models.BooleanField(default=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     is_verified = models.BooleanField(default=False)
+    
 
     def __str__(self):
         return self.property_name
@@ -60,8 +61,19 @@ class Adminm(models.Model):
     email = models.EmailField(max_length=254, unique=True)
     password = models.CharField(max_length=128)
 
-# class Wishlist(models.Model):
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='wishlist')
-#     property = models.ForeignKey(Property, on_delete=models.CASCADE)
-#     added_on = models.DateTimeField(auto_now_add=True)
+class Wishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    added_date = models.DateTimeField(auto_now_add=True)
 
+class RentalAgreement(models.Model):
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    renter = models.ForeignKey(User, on_delete=models.CASCADE)  # The user signing the agreement
+    start_date = models.DateField()
+    end_date = models.DateField()
+    monthly_rent = models.DecimalField(max_digits=10, decimal_places=2)
+    terms = models.BooleanField()  # To confirm they agreed to terms
+    digital_signature = models.ImageField(upload_to='signatures/', blank=True, null=True)
+
+    def __str__(self):
+        return f'Rental Agreement for {self.property.property_name}'

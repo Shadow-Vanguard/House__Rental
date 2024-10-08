@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import User,Property,PropertyImage,Adminm
+from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement
 from django.contrib import messages
 import logging
 from django.utils.crypto import get_random_string
@@ -10,6 +10,7 @@ from django.views.decorators.cache import cache_control
 from django.http import JsonResponse
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
+from django.http import HttpResponse
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout(request):
@@ -27,14 +28,14 @@ def login(request):
         password = request.POST.get('password')
         admin = Adminm.objects.filter(email=email).first()
         if admin:
-            if admin.password == password:
+            if admin.password == password:  # Check password
                 request.session['admin_email'] = admin.email
                 return redirect('admin')
             else:
                 return render(request, 'login.html', {'error': 'Incorrect password for admin'})
         user = User.objects.filter(email=email).first()
         if user:
-            if user.password == password:
+            if user.password == password:  # Check password
                 request.session['user_id'] = user.id
                 request.session['name'] = user.name
                 request.session['role'] = user.role
@@ -43,7 +44,7 @@ def login(request):
                 elif user.role == 'user':
                     return redirect('userpage')
             else:
-                return render(request, 'rename_login.html', {'error': 'Incorrect password'})
+                return render(request, 'login.html', {'error': 'Incorrect password'})
         return render(request, 'login.html', {'error': 'Email does not exist'})
     return render(request, 'login.html')
 
@@ -216,20 +217,32 @@ def reset_password(request, token):
     else:
         messages.error(request, 'Invalid or expired reset token.')
         return redirect('forgotpass')
-def propertyview(request,id):
-    # Use select_related to get the owner information in the same query
-    property = get_object_or_404(Property,id=property_id)
-    print(f"Owner Name: {property.owner.name}")  #  
+
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)        
+def propertyview(request, property_id):
+    property_instance = get_object_or_404(Property, id=property_id)
+    if request.method == 'POST':
+        if 'add_to_wishlist' in request.POST:
+            user_id = request.session.get('user_id')
+            if user_id:
+                user = User.objects.get(id=user_id)
+                wishlist_item, created = Wishlist.objects.get_or_create(user=user, property=property_instance)
+
+                if created:
+                    messages.success(request, 'Property added to wishlist!')
+                else:
+                    messages.info(request, 'Property is already in your wishlist.')
+            else:
+                messages.error(request, 'You need to log in to add to your wishlist.')
+
     context = {
-        'property': property,
+        'property': property_instance,
     }
     return render(request, 'propertyview.html', context)
 
 def propertypage(request):
     properties = Property.objects.all()  # Fetch all properties
     return render(request, 'propertypage.html', {'properties': properties})
-def house(request):
-    return render(request, 'house.html')
 
 def updateprofile(request):
     if not request.session.get('user_id'):
@@ -448,60 +461,130 @@ def reject_property(request, property_id):
     return redirect('request')
 
 
-def add_to_wishlist(request, property_id):
-    property = get_object_or_404(Property, id=property_id, status=1, is_verified=1)  # Only allow active and verified properties
-
-    # Get the wishlist from session or initialize an empty list
-    wishlist = request.session.get('wishlist', [])
-
-    # Add the property to wishlist if not already added
-    if property_id not in wishlist:
-        wishlist.append(property_id)
-        request.session['wishlist'] = wishlist  # Save the wishlist back to session
-
-    return redirect('wishlist')  # Redirect to the 
-
-def remove_from_wishlist(request, property_id):
-    wishlist = request.session.get('wishlist', [])
-
-    if property_id in wishlist:
-        wishlist.remove(property_id)
-        request.session['wishlist'] = wishlist  # Save the updated wishlist back to session
-
-    return redirect('wishlist')
-
-def wishlist(request):
-    # Get the wishlist from session
-    wishlist = request.session.get('wishlist', [])
-
-    # Fetch the properties from the wishlist
-    properties = Property.objects.filter(id__in=wishlist, status=1, is_verified=1)  # Only show active and verified properties
-
-    return render(request, 'wishlist.html', {'properties': properties})
-
 def bookproperty(request):
     return render(request, 'bookproperty.html')
 def bookconf(request):
     return render(request, 'bookconf.html')
 
 def contactowner(request, property_id):
-    # Retrieve the property and pass it to the template
     property = get_object_or_404(Property, id=property_id)
-    context = {
-        'property': property,  # Pass the property object to access its id in the template
-    }
-    return render(request, 'contactowner.html', context)
+    owner = property.owner
+    messages = Message.objects.filter(property=property)
+
+    if request.method == 'POST':
+        message_text = request.POST.get('message')
+        Message.objects.create(
+            sender=request.user,
+            receiver=owner,
+            property=property,
+            message=message_text,
+        )
+
+    return render(request, 'contactowner.html', {
+        'owner': owner,
+        'messages': messages,
+        'property': property,
+    })
 
 
 def owner_details(request, property_id):
-    property_obj = get_object_or_404(Property, id=property_id)
-    owner = property_obj.owner
+    # Get the property object based on the provided property_id
+    property = get_object_or_404(Property, id=property_id)
+    
+    # Render the owner details template with the property data
+    return render(request, 'owner_details.html', {'property': property})
 
-    context = {
-        'property_id': property_id,
-        'owner_name': owner.name,
-        'owner_phone': owner.phone,
-        'is_phone_verified': owner.is_verified,  # Assuming 'is_verified' is a field for phone verification
-    }
 
-    return render(request, 'owner_details.html', context)
+def wishlist(request):
+    user_id = request.session.get('user_id')
+    if user_id:
+        user = get_object_or_404(User, id=user_id)
+        if request.method == 'POST':
+            property_id = request.POST.get('remove_property_id')
+            if property_id:
+                try:
+                    wishlist_item = Wishlist.objects.get(user=user, property_id=property_id)
+                    wishlist_item.delete()  # Remove the property from the wishlist
+                    messages.success(request, 'Property removed from your wishlist.')
+                except Wishlist.DoesNotExist:
+                    messages.error(request, 'This property is not in your wishlist.')
+        wishlist_items = Wishlist.objects.filter(user=user)
+        context = {
+            'wishlist': [item.property for item in wishlist_items],
+            'error': None
+        }
+    else:
+        messages.error(request, "You need to log in to view your wishlist.")
+        context = {
+            'wishlist': [],
+            'error': "You need to log in to view your wishlist."
+        }
+    return render(request, 'wishlist.html', context)
+
+
+
+
+def user_chat_view(request, owner_id):
+    owner = get_object_or_404(User, id=owner_id)
+    messages = Message.objects.filter(sender=request.user, receiver=owner) | Message.objects.filter(sender=owner, receiver=request.user)
+    messages = messages.order_by('timestamp')
+    
+    if request.method == 'POST':
+        message_content = request.POST.get('message')
+        if message_content:
+            # Save the new message
+            Message.objects.create(sender=request.user, receiver=owner, message=message_content)
+            return redirect('user_chat', owner_id=owner_id)
+    
+    return render(request, 'user_chat.html', {'messages': messages, 'owner': owner})
+
+
+def owner_chat_view(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+    messages = Message.objects.filter(sender=request.user, receiver=user) | Message.objects.filter(sender=user, receiver=request.user)
+    messages = messages.order_by('timestamp')
+    
+    if request.method == 'POST':
+        message_content = request.POST.get('message')
+        if message_content:
+            # Save the new message
+            Message.objects.create(sender=request.user, receiver=user, message=message_content)
+            return redirect('owner_chat', user_id=user_id)
+    
+    return render(request, 'owner_chat.html', {'messages': messages, 'user': user})
+
+
+@login_required
+def rental_agreement(request, property_id):
+    # Retrieve the property based on its ID
+    property = get_object_or_404(Property, id=property_id)
+
+    if request.method == 'POST':
+        # Retrieve data from the form submission
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        monthly_rent = request.POST.get('monthly_rent')
+        terms = request.POST.get('terms') == 'on'
+        digital_signature = request.FILES.get('digital_signature')  # For image-based signature
+
+        # Check if terms were accepted
+        if not terms:
+            return HttpResponse('You must agree to the terms and conditions.')
+
+        # Create a new RentalAgreement entry
+        rental_agreement = RentalAgreement(
+            property=property,
+            renter=request.user,  # The current logged-in user
+            start_date=start_date,
+            end_date=end_date,
+            monthly_rent=monthly_rent,
+            terms=terms,
+            digital_signature=digital_signature  # Save the uploaded signature image
+        )
+        rental_agreement.save()
+
+        return HttpResponse('Rental agreement submitted successfully!')
+
+    return render(request, 'rental_agreement.html', {
+        'property': property
+    })

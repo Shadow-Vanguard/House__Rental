@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chat with {{ owner.name }}</title>
+</head>
+<body>
+    <h1>Chat with {{ owner.name }}</h1>
+    
+    <div class="chat-box">
+        {% for msg in messages %}
+            <div class="{% if msg.sender == request.user %}sent{% else %}received{% endif %}">
+                <p>{{ msg.message }}</p>
+                <small>{{ msg.timestamp }}</small>
+            </div>
+        {% empty %}
+            <p>No messages yet.</p>
+        {% endfor %}
+    </div>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="message" rows="4" cols="50" placeholder="Type your message..."></textarea>
+        <button type="submit">Send</button>
+    </form>
+</body>
+</html>

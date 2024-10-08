@@ -1,51 +1,139 @@
-{% load static %}
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Wishlist</title>
-    <link rel="stylesheet" href="{% static 'css/wishlist.css' %}">
+  <meta charset="utf-8">
+  <title>EstateAgency Bootstrap Template</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="" name="keywords">
+  <meta content="" name="description">
+  <link href="{% static 'template_landingpage/img/favicon.png' %}" rel="icon">
+  <link href="{% static 'template_landingpage/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+  <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/animate/animate.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/ionicons/css/ionicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/css/style.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
 </head>
 <body>
 
-<div class="container">
-    <!-- Back button -->
-    <div class="back-btn-container">
-        <a href="{% url 'property_list' %}" class="back-btn">Back to Properties</a>
+  <div class="click-closed"></div>
+
+  <!--/ Nav Start /-->
+  <nav class="navbar navbar-default navbar-trans navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand text-brand" href="#">Estate<span class="color-b">Agency</span></a>
+      <div class="navbar-collapse collapse justify-content-center" id="navbarDefault">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'index' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'updateprofile' %}">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'wishlist' %}">Wishlist</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>
+        </ul>
+        {% if error %}
+        <div class="error-box">
+          {{ error }}
+        </div>
+        {% endif %}
+      </div>
     </div>
+  </nav>
+  <!--/ Nav End /-->
 
-    <h1>My Wishlist</h1>
+<!-- Wishlist Section Start -->
+<section class="wishlist-section mt-5 pt-5">
+    <div class="container"><br><br><br>
+        <h2 class="text-center mb-4">Your Wishlist</h2>
+        <div class="row">
+            {% for property in wishlist %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card">
+                    <img src="{{ property.images.first.image.url }}" class="card-img-top" alt="{{ property.property_name }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ property.property_name }}</h5>
+                        <p class="card-text">Price: ${{ property.price }}</p>
+                        <p class="card-text">Listing Type: {{ property.listing_type }}</p>
+                        <p class="card-text">{{ property.address }}, {{ property.city }}, {{ property.state }}</p>
+                        <a href="{% url 'propertyview' property.id %}" class="btn btn-primary">View Property</a>
+                        <!-- Form for removing the property -->
+                        <form method="POST" style="display:inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="remove_property_id" value="{{ property.id }}">
+                            <button type="submit" class="btn btn-danger">Remove</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center">Your wishlist is empty.</p>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<!-- Wishlist Section End -->
 
-    {% if wishlist_items %}
-    <ul class="wishlist-items">
-        {% for item in wishlist_items %}
-            <li class="wishlist-item">
-                <div class="property-image">
-                    {% if item.property.propertyimage_set.all %}
-                        <img src="{{ item.property.propertyimage_set.first.image.url }}" alt="{{ item.property.property_name }}">
-                    {% else %}
-                        <p>No image available</p>
-                    {% endif %}
-                </div>
-                <div class="property-info">
-                    <h2>{{ item.property.property_name }}</h2>
-                    <p>Location: {{ item.property.address }}, {{ item.property.city }}, {{ item.property.state }}</p>
-                    <p>{{ item.property.description }}</p>
-                    <span class="property-price">Price: Rs.{{ item.property.price }}</span>
-                </div>
-                <div class="actions">
-                    <a href="{% url 'remove_from_wishlist' item.property.id %}" class="remove-btn">Remove</a>
-                </div>
-            </li>
-        {% endfor %}
-    </ul>
-    
-    {% else %}
-        <p class="empty-message">Your wishlist is empty.</p>
-    {% endif %}
 
-</div>
+
+  <!-- JavaScript Libraries -->
+  <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/jquery/jquery-migrate.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/popper/popper.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/bootstrap/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/easing/easing.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/owlcarousel/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/scrollreveal/scrollreveal.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/contactform/contactform.js' %}"></script>
+  <script src="{% static 'template_landingpage/js/main.js' %}"></script>
+  <!-- JavaScript Libraries end -->
+
+            <!-- script -->
+            <!-- No longer needed, can be removed entirely -->
+            <!--
+            <script>
+                // Function to handle the remove button click
+                document.querySelectorAll('.remove-btn').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const propertyId = this.getAttribute('data-property-id'); // Get the property ID
+                        const row = this.closest('.col-lg-4'); // Get the closest parent row for this card
+
+                        // Send a POST request to remove the property from the wishlist
+                        fetch(/remove-from-wishlist/${propertyId}/, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}' // CSRF token for security
+                            },
+                            body: JSON.stringify({
+                                'remove': true
+                            })
+                        })
+                        .then(response => {
+                            if (response.ok) {
+                                row.remove(); // Remove the property card from the DOM
+                            } else {
+                                alert('Error removing the property from the wishlist. Please try again.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                        });
+                    });
+                });
+            </script>
+            -->
+            <!-- script end -->
+
 
 </body>
 </html>

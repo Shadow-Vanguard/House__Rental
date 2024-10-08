@@ -1,101 +1,113 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get Contact Details</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <title>Contact Owner</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-        }
-        .contact-form {
-            width: 100%;
-            max-width: 400px;
-            margin: 0 auto;
+            background-color: #f4f4f4;
+            margin: 0;
             padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background-color: #fff;
         }
-        .contact-form h2 {
-            color: #28a745;
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
-        .form-group {
-            margin-bottom: 15px;
+        .contact-owner h2 {
+            color: #333;
         }
-        .form-group label {
-            display: block;
-            font-weight: bold;
-        }
-        .form-group input {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
+        .chat-box {
             border: 1px solid #ccc;
-            border-radius: 4px;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
         }
-        .form-group .captcha-image {
-            margin-top: 5px;
-            display: inline-block;
+        .chat-history {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            padding: 10px;
+            background-color: #fff;
+            margin-bottom: 20px;
         }
-        .form-group .captcha-refresh {
-            cursor: pointer;
-            display: inline-block;
-            margin-left: 10px;
-            color: #007BFF;
-            text-decoration: underline;
+        .chat-message-sent {
+            text-align: right;
+            color: #0056b3;
+            background-color: #e9f7fd;
+            border-radius: 10px;
+            padding: 10px;
+            margin-left: 30%;
+            margin-bottom: 10px;
         }
-        .form-group input[type="checkbox"] {
+        .chat-message-received {
+            text-align: left;
+            color: #155724;
+            background-color: #d4edda;
+            border-radius: 10px;
+            padding: 10px;
+            margin-right: 30%;
+            margin-bottom: 10px;
+        }
+        form {
+            display: flex;
+        }
+        form input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             margin-right: 10px;
         }
-        .form-group .terms {
-            display: inline-block;
-            font-size: 14px;
-        }
-        .submit-btn {
-            width: 100%;
-            padding: 10px;
+        form button {
+            padding: 10px 20px;
+            border: none;
             background-color: #28a745;
             color: white;
-            border: none;
             border-radius: 5px;
-            font-size: 16px;
             cursor: pointer;
         }
-        .submit-btn:hover {
+        form button:hover {
             background-color: #218838;
         }
     </style>
 </head>
 <body>
-    <div class="contact-form">
-        <h2>Get Contact Details</h2>
-        <p>Please fill in your details to view the contact number of the property owner.</p>
-        <form method="POST" action="{% url 'owner_details' property_id=property.id %}">            
-            {% csrf_token %}
-            <div class="form-group">
-                <label for="name">Your Name *</label>
-                <input type="text" id="name" name="name" placeholder="Your Name" required>
+
+    <div class="container">
+        <div class="contact-owner">
+            <h2>Contact Owner: {{ owner.username }}</h2>
+            <p><strong>Phone Number:</strong> {{ owner.profile.phone_number }}</p> <!-- Assuming you have a profile with phone number -->
+
+            <!-- Chatbot system -->
+            <div class="chat-box">
+                <h4>Chat with {{ owner.username }}</h4>
+
+                <!-- Display the messages -->
+                <div class="chat-history">
+                    {% for message in messages %}
+                        <div class="{% if message.sender == user %}chat-message-sent{% else %}chat-message-received{% endif %}">
+                            <strong>{{ message.sender.username }}:</strong> {{ message.message }} <br>
+                            <small>{{ message.timestamp|date:"d M, Y h:i A" }}</small>
+                        </div>
+                    {% empty %}
+                        <p>No messages yet. Start the conversation!</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Message input form -->
+                <form method="POST" action="{% url 'contactowner' property_id=property.id %}">
+                    {% csrf_token %}
+                    <input type="text" name="message" placeholder="Type your message..." required>
+                    <button type="submit" class="btn btn-primary">Send</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="mobile">Your Mobile No *</label>
-                <input type="text" id="mobile" name="mobile" placeholder="+91 Your Mobile No" required>
-            </div>
-            <div class="form-group">
-                <label for="email">Your E-mail *</label>
-                <input type="email" id="email" name="email" placeholder="Your E-mail" required>
-            </div>
-            <div class="form-group">
-                <input type="checkbox" id="terms" name="terms" required>
-                <label for="terms" class="terms">
-                    By agreeing to the <a href="#">Terms and Conditions</a>, I give my consent to being contacted by your service.
-                </label>
-            </div>
-            <button type="submit" class="submit-btn">View Contact</button>
-        </form>
+        </div>
     </div>
-    
+
 </body>
 </html>

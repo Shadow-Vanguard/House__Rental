@@ -1,120 +1,172 @@
-/* Global Styles */
+/* General Styling */
 body {
-    background-color: #660d0d; /* Light grey background */
-    font-family: 'Arial', sans-serif; /* Simple, clean font */
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f7f6;
     margin: 0;
     padding: 0;
-    color: #333;
+    background-image: url('https://media.istockphoto.com/id/501777744/photo/vintage-style-tin-lantern-lamps-i.jpg?s=612x612&w=0&k=20&c=a3VR3pYkh5S_pChmf-z4YCf1u2TBQ0vHA9Zw9j2digc=');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+
 }
 
 .container {
-    max-width: 600px; /* Restrict form width */
-    margin: 50px auto; /* Center the container */
-    padding: 20px;
-    background-color: #fff; /* White background for form */
-    border-radius: 10px; /* Rounded corners */
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Light shadow */
+    width: 100%;
+    max-width: 600px;
+    margin: 50px auto;
+    background-color: #ffffff;
+    padding: 40px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
 }
 
 h1 {
-    color: #333;
+    font-size: 2.2em;
     text-align: center;
-    margin-bottom: 20px;
+    color: #333333;
+    margin-bottom: 30px;
+    font-weight: 700;
 }
 
+/* Form Group Styling */
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
 }
 
 label {
-    display: block; /* Make labels block elements */
-    font-weight: bold;
-    margin-bottom: 5px;
-    color: #555;
+    font-size: 1em;
+    font-weight: 600;
+    color: #555555;
 }
 
-input[type="text"], input[type="number"], textarea, select {
-    width: 100%; /* Full width inputs */
-    padding: 10px;
-    border: 1px solid #ccc; /* Light grey border */
-    border-radius: 5px; /* Rounded corners */
-    box-sizing: border-box;
-    font-size: 16px;
-    margin-top: 5px;
-}
-
-input[type="file"] {
-    margin-top: 10px;
+input[type="text"],
+input[type="number"],
+input[type="file"],
+textarea,
+select {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    margin-top: 8px;
+    font-size: 1em;
+    color: #333333;
 }
 
 textarea {
-    resize: vertical; /* Allow vertical resizing only */
+    resize: vertical;
+    min-height: 120px;
 }
 
-input[type="text"]:focus, input[type="number"]:focus, textarea:focus, select:focus {
-    border-color: #007bff; /* Blue border on focus */
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Blue shadow on focus */
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: #50b3a2;
+    box-shadow: 0 0 5px rgba(80, 179, 162, 0.3);
 }
 
-small {
-    display: block;
-    margin-top: 5px;
-    color: #888;
-}
-
+/* Button Styling */
 .btn {
-    display: inline-block;
-    width: 100%; /* Full width button */
-    padding: 12px;
-    background-color: #007bff; /* Blue background */
+    background-color: #50b3a2;
     color: white;
-    text-align: center;
-    font-size: 16px;
-    font-weight: bold;
-    border: none; /* Remove border */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer; /* Pointer cursor */
-    margin-top: 20px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
     transition: background-color 0.3s ease;
+    width: 100%;
 }
 
 .btn:hover {
-    background-color: #0056b3; /* Darker blue on hover */
+    background-color: #42998e;
 }
 
-/* Back Button */
+/* Back Button Styling */
 .back-btn {
     display: inline-block;
-    margin-bottom: 20px;
-    padding: 10px 20px;
-    background-color: #343a40; /* Dark background for button */
+    padding: 10px 15px;
+    background-color: #7a7a7a;
     color: white;
     text-decoration: none;
     border-radius: 5px;
-    font-size: 16px;
+    margin-bottom: 30px;
     transition: background-color 0.3s ease;
 }
 
 .back-btn:hover {
-    background-color: #23272b; /* Darker background on hover */
+    background-color: #555555;
 }
 
-/* Error Message */
+/* Error & Success Message */
 .error {
     color: red;
-    font-weight: bold;
+    font-size: 0.9em;
     margin-top: 5px;
+    font-weight: bold;
 }
 
-/* Responsive Design */
-@media (max-width: 600px) {
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 15px;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    text-align: center;
+    display: none;
+    margin-bottom: 20px;
+}
+
+/* Styling for Inputs with Errors */
+input.error,
+textarea.error,
+select.error {
+    border-color: red;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
     .container {
-        padding: 10px;
-        margin: 20px auto;
+        width: 90%;
+        padding: 20px;
     }
 
-    .back-btn {
-        width: 100%; /* Make back button full width on small screens */
-        text-align: center;
+    h1 {
+        font-size: 1.8em;
     }
 }
+
+/* Custom Dropdown */
+select {
+    appearance: none;
+    background: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='%23333' d='M2 0L0 2h4zM2 5L0 3h4z'/%3E%3C/svg%3E") no-repeat right 10px center;
+    background-size: 12px;
+    padding-right: 30px;
+}
+
+/* Style for file input */
+input[type="file"] {
+    border: none;
+    background-color: #f0f0f0;
+    padding: 12px;
+}
+
+input[type="file"]::file-selector-button {
+    background-color: #50b3a2;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 5px;
+    border: none;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: #42998e;
+}
+

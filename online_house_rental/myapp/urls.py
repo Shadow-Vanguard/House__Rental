@@ -16,7 +16,6 @@ urlpatterns = [
   path('reset_password/<str:token>/', views.reset_password, name='reset_password'),
   path('propertyview/<int:property_id>/', views.propertyview, name='propertyview'),
   path('propertypage', views.propertypage, name='propertypage'),
-  path('house', views.house, name='house'),
   path('updateprofile', views.updateprofile, name='updateprofile'),
   path('ownerupdate', views.ownerupdate, name='ownerupdate'),
   path('propertyadd', views.propertyadd, name='propertyadd'),
@@ -29,15 +28,15 @@ urlpatterns = [
   path('request', views.request, name='request'),
   path('verify_property/<int:property_id>/', views.verify_property, name='verify_property'),
   path('reject_property/<int:property_id>/', views.reject_property, name='reject_property'),
-  path('wishlist/', views.wishlist, name='wishlist'),  # View wishlist
-  path('add_to_wishlist/<int:property_id>/', views.add_to_wishlist, name='add_to_wishlist'),  # Add property to wishlist
-  path('remove_from_wishlist/<int:property_id>/', views.remove_from_wishlist, name='remove_from_wishlist'),  # Remove property from wishlist
   path('bookproperty', views.bookproperty, name='bookproperty'),
   path('bookconf', views.bookconf, name='bookconf'),
   path('contactowner/<int:property_id>/', views.contactowner, name='contactowner'), 
   path('ownerproperty', views.ownerproperty, name='ownerproperty'),
-  path('owner_details/<int:id>/', views.owner_details, name='owner_details'),
-
+  path('owner_details/<int:property_id>/', views.owner_details, name='owner_details'),
+  path('wishlist/', views.wishlist, name='wishlist'),
+  path('chat/user/<int:owner_id>/', views.user_chat_view, name='user_chat'),
+  path('chat/owner/<int:user_id>/', views.owner_chat_view, name='owner_chat'),
+  path('rental_agreement/<int:property_id>/', views. rental_agreement, name='rental_agreement'),
   
 
 
