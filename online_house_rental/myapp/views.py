@@ -355,6 +355,7 @@ def ownerproperty(request):
         property_instance.address = request.POST.get('address')
         property_instance.city = request.POST.get('city')
         property_instance.state = request.POST.get('state')
+        property_instance.beds=request.POST.get('beds')
         property_instance.price = request.POST.get('price')
         property_instance.property_type = request.POST.get('property_type')
         property_instance.listing_type = request.POST.get('listing_type')
@@ -560,30 +561,32 @@ def owner_chat_view(request, user_id):
     return render(request, 'owner_chat.html', {'messages': messages, 'user': user})
 
 
-@login_required
+
 def rental_agreement(request, property_id):
-    # Retrieve the property based on its ID
     property = get_object_or_404(Property, id=property_id)
 
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')  # Redirect to login if user is not logged in
+
+    user = get_object_or_404(User, id=user_id)
+
     if request.method == 'POST':
-        # Retrieve data from the form submission
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
-        monthly_rent = request.POST.get('monthly_rent')
         terms = request.POST.get('terms') == 'on'
-        digital_signature = request.FILES.get('digital_signature')  # For image-based signature
+        digital_signature = request.FILES.get('digital_signature')
 
-        # Check if terms were accepted
+        # Validate that terms and conditions are accepted
         if not terms:
             return HttpResponse('You must agree to the terms and conditions.')
 
         # Create a new RentalAgreement entry
         rental_agreement = RentalAgreement(
             property=property,
-            renter=request.user,  # The current logged-in user
+            renter=user,
             start_date=start_date,
             end_date=end_date,
-            monthly_rent=monthly_rent,
             terms=terms,
             digital_signature=digital_signature  # Save the uploaded signature image
         )
@@ -592,10 +595,9 @@ def rental_agreement(request, property_id):
         return HttpResponse('Rental agreement submitted successfully!')
 
     return render(request, 'rental_agreement.html', {
-        'property': property
+        'property': property  # Pass the property to the template for display
     })
-
-
+    
 def adminproview(request):
     properties = Property.objects.all()  # Fetch all properties
     return render(request, 'adminproview.html', {'properties': properties})

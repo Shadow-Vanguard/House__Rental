@@ -36,6 +36,9 @@
             margin-bottom: 15px;
             border: 1px solid #f5c6cb; /* Border color */
         }
+        .red-text {
+    color: red;
+}
     </style>
 </head>
 <body>
@@ -58,7 +61,6 @@
                 <p><strong>City:</strong> <span id="propertyCity">{{ property.city }}</span></p>
                 <p><strong>State:</strong> <span id="propertyState">{{ property.state }}</span></p>
                 <p><strong>Price:</strong> <span id="propertyPrice">${{ property.price }}</span></p>
-                <p><strong>Available Date:</strong> <span id="propertyAvailableDate">{{ property.available_date }}</span></p>
                 <p><strong>Posted Date:</strong> <span id="propertyPostedDate">{{ property.posted_date }}</span></p>
                 <p><strong>Property Type:</strong> <span id="propertyType">{{ property.property_type }}</span></p>
                 <p><strong>Owner:</strong> <span id="propertyOwner">{{ property.owner.name }}</span></p>
@@ -82,13 +84,13 @@
                         <button class="btn buy-btn">Buy Now</button>
                     {% endif %}
                     {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
-                    <a href="{% url 'rental_agreement' property.id %}"><button type="button">Rent Now</button></a>
+                    <a href="{% url 'rental_agreement' property.id %}"><button type="btn contact-btn">Rent Now</button></a>
                         <form method="post" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" name="add_to_wishlist" class="btn contact-btn">Wishlist</button>
                         </form>
                         <button class="btn contact-btn">
-                            <a href="{% url 'contactowner' property.id %}" class="contact-link">Contact Owner</a>
+                            <a href="{% url 'owner_details' property.id %}" class="contact-link">Contact Owner</a>
                         </button>
                     {% endif %}
                 </div>

@@ -206,6 +206,22 @@
                 'State must not contain spaces at the beginning or end.'
             ]);
         });
+
+    $('#beds').on('input focusout', function() {
+    const beds = parseInt($(this).val().trim());
+    let bedsErrorDiv = $(this).siblings('.error');
+    
+    // Ensure beds is a whole number and non-negative
+    if (isNaN(beds) || beds < 0 || !Number.isInteger(beds)) {
+        if (bedsErrorDiv.length === 0) {
+            bedsErrorDiv = $('<p class="error"></p>');
+            $(this).after(bedsErrorDiv);
+        }
+        bedsErrorDiv.text('Beds must be a non-negative whole number.');
+    } else {
+        bedsErrorDiv.remove(); // Remove error if valid
+    }
+});
         $('#price').on('input focusout', function() {
             const price = parseFloat($(this).val().trim());
             let priceErrorDiv = $(this).siblings('.error');
@@ -240,7 +256,7 @@
         });
     });
     </script>
-    <style> -->
+    <style> 
         .error {
             color: red;
             font-size: 0.9em;
@@ -332,6 +348,14 @@
                         <input type="text" id="state" name="state" value="{{ property.state }}" required>
                         <div class="error"></div>
                     </div>
+                    <div class="form-group">
+                        <label for="beds">Beds:</label>
+                        <input type="text" id="beds" name="beds" value="{{ property.beds }}" required>
+                        <div class="error"></div>
+                    </div>
+
+
+
                     <div class="form-group">
                         <label for="price">Price:</label>
                         <input type="number" id="price" name="price" value="{{ property.price }}" required>

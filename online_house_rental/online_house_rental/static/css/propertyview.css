@@ -107,13 +107,6 @@ body {
     background-color: #e0a800; /* Darker yellow on hover */
 }
 
-.book-btn {
-    background-color: #b5460f; /* Brown for book */
-}
-
-.book-btn:hover {
-    background-color: #d0661b; /* Darker brown on hover */
-}
 
 .contact-btn {
     background-color: #29c814; /* Green for contact */

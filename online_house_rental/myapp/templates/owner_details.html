@@ -8,14 +8,21 @@
     <link rel="stylesheet" href="{% static 'css/details.css' %}">
 </head>
 <body>
+    <a href="javascript:history.back()" class="back-button">← Back</a>
     <div class="container">
-        <a href="javascript:history.back()" class="back-button">← Back</a>
         <h1>Owner Details for Property: {{ property.property_name }}</h1>
 
         <p><strong>Property Address:</strong> {{ property.address }}</p>
         <p><strong>Owner Name:</strong> {{ property.owner.name }}</p>
-        <p><strong>Owner Phone Number:</strong> {{ property.owner.phone }}</p>
-        <p><strong>Owner Email:</strong> {{ property.owner.email }}</p>
+        <div class="icon-container">
+            <i class="fas fa-phone"></i>
+            <p><strong>Owner Phone Number:</strong> {{ property.owner.phone }}</p>
+        </div>
+
+        <div class="icon-container">
+            <i class="fas fa-envelope"></i>
+            <p><strong>Owner Email:</strong> {{ property.owner.email }}</p>
+        </div>
     </div>
 </body>
 </html>

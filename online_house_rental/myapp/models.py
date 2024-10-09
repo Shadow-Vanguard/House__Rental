@@ -78,3 +78,5 @@ class RentalAgreement(models.Model):
 
     def __str__(self):
         return f'Rental Agreement for {self.property.property_name}'
+
+        
