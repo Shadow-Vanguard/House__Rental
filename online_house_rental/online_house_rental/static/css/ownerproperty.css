@@ -28,7 +28,10 @@ body {
     width: 30px;
     height: 30px;
 }
-
+.error {
+    color: red;
+    font-size: 0.9em;
+}
 .properties-list {
     padding: 20px;
     display: flex;

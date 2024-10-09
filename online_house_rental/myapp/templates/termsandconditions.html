@@ -1,0 +1,138 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms and Conditions</title>
+    <link rel="stylesheet" href="{% static 'css/ownerproperty.css' %}">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .back-button {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #333;
+            font-size: 18px;
+            background-color: #e7e7e7;
+            padding: 10px 15px;
+            border-radius: 5px;
+        }
+
+        .back-button img {
+            margin-right: 8px;
+        }
+
+        .form-container {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 0 auto;
+            max-width: 600px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .submit-btn {
+            background-color: darkgreen;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .submit-btn:hover {
+            background-color: green;
+        }
+
+        .terms-display {
+            background: #f0f8ff;
+            border: 1px solid #007BFF;
+            border-radius: 4px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+
+        .error {
+            color: red;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <a href="{% url 'ownerproperty' %}" class="back-button">
+            <img src="{% static 'image/back_icon.png' %}" alt="Back">
+            Back
+        </a>
+    </div>
+
+    <div class="form-container">
+        <h2>Terms and Conditions</h2>
+        <form method="POST" id="termsForm">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="terms_and_conditions">Enter Terms and Conditions:</label>
+                <textarea id="terms_and_conditions" name="terms_and_conditions" rows="5" required>{{ property.terms_and_conditions }}</textarea>
+                <div class="error" id="terms-error" style="display: none;"></div>
+            </div>
+            <button type="submit" class="submit-btn">Submit</button>
+        </form>
+
+        {% if property.terms_and_conditions %}
+        <div class="terms-display">
+            <h3>Current Terms and Conditions:</h3>
+            <p>{{ property.terms_and_conditions }}</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById('termsForm').addEventListener('submit', function(event) {
+            const termsField = document.getElementById('terms_and_conditions');
+            const errorField = document.getElementById('terms-error');
+            errorField.style.display = 'none'; // Reset the error display
+
+            if (termsField.value.length > 255) {
+                event.preventDefault(); // Prevent form submission
+                errorField.textContent = 'Terms and Conditions must not exceed 255 characters.';
+                errorField.style.display = 'block'; // Show the error
+            }
+        });
+    </script>
+
+</body>
+</html>

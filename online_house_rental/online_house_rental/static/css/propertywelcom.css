@@ -1,0 +1,118 @@
+/* General body and page styling */
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5;
+    color: #333;
+}
+
+/* Header styling */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 30px;
+    background-color: #283593; /* Dark blue background */
+    border-bottom: 4px solid #1a237e; /* Slightly darker border */
+    position: relative;
+}
+
+/* Header buttons layout */
+.header-buttons {
+    display: flex;
+    justify-content: space-around;
+    flex-grow: 1;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Header link styling */
+.header-link {
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 18px;
+    padding: 12px 20px;
+    background-color: #3949ab; /* Lighter blue for buttons */
+    border-radius: 50px;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header-link:hover {
+    background-color: #303f9f; /* Hover effect */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Back button styling */
+.back-button {
+    position: absolute;
+    right: 30px;
+    top: 30px;
+    background-color: #e53935; /* Red background for back button */
+    border-radius: 50%;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.back-button img {
+    width: 24px;
+    height: 24px;
+    filter: brightness(0) invert(1); /* Makes the image white */
+}
+
+.back-button:hover {
+    background-color: #d32f2f; /* Darker red on hover */
+    transform: scale(1.1);
+}
+
+/* Quote section styling */
+.quote-section {
+    margin: 60px auto;
+    text-align: center;
+    padding: 20px;
+    max-width: 1000px;
+}
+
+.quote-section blockquote {
+    font-size: 26px;
+    color: #424242;
+    font-weight: 300;
+    background-color: #e8eaf6;
+    padding: 20px;
+    border-left: 5px solid #3f51b5; /* Blue border */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .header-buttons {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .back-button {
+        right: 20px;
+        top: 20px;
+        width: 40px;
+        height: 40px;
+    }
+
+    .back-button img {
+        width: 20px;
+        height: 20px;
+    }
+
+    .quote-section blockquote {
+        font-size: 22px;
+        padding: 15px;
+    }
+}

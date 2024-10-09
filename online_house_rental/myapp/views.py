@@ -333,7 +333,6 @@ def updateproperty(request):
         return redirect(f"{reverse('owner')}?search_property_name={property_instance.property_name}")
     return render(request, 'updateproperty.html', {'property': property_instance})
 
-
 def ownerproperty(request):
     properties = Property.objects.all()
     if request.method == 'POST':
@@ -346,6 +345,10 @@ def ownerproperty(request):
             if image_to_delete:
                 image_to_delete.delete()
                 return JsonResponse({'status': 'success'})
+        if delete_property_id:
+            property_instance = get_object_or_404(Property, id=delete_property_id)
+            property_instance.delete()
+            return redirect('ownerproperty')
         property_instance = get_object_or_404(Property, id=property_id)
         property_instance.property_name = request.POST.get('property_name')
         property_instance.description = request.POST.get('description')
@@ -355,6 +358,9 @@ def ownerproperty(request):
         property_instance.price = request.POST.get('price')
         property_instance.property_type = request.POST.get('property_type')
         property_instance.listing_type = request.POST.get('listing_type')
+        monthly_rent = request.POST.get('monthly_rent')
+        if monthly_rent:  # Check if the monthly rent was provided
+            property_instance.monthly_rent = int(monthly_rent)  
         property_instance.save()
         new_images = request.FILES.getlist('new_images')
         for image in new_images:
@@ -588,3 +594,24 @@ def rental_agreement(request, property_id):
     return render(request, 'rental_agreement.html', {
         'property': property
     })
+
+
+def adminproview(request):
+    properties = Property.objects.all()  # Fetch all properties
+    return render(request, 'adminproview.html', {'properties': properties})
+
+def propertywelcom(request):
+    return render(request,'propertywelcom.html')
+
+
+def termsandconditions(request, property_id):
+    property_instance = get_object_or_404(Property, id=property_id)
+    if request.method == 'POST':
+        terms_and_conditions = request.POST.get('terms_and_conditions')
+        if len(terms_and_conditions) > 255:
+            pass
+        else:
+            property_instance.terms_and_conditions = terms_and_conditions
+            property_instance.save()
+            return redirect('termsandconditions', property_id=property_id)
+    return render(request, 'termsandconditions.html', {'property': property_instance})

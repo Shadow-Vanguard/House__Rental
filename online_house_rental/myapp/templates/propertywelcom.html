@@ -1,0 +1,29 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Properties</title>
+    <link rel="stylesheet" href="{% static 'css/propertywelcom.css' %}">
+</head>
+<body>
+    <div class="header">
+        <div class="header-buttons">
+            <a href="{% url 'adminproview' %}" class="header-link">Property Added</a>
+            <a href="#" class="header-link">Bought Property</a>
+            <a href="#" class="header-link">Rented Property</a>
+        </div>
+        <a href="{% url 'admin' %}" class="back-button">
+            <img src="{% static 'image/back_icon.png' %}" alt="Back">
+        </a>
+
+    </div>
+
+    <div class="quote-section">
+        <blockquote>"Managing properties is about handling people, not just real estate."</blockquote>
+    </div>
+
+    <!-- Content goes here -->
+</body>
+</html>

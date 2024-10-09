@@ -7,6 +7,23 @@
     <title>Properties</title>
     <link rel="stylesheet" href="{% static 'css/ownerproperty.css' %}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Include jQuery -->
+    <style>
+        
+        .terms-btn {
+            background-color: darkred; /* Dark red background */
+            color: white; /* White text color */
+            padding: 10px 15px; /* Add some padding */
+            text-decoration: none; /* Remove underline from link */
+            border-radius: 5px; /* Rounded corners */
+            transition: background-color 0.3s ease; /* Smooth transition for background color */
+        }
+
+        .terms-btn:hover {
+            background-color: blue; /* Change to blue on hover */
+        }
+
+    </style>
+
     <script>
         function toggleForm(propertyId) {
             var form = document.getElementById('update-form-' + propertyId);
@@ -59,147 +76,171 @@
             }
         }
 
-        function validateForm(event) {
-            event.preventDefault(); // Prevent form submission
+    function validateField(field, regex, errorMessages) {
+        const value = $(field).val().trim();
+        let errorDiv = $(field).siblings('.error'); // Get the error message div
+        errorDiv.remove(); // Clear previous error messages
+        let errorText = '';
 
-            let isValid = true;
-            const newImages = $('#new_images')[0].files;
+        if (!regex.test(value)) {
+            errorText = errorMessages[0];
+        } else if (value.length < 5) {
+            errorText = errorMessages[1];
+        }
 
-            // Validations
-            isValid &= validateField('#property_name', /^[A-Z][a-zA-Z]{4,}$/, [
+        if (errorText) {
+            if (errorDiv.length === 0) { // Create error div if it doesn't exist
+                errorDiv = $('<p class="error"></p>');
+                $(field).after(errorDiv);
+            }
+            errorDiv.text(errorText); // Set the error message
+            return false;
+        } else {
+            errorDiv.remove(); // Remove error if valid
+            return true;
+        }
+    }
+
+    function validateForm(event) {
+        event.preventDefault(); // Prevent form submission
+
+        let isValid = true;
+        const newImages = $('#new_images')[0].files;
+
+        // Validations
+        $('#property_name').on('input focusout', function() {
+    validateField(this, /^[A-Za-z\s]{5,}$/, [
+        'Property name must contain only letters and spaces.',
+        'Property name must be at least 5 characters long.'
+    ]);
+});
+
+
+
+        isValid &= validateField('#description', /^.{5,}$/, [
+            'Description must be at least 5 characters long.'
+        ]);
+        isValid &= validateField('#address', /^.*$/, [
+            'Address cannot be empty.',
+            'Address must not contain special characters.',
+            'Address must be at least 5 characters long.'
+        ]);
+        isValid &= validateField('#city', /^[a-zA-Z\s]{4,}$/, [
+            'City must not contain special characters.',
+            'City must be at least 5 characters long.',
+            'City must not contain spaces at the beginning or end.'
+        ]);
+        isValid &= validateField('#state', /^[a-zA-Z\s]{4,}$/, [
+            'State must not contain special characters.',
+            'State must be at least 5 characters long.',
+            'State must not contain spaces at the beginning or end.'
+        ]);
+
+        // Price validation
+        const price = parseFloat($('#price').val().trim());
+        let priceErrorDiv = $('#price').siblings('.error');
+        if (isNaN(price) || price < 0) {
+            if (priceErrorDiv.length === 0) {
+                priceErrorDiv = $('<p class="error"></p>');
+                $('#price').after(priceErrorDiv);
+            }
+            priceErrorDiv.text('Price must be a non-negative number.');
+            isValid = false;
+        } else {
+            priceErrorDiv.remove(); // Remove error if valid
+        }
+
+        // Image validation
+        if (newImages.length > 0) {
+            for (let i = 0; i < newImages.length; i++) {
+                const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
+                if (fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
+                    if ($('#new_images').siblings('.error').length === 0) {
+                        $('<p class="error"></p>').insertAfter('#new_images').text('Only JPG and JPEG image files are allowed.');
+                    }
+                    isValid = false;
+                    break;
+                } else {
+                    $('#new_images').siblings('.error').remove(); // Remove error if valid
+                }
+            }
+        }
+
+        if (isValid) {
+            // If valid, submit the form
+            event.target.submit();
+        }
+    }
+
+    $(document).ready(function() {
+        // Add event listeners for live validation
+        $('#property_name').on('input focusout', function() {
+            validateField(this, /^[A-Z][a-zA-Z]{4,}$/, [
                 'Property name must start with a capital letter.',
-                'Property name must be at least 5 characters long.',
-                'Property name must not contain spaces.'
+                'Property name must be at least 5 characters long.'
             ]);
-            isValid &= validateField('#description', /^\S{5,}$/, [
-                'Description must be at least 5 characters long.',
-                'Description must not contain spaces.',
-                'Description can contain letters and numbers only.'
+        });
+        $('#description').on('input focusout', function() {
+            validateField(this, /^.{5,}$/, [
+                'Description must be at least 5 characters long.'
             ]);
-            isValid &= validateField('#address', /^.*$/, [
+        });
+        $('#address').on('input focusout', function() {
+            validateField(this, /^.*$/, [
                 'Address cannot be empty.',
                 'Address must not contain special characters.',
                 'Address must be at least 5 characters long.'
             ]);
-            isValid &= validateField('#city', /^[a-zA-Z\s]{4,}$/, [
+        });
+        $('#city').on('input focusout', function() {
+            validateField(this, /^[a-zA-Z\s]{4,}$/, [
                 'City must not contain special characters.',
                 'City must be at least 5 characters long.',
                 'City must not contain spaces at the beginning or end.'
             ]);
-            isValid &= validateField('#state', /^[a-zA-Z\s]{4,}$/, [
+        });
+        $('#state').on('input focusout', function() {
+            validateField(this, /^[a-zA-Z\s]{4,}$/, [
                 'State must not contain special characters.',
                 'State must be at least 5 characters long.',
                 'State must not contain spaces at the beginning or end.'
             ]);
-
-            // Price validation
-            const price = parseFloat($('#price').val().trim());
-            let priceErrorDiv = $('#price').siblings('.error');
+        });
+        $('#price').on('input focusout', function() {
+            const price = parseFloat($(this).val().trim());
+            let priceErrorDiv = $(this).siblings('.error');
             if (isNaN(price) || price < 0) {
                 if (priceErrorDiv.length === 0) {
                     priceErrorDiv = $('<p class="error"></p>');
-                    $('#price').after(priceErrorDiv);
+                    $(this).after(priceErrorDiv);
                 }
                 priceErrorDiv.text('Price must be a non-negative number.');
-                isValid = false;
             } else {
                 priceErrorDiv.remove(); // Remove error if valid
             }
-
-            // Image validation
-            if (newImages.length > 0) {
-                for (let i = 0; i < newImages.length; i++) {
-                    const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
-                    if (fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
-                        if ($('#new_images').siblings('.error').length === 0) {
-                            $('<p class="error"></p>').insertAfter('#new_images').text('Only JPG and JPEG image files are allowed.');
-                        }
-                        isValid = false;
-                        break;
-                    } else {
-                        $('#new_images').siblings('.error').remove(); // Remove error if valid
-                    }
-                }
-            }
-
-            if (isValid) {
-                // If valid, submit the form
-                event.target.submit();
-            }
-        }
-
-        $(document).ready(function() {
-            // Add event listeners for live validation
-            $('#property_name').on('input focusout', function() {
-                validateField(this, /^[A-Z][a-zA-Z]{4,}$/, [
-                    'Property name must start with a capital letter.',
-                    'Property name must be at least 5 characters long.',
-                    'Property name must not contain spaces.'
-                ]);
-            });
-            $('#description').on('input focusout', function() {
-                validateField(this, /^\S{5,}$/, [
-                    'Description must be at least 5 characters long.',
-                    'Description must not contain spaces.',
-                    'Description can contain letters and numbers only.'
-                ]);
-            });
-            $('#address').on('input focusout', function() {
-                validateField(this, /^.*$/, [
-                    'Address cannot be empty.',
-                    'Address must not contain special characters.',
-                    'Address must be at least 5 characters long.'
-                ]);
-            });
-            $('#city').on('input focusout', function() {
-                validateField(this, /^[a-zA-Z\s]{4,}$/, [
-                    'City must not contain special characters.',
-                    'City must be at least 5 characters long.',
-                    'City must not contain spaces at the beginning or end.'
-                ]);
-            });
-            $('#state').on('input focusout', function() {
-                validateField(this, /^[a-zA-Z\s]{4,}$/, [
-                    'State must not contain special characters.',
-                    'State must be at least 5 characters long.',
-                    'State must not contain spaces at the beginning or end.'
-                ]);
-            });
-            $('#price').on('input focusout', function() {
-                const price = parseFloat($(this).val().trim());
-                let priceErrorDiv = $(this).siblings('.error');
-                if (isNaN(price) || price < 0) {
-                    if (priceErrorDiv.length === 0) {
-                        priceErrorDiv = $('<p class="error"></p>');
-                        $(this).after(priceErrorDiv);
-                    }
-                    priceErrorDiv.text('Price must be a non-negative number.');
-                } else {
-                    priceErrorDiv.remove(); // Remove error if valid
-                }
-            });
-
-            $('#new_images').on('change', function() {
-                const newImages = this.files;
-                let errorDiv = $(this).siblings('.error');
-                if (errorDiv.length === 0) {
-                    errorDiv = $('<p class="error"></p>');
-                    $(this).after(errorDiv);
-                }
-                errorDiv.text(''); // Clear previous error
-                for (let i = 0; i < newImages.length; i++) {
-                    const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
-                    if (fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
-                        errorDiv.text('Only JPG and JPEG image files are allowed.');
-                        break;
-                    } else {
-                        errorDiv.remove(); // Remove error if valid
-                    }
-                }
-            });
         });
+
+        $('#new_images').on('change', function() {
+            const newImages = this.files;
+            let errorDiv = $(this).siblings('.error');
+            if (errorDiv.length === 0) {
+                errorDiv = $('<p class="error"></p>');
+                $(this).after(errorDiv);
+            }
+            errorDiv.text(''); // Clear previous error
+            for (let i = 0; i < newImages.length; i++) {
+                const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
+                if (fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
+                    errorDiv.text('Only JPG and JPEG image files are allowed.');
+                    break;
+                } else {
+                    errorDiv.remove(); // Remove error if valid
+                }
+            }
+        });
+    });
     </script>
-    <style>
+    <style> -->
         .error {
             color: red;
             font-size: 0.9em;
@@ -220,11 +261,17 @@
             <h2>{{ property.property_name }}</h2>
             <p>{{ property.description|truncatewords:20 }}</p>
             <button type="button" onclick="toggleForm({{ property.id }})">Update</button>
+            
+            <!-- Terms and Conditions Button -->
+            <a href="{% url 'termsandconditions' property.id %}" class="terms-btn">Terms and Conditions</a>
+
             <form method="POST" action="{% url 'ownerproperty' %}" style="display:inline;">
                 {% csrf_token %}
                 <input type="hidden" name="delete_property" value="{{ property.id }}">
                 <button type="submit" class="submit-btn delete-btn">Delete</button>
             </form>
+
+
             <p>Status:
                 {% if property.is_verified %}
                     <span class="verified">Verified</span>
@@ -249,6 +296,14 @@
                             <option value="House" {% if property.property_type == 'House' %}selected{% endif %}>House</option>
                         </select>
                     </div>
+
+                     <!-- Monthly Rent Textbox -->
+                     <div class="form-group monthly-rent-group" id="monthly-rent-group-{{ property.id }}" style="display: {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}block{% else %}none{% endif %};">
+                        <label for="monthly_rent">Monthly Rent:</label>
+                        <input type="number" id="monthly_rent_{{ property.id }}" name="monthly_rent" placeholder="Enter monthly rent" value="{{ property.monthly_rent }}">
+                        <div class="error" id="monthly-rent-error-{{ property.id }}"></div>
+                    </div>
+
                     <div class="form-group">
                         <label for="listing_type">Listing Type:</label>
                         <select id="listing_type" name="listing_type" required>

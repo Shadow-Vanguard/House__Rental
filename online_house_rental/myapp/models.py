@@ -42,6 +42,8 @@ class Property(models.Model):
     posted_date = models.DateTimeField(default=timezone.now, null=False)
     status = models.BooleanField(default=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    monthly_rent = models.IntegerField(null=True, blank=True)
+    terms_and_conditions = models.CharField(max_length=255, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     
 
@@ -71,7 +73,6 @@ class RentalAgreement(models.Model):
     renter = models.ForeignKey(User, on_delete=models.CASCADE)  # The user signing the agreement
     start_date = models.DateField()
     end_date = models.DateField()
-    monthly_rent = models.DecimalField(max_digits=10, decimal_places=2)
     terms = models.BooleanField()  # To confirm they agreed to terms
     digital_signature = models.ImageField(upload_to='signatures/', blank=True, null=True)
 

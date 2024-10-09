@@ -37,6 +37,9 @@ urlpatterns = [
   path('chat/user/<int:owner_id>/', views.user_chat_view, name='user_chat'),
   path('chat/owner/<int:user_id>/', views.owner_chat_view, name='owner_chat'),
   path('rental_agreement/<int:property_id>/', views. rental_agreement, name='rental_agreement'),
+  path('adminproview', views.adminproview, name='adminproview'),
+  path('propertywelcom', views.propertywelcom, name='propertywelcom'),
+  path('terms/<int:property_id>/', views.termsandconditions, name='termsandconditions'),
   
 
 
