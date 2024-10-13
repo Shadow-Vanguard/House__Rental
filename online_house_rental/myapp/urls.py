@@ -40,7 +40,9 @@ urlpatterns = [
   path('adminproview', views.adminproview, name='adminproview'),
   path('propertywelcom', views.propertywelcom, name='propertywelcom'),
   path('terms/<int:property_id>/', views.termsandconditions, name='termsandconditions'),
-  
+  path('ownerview/', views.ownerview, name='ownerview'),  
+  path('accept-decline-agreement/<int:agreement_id>/', views.accept_decline_agreement, name='accept_decline_agreement'),
+  path('rented-properties/', views.rented_properties_view, name='rented_properties'),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

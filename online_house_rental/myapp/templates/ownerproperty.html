@@ -283,8 +283,15 @@
 
             <form method="POST" action="{% url 'ownerproperty' %}" style="display:inline;">
                 {% csrf_token %}
-                <input type="hidden" name="delete_property" value="{{ property.id }}">
-                <button type="submit" class="submit-btn delete-btn">Delete</button>
+                {% if property.status %}
+                    <!-- Deactivate Property -->
+                    <input type="hidden" name="deactivate_property" value="{{ property.id }}">
+                    <button type="submit" class="submit-btn deactivate-btn">Deactivate</button>
+                {% else %}
+                    <!-- Activate Property -->
+                    <input type="hidden" name="activate_property" value="{{ property.id }}">
+                    <button type="submit" class="submit-btn activate-btn">Activate</button>
+                {% endif %}
             </form>
 
 

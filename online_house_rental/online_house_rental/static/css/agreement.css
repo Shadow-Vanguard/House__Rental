@@ -1,0 +1,141 @@
+/* General Body Styling */
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #e9ecef; /* Light gray background for a smooth look */
+    padding: 20px;
+}
+
+/* Container Styling */
+.container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Header Styling */
+h4 {
+    text-align: center;
+    color: #343a40;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+/* Label Styling */
+label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #495057; /* Darker shade for better readability */
+}
+
+/* Input & Textarea Styling */
+input[type="text"],
+input[type="date"],
+input[type="file"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #ced4da;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease; /* Smooth transition */
+}
+
+input[type="text"]:focus,
+input[type="date"]:focus,
+input[type="file"]:focus {
+    border-color: #28a745; /* Highlight border on focus */
+    outline: none;
+}
+
+/* Button Styling */
+button {
+    width: 100%;
+    padding: 12px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+button:hover {
+    background-color: #218838; /* Darker green on hover */
+}
+
+/* Terms and Conditions Styling */
+.terms-container {
+    display: flex;
+    justify-content: space-between; /* Aligns checkbox to the right */
+    align-items: center; /* Vertically centers the checkbox */
+    margin-bottom: 20px; /* Spacing below the terms */
+}
+
+.terms-label {
+    margin-bottom: 0; /* No extra margin for label */
+}
+
+input[type="checkbox"] {
+    transform: scale(1.3); /* Increase checkbox size for better visibility */
+    cursor: pointer; /* Pointer cursor on hover */
+}
+
+/* Modal Styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.7); /* Darker overlay */
+}
+
+.modal-content {
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    border-radius: 10px;
+    width: 80%;
+}
+
+/* Close Button Styling */
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem;
+    }
+
+    h4 {
+        font-size: 1.3rem;
+    }
+
+    button {
+        padding: 10px;
+        font-size: 1rem;
+    }
+}

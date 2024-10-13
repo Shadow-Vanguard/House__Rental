@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="{% static 'css/propertyview.css' %}">
     <style>
         .contact-btn {
-            background-color: #b71791; /* Button color */
+            background-color: #0eaac5; /* Button color */
             border: none; /* Remove border */
             border-radius: 5px; /* Rounded corners */
             color: white; /* Text color */
@@ -84,7 +84,10 @@
                         <button class="btn buy-btn">Buy Now</button>
                     {% endif %}
                     {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
-                    <a href="{% url 'rental_agreement' property.id %}"><button type="btn contact-btn">Rent Now</button></a>
+                    <!-- <a href="{% url 'rental_agreement' property.id %}"><button type="btn contact-btn">Rent Now</button></a> -->
+                    <button class="btn contact-btn">
+                        <a href="{% url 'rental_agreement' property.id %}" class="contact-link">Rent Now</a>
+                    </button>
                         <form method="post" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" name="add_to_wishlist" class="btn contact-btn">Wishlist</button>

@@ -75,6 +75,10 @@ class RentalAgreement(models.Model):
     end_date = models.DateField()
     terms = models.BooleanField()  # To confirm they agreed to terms
     digital_signature = models.ImageField(upload_to='signatures/', blank=True, null=True)
+    owner_digital_signature = models.ImageField(upload_to='signatures/', blank=True, null=True)  # Owner's signature
+    status = models.BooleanField(null=True, default=None)
+
+  
 
     def __str__(self):
         return f'Rental Agreement for {self.property.property_name}'

@@ -1,0 +1,40 @@
+<!-- templates/admin/rented_properties.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rented Properties</title>
+    <link rel="stylesheet" href="{% static 'css/rentad.css' %}"> <!-- Link to your CSS file -->
+</head>
+<body>
+    <h1>Rented Properties</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Property Name</th>
+                <th>Owner Name</th>
+                <th>Renter Name</th>
+                <th>Address</th>
+                <th>Rented Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rental in rented_properties %}
+                <tr>
+                    <td>{{ rental.property.property_name }}</td>
+                    <td>{{ rental.property.owner.name }}</td>
+                    <td>{{ rental.renter.name }}</td>
+                    <td>{{ rental.property.address }}</td>
+                    <td>{{ rental.start_date }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No rented properties found.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

@@ -1,0 +1,75 @@
+/* styles.css */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0 auto;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+thead {
+    background-color: #4CAF50; /* Green color */
+    color: white;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2; /* Light gray for even rows */
+}
+
+tr:hover {
+    background-color: #ddd; /* Darker gray for row hover */
+}
+
+td {
+    color: #555; /* Text color */
+}
+
+@media (max-width: 768px) {
+    table, thead, tbody, th, td, tr {
+        display: block;
+    }
+
+    th {
+        position: absolute;
+        left: -9999px; /* Hide the heading */
+    }
+
+    tr {
+        margin-bottom: 10px; /* Spacing between rows */
+    }
+
+    td {
+        text-align: right; /* Right align text for mobile */
+        position: relative;
+        padding-left: 50%; /* Add space for labels */
+    }
+
+    td::before {
+        content: attr(data-label); /* Show the heading for each cell */
+        position: absolute;
+        left: 10px; /* Position it on the left */
+        width: 45%; /* Width of the label */
+        padding-left: 10px; /* Padding for the label */
+        text-align: left; /* Align label to the left */
+        font-weight: bold; /* Make label bold */
+        color: #333; /* Color of the label */
+    }
+}

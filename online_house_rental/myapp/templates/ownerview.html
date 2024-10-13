@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        h2, h3 {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .agreement-form {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .agreement-form h4 {
+            margin-bottom: 10px;
+        }
+        .agreement-form label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        .agreement-form input, .agreement-form textarea {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .agreement-form img {
+            margin-top: 10px;
+            max-width: 150px;
+            height: auto;
+        }
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .actions button {
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .actions button.accept {
+            background-color: #4CAF50; /* Green for accept */
+        }
+        .actions button.decline {
+            background-color: #f44336; /* Red for decline */
+        }
+        .actions button:hover {
+            opacity: 0.9;
+        }
+        .status {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .container {
+            max-width: 80%;
+            margin: auto;
+            padding: 20px;
+        }
+        p {
+            text-align: center;
+            color: #b32d2d;
+        } 
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Welcome, {{ owner_name }}</h2>
+
+        <h3>Your Rental Agreements</h3>
+
+        {% if rental_agreements %}
+        {% for rental_agreement in rental_agreements %}
+        <div class="agreement-form">
+            <h4>Review Rental Agreement for {{ rental_agreement.property.property_name }}</h4>
+    
+            <!-- Existing fields for the rental agreement -->
+            <label>Renter Name:</label>
+            <input type="text" value="{{ rental_agreement.renter.name }}" readonly>
+    
+            <label>Start Date:</label>
+            <input type="text" value="{{ rental_agreement.start_date }}" readonly>
+    
+            <label>End Date:</label>
+            <input type="text" value="{{ rental_agreement.end_date }}" readonly>
+    
+            <label>Terms Accepted:</label>
+            <textarea readonly>{{ rental_agreement.terms }}</textarea>
+    
+            <label>Renter's Digital Signature:</label>
+            {% if rental_agreement.digital_signature %}
+                <img src="{{ rental_agreement.digital_signature.url }}" alt="Renter's Digital Signature">
+            {% else %}
+                <p>No signature provided</p>
+            {% endif %}
+    
+            <!-- New field for Owner's Digital Signature -->
+            <label>Owner's Digital Signature:</label>
+            {% if rental_agreement.owner_digital_signature %}
+                <img src="{{ rental_agreement.owner_digital_signature.url }}" alt="Owner's Digital Signature">
+            {% else %}
+                <p>No signature provided by the owner</p>
+            {% endif %}
+    
+            <label>Status:</label>
+            <p class="status">
+                {% if rental_agreement.status == 1 %}
+                Accepted
+                {% elif rental_agreement.status == 0 %}
+                Declined
+                {% else %}
+                Pending
+                {% endif %}
+            </p>
+    
+            {% if rental_agreement.status is None %}
+                <!-- Display Accept and Decline buttons only if status is pending (None) -->
+                <div class="actions">
+                    <form method="post" enctype="multipart/form-data" action="{% url 'accept_decline_agreement' rental_agreement.id %}">
+                        {% csrf_token %}
+                        
+                        <!-- Image Upload Field for Owner's Signature -->
+                        <label for="owner_digital_signature">Upload Your Digital Signature (Only for Accept):</label>
+                        <input type="file" id="owner_digital_signature" name="owner_digital_signature" accept="image/*">
+                        
+                        <button type="submit" name="action" value="accept" class="accept">Accept</button>
+                        <button type="submit" name="action" value="decline" class="decline">Decline</button>
+                    </form>
+                </div>
+            {% elif rental_agreement.status == 1 %}
+                <!-- If accepted, show the decline button -->
+                <div class="actions">
+                    <form method="post" action="{% url 'accept_decline_agreement' rental_agreement.id %}">
+                        {% csrf_token %}
+                        <button type="submit" name="action" value="decline" class="decline">Decline</button>
+                    </form>
+                </div>
+            {% elif rental_agreement.status == 0 %}
+                <!-- If declined, show the accept button -->
+                <div class="actions">
+                    <form method="post" action="{% url 'accept_decline_agreement' rental_agreement.id %}">
+                        {% csrf_token %}
+                        <button type="submit" name="action" value="accept" class="accept">Accept</button>
+                    </form>
+                </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% else %}
+            <p>No rental agreements found.</p>
+        {% endif %}
+    </div>
+
+</body>
+</html>
