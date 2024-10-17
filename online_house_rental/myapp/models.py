@@ -14,7 +14,8 @@ class User(models.Model):
     password = models.CharField(max_length=128)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     reset_token = models.CharField(max_length=50, blank=True, null=True)
-    status = models.BooleanField(default=True)  # Boolean field, defaulting to True (e.g., for active users)
+    status = models.BooleanField(default=True)
+
 
 
 
@@ -43,7 +44,7 @@ class Property(models.Model):
     status = models.BooleanField(default=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     monthly_rent = models.IntegerField(null=True, blank=True)
-    terms_and_conditions = models.CharField(max_length=255, null=True, blank=True)
+    terms_and_conditions = models.CharField(max_length=300, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     
 
@@ -57,7 +58,6 @@ class PropertyImage(models.Model):
 
     def str(self):
         return f"Image for {self.property.property_name}"
-
 
 class Adminm(models.Model):
     email = models.EmailField(max_length=254, unique=True)
@@ -77,6 +77,8 @@ class RentalAgreement(models.Model):
     digital_signature = models.ImageField(upload_to='signatures/', blank=True, null=True)
     owner_digital_signature = models.ImageField(upload_to='signatures/', blank=True, null=True)  # Owner's signature
     status = models.BooleanField(null=True, default=None)
+    notification_date = models.DateTimeField(blank=True, null=True)  # Field to track notification timestamp
+
 
   
 

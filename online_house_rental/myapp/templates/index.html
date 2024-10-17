@@ -47,6 +47,10 @@
           <li class="nav-item">
             <a class="nav-link" href="{%url 'login'%}">Login</a>
           </li>
+          <li class="nav-item">
+            <!-- Button to redirect to registration page with usertype query string -->
+            <a class="nav-link" href="{% url 'enter_email' %}?role=owner">Property Owner</a>
+          </li>
         </ul>
         {% if error %}
         <div class="error-box">

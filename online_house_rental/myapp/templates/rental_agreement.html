@@ -1,4 +1,3 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,111 +5,106 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rental Agreement</title>
-    <!-- <link rel="stylesheet" href="{% static 'css/agreement.css' %}"> -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         /* Basic CSS for styling the form */
+        /* Global Style */
 body {
-    font-family: 'Arial', sans-serif;
+    font-family: 'Georgia', serif;
     background-color: #f4f4f4;
     padding: 20px;
+    color: #333;
+    line-height: 1.6;
 }
 
 .container {
-    max-width: 600px;
+    max-width: 800px;
     margin: auto;
+    background-color: #fff;
     padding: 2rem;
-    background-color: #ffffff;
     border: 1px solid #ccc;
     border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+/* Header Styles */
 h3 {
     text-align: center;
-    color: #333;
-    margin-bottom: 20px;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    font-weight: bold;
+    color: #2c3e50;
+    text-transform: uppercase;
+    letter-spacing: 2px;
 }
 
-h4 {
-    text-align: center;
-    color: #555;
-    margin-bottom: 20px;
-}
-
+/* Label and Input Styling */
 label {
     display: block;
     font-weight: bold;
-    margin-bottom: 5px;
-    color: #555;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+    color: #2c3e50;
 }
 
-input,
-textarea {
+input, textarea {
     width: 100%;
     padding: 12px;
-    margin-bottom: 15px;
-    border: 1px solid #ccc;
+    margin-bottom: 1rem;
+    border: 1px solid #bdc3c7;
     border-radius: 5px;
     font-size: 1rem;
-    transition: border-color 0.3s ease;
+    font-family: 'Arial', sans-serif;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
 }
 
-input:focus,
-textarea:focus {
-    border-color: #4CAF50; /* Highlight border on focus */
+input:focus, textarea:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
 }
 
+/* Button Styling */
 button {
     width: 100%;
     padding: 12px;
-    background-color: #4CAF50;
+    background-color: #2980b9;
     color: white;
     border: none;
     border-radius: 5px;
     font-size: 1.1rem;
+    font-weight: bold;
+    text-transform: uppercase;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
 button:hover {
-    background-color: #45a049; /* Darker green on hover */
-}
-/* Back Button Styling */
-.back-btn {
-    display: inline-block;
-    padding: 10px 15px;
-    background-color: #095578;
-    color: white;
-    text-decoration: none;
-    border-radius: 5px;
-    margin-bottom: 30px;
-    transition: background-color 0.3s ease;
+    background-color: #1a6391;
 }
 
-.back-btn:hover {
-    background-color: #87a113;
+/* Paragraphs and Additional Information */
+p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
 }
 
-/* Terms and Conditions Styling */
-.terms-container {
-    display: flex;
-    justify-content: space-between; /* Aligns checkbox to the right */
-    align-items: center; /* Vertically centers the checkbox */
-    margin-bottom: 20px; /* Spacing below the terms */
+strong {
+    color: #2c3e50;
 }
 
 .terms-label {
-    margin-bottom: 0; /* No extra margin for label */
-    color: #555;
+    font-weight: bold;
+    font-size: 1rem;
 }
 
-input[type="checkbox"] {
-    transform: scale(1.5); /* Increase checkbox size for better visibility */
-    cursor: pointer; /* Pointer cursor on hover */
+.terms-link {
+    color: #2980b9;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
-/* Modal styling */
+/* Modal Styling */
 .modal {
     display: none;
     position: fixed;
@@ -120,90 +114,119 @@ input[type="checkbox"] {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
-    background-color: #fff;
-    margin: 15% auto;
-    padding: 20px;
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 2rem;
     border: 1px solid #888;
-    width: 80%;
+    width: 60%;
     border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .close {
     color: #aaa;
     float: right;
-    font-size: 28px;
+    font-size: 1.8rem;
     font-weight: bold;
 }
 
-.close:hover,
-.close:focus {
-    color: black;
+.close:hover, .close:focus {
+    color: #333;
     text-decoration: none;
     cursor: pointer;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 768px) {
-    .container {
-        padding: 1.5rem;
-    }
+/* Signature and File Input Styling */
+input[type="file"] {
+    padding: 10px;
+    font-size: 0.9rem;
+    background-color: #ecf0f1;
+    border: none;
+    border-radius: 5px;
+}
 
-    h4, h3 {
-        font-size: 1.2rem;
-    }
+input[type="file"]:hover {
+    background-color: #bdc3c7;
+}
 
-    button {
-        padding: 10px;
-        font-size: 1rem;
+/* Error Message Styling */
+.error-message {
+    color: #e74c3c;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+}
+
+/* Terms Section Styling */
+.terms-label, .terms-link {
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+    color: #2980b9;
+}
+
+.terms-link:hover {
+    text-decoration: none;
+}
+
+/* Footer Agreement Signature Instruction */
+small {
+    color: #7f8c8d;
+    font-size: 0.9rem;
+}
+
+@media screen and (max-width: 768px) {
+    .modal-content {
+        width: 90%;
     }
 }
 
+        .error-message {
+    color: red;
+    font-size: 0.9em;
+}
     </style>
 </head>
 <body>
-    <a href="{% url 'propertyview' rental_agreement.property.id %}" class="back-btn">Back to Home</a>
-    <div class="container">
-    <form method="POST" enctype="multipart/form-data" id="rentalForm">
+
+<div class="container">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
-        <h4>Review Rental Agreement </h4>
-        <!-- Display Renter Name -->
-        <label for="renter_name">Renter Name:</label>
-        <input type="text" id="renter_name" name="renter_name" value="{{ rental_agreement.renter.name }}" required>
-        <label for="property_address">Property Adress:</label>
-        <input type="text" id="property_address" name="property_address" value="{{rental_agreement.property.address }}" required>
+        <h3>Rental Agreement for {{ property.property_name }}</h3>
+        <p><strong>Address:</strong> {{ property.address }}, {{ property.city }}, {{ property.state }}</p>
 
-        <label for="start_date">Start Date:</label>
-        <input type="date" id="start_date" name="start_date" value="{{ rental_agreement.start_date|date:'Y-m-d' }}" required>  
-        
-        <label for="end_date">End Date:</label>
-        <input type="date" id="end_date" name="end_date" value="{{ rental_agreement.end_date|date:'Y-m-d' }}" required>
-        
-        <label for="digital_signature">Your Signature:</label>
-        {% if rental_agreement and rental_agreement.digital_signature %}
-            <img src="{{ rental_agreement.digital_signature.url }}" alt="Your Signature" style="max-width: 100px;">
-        {% endif %}
-        <input type="file" id="digital_signature" name="digital_signature" accept="image/*">
+        <div>
+            <label for="start_date">Start Date:</label>
+            <input type="date" id="start_date" name="start_date" required>
+        </div>
 
-        <!-- Display owner's digital signature above the submit button -->
-        <label for="digital_signature">Onwer Signature:</label>
-        {% if rental_agreement and rental_agreement.status %}
-            <img src="{{ rental_agreement.owner_digital_signature.url }}" alt="Owner's Signature" style="max-width: 100px;">
-        {% else %}
-            <p>The owner has not accepted the agreement yet.</p>
-        {% endif %}
-        <div class="terms-container">
-            <label class="terms-label" for="terms">I agree to the terms and conditions</label>
-            <input type="checkbox" id="terms" name="terms" {% if rental_agreement and rental_agreement.terms %}checked{% endif %} required>
-        </div>        
-        {% if rental_agreement and rental_agreement.status %}
-            <button type="submit" id="submitButton">Continue</button>
-        {% else %}
-            <button type="submit" id="submitButton">Submit</button>
-        {% endif %}
+        <div>
+            <label for="end_date">End Date:</label>
+            <input type="date" id="end_date" name="end_date" required>
+        </div>
+
+        <div>
+            <label>Monthly Rent:</label>
+            <p><strong>Rs.{{ property.monthly_rent }}</strong></p> <!-- Display the monthly rent -->
+        </div>
+
+        <div>
+            <label class="terms-label" for="terms">Terms and Conditions:</label>
+            <p>
+                Please read and agree to the <span class="terms-link" id="openTermsModal">terms and conditions</span> before proceeding.
+            </p>
+            <input type="checkbox" id="terms" name="terms" required> I agree to the terms and conditions
+        </div>
+
+        <div>
+            <label for="digital_signature">Digital Signature:</label>
+            <input type="file" id="digital_signature" name="digital_signature" accept="image/*" required>
+            <small>Please upload an image of your signature.</small>
+        </div>
+
+        <button type="submit">Submit Agreement</button>
     </form>
 </div>
 
@@ -215,44 +238,68 @@ input[type="checkbox"] {
         <p>{{ property.terms_and_conditions }}</p> <!-- Display terms and conditions from the Property model -->
     </div>
 </div>
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
-<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
 <script>
     // Get modal elements
     var termsModal = document.getElementById("termsModal");
+    var openTermsModal = document.getElementById("openTermsModal");
     var closeTermsModal = document.getElementById("closeTermsModal");
+
+    // Open the modal when clicking the terms link
+    openTermsModal.onclick = function() {
+        termsModal.style.display = "block";
+    }
 
     // Close the modal when clicking the close button
     closeTermsModal.onclick = function() {
-        termsModal.style.display = "none"; // Close modal
-    };
+        termsModal.style.display = "none";
+    }
 
     // Close the modal if clicking outside of it
     window.onclick = function(event) {
         if (event.target == termsModal) {
-            termsModal.style.display = "none"; // Close modal
+            termsModal.style.display = "none";
         }
-    };
-    document.getElementById("rentalForm").addEventListener("submit", function(event) {
-    event.preventDefault(); // Prevent default form submission
-
-    // Show Toastify notification
-    Toastify({
-        text: "Your submission has been received. Please wait for the owner's response. You will be informed by email.",
-        duration: 3000, // Duration in milliseconds
-        gravity: "top", // `top` or `bottom`
-        position: 'center', // `left`, `center` or `right`
-        backgroundColor: "#4CAF50", // Green color
-        className: "info",
-    }).showToast();
-
-    // Submit the form after a timeout
-    setTimeout(() => {
-        this.submit(); // Submit the form after showing the toast
-    }, 2000); // Adjust timeout as necessary
-});
-
+    }
 </script>
+<script>
+document.getElementById('rentalForm').addEventListener('submit', function(event) {
+    let formValid = true;
 
+    // Clear previous error messages
+    document.getElementById('startDateError').textContent = '';
+    document.getElementById('endDateError').textContent = '';
+    document.getElementById('termsError').textContent = '';
+    document.getElementById('signatureError').textContent = '';
+
+   
+
+    // Terms Checkbox Validation
+    const terms = document.getElementById('terms');
+    if (!terms.checked) {
+        document.getElementById('termsError').textContent = 'You must agree to the terms and conditions.';
+        formValid = false;
+    }
+
+    // Digital Signature File Validation
+    const signature = document.getElementById('digital_signature');
+    const signatureFile = signature.files[0];
+    if (signatureFile) {
+        const fileExtension = signatureFile.name.split('.').pop().toLowerCase();
+        if (fileExtension !== 'png' && fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
+            document.getElementById('signatureError').textContent = 'Please upload a valid image file (PNG or JPG).';
+            formValid = false;
+        }
+    } else {
+        document.getElementById('signatureError').textContent = 'Please upload your digital signature.';
+        formValid = false;
+    }
+
+    // Prevent form submission if validation fails
+    if (!formValid) {
+        event.preventDefault();
+    }
+});
+</script>
 </body>
 </html>

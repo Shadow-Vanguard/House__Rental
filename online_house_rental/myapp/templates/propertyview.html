@@ -55,12 +55,21 @@
                     <img src="{{ image.image.url }}" alt="{{ property.property_name }}" class="property-img">
                 {% endfor %}
             </div>
+
+            <div class="property-videos">
+                {% for video in property.video.all %}
+                    <video width="400" controls>
+                        <source src="{{ video.video.url }}" type="video">
+                        Your browser does not support the video tag.
+                    </video>
+                {% endfor %}
+            </div>
             <div class="property-info">
                 <p><strong>Description:</strong> <span id="propertyDescription">{{ property.description }}</span></p>
                 <p><strong>Address:</strong> <span id="propertyAddress">{{ property.address }}</span></p>
                 <p><strong>City:</strong> <span id="propertyCity">{{ property.city }}</span></p>
                 <p><strong>State:</strong> <span id="propertyState">{{ property.state }}</span></p>
-                <p><strong>Price:</strong> <span id="propertyPrice">${{ property.price }}</span></p>
+                <p><strong>Price:</strong> <span id="propertyPrice">Rs.{{ property.price }}</span></p>
                 <p><strong>Posted Date:</strong> <span id="propertyPostedDate">{{ property.posted_date }}</span></p>
                 <p><strong>Property Type:</strong> <span id="propertyType">{{ property.property_type }}</span></p>
                 <p><strong>Owner:</strong> <span id="propertyOwner">{{ property.owner.name }}</span></p>
@@ -81,10 +90,11 @@
 
                 <div class="action-buttons">
                     {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}
-                        <button class="btn buy-btn">Buy Now</button>
+                    <button class="btn buy-btn">
+                        <a href="{% url 'buy_property' property.id %}" class="buy-link">Buy Now</a>
+                    </button>
                     {% endif %}
                     {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
-                    <!-- <a href="{% url 'rental_agreement' property.id %}"><button type="btn contact-btn">Rent Now</button></a> -->
                     <button class="btn contact-btn">
                         <a href="{% url 'rental_agreement' property.id %}" class="contact-link">Rent Now</a>
                     </button>

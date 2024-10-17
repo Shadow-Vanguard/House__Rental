@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Property</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f2f2f2;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin: 10px 0 5px;
+            font-weight: bold;
+        }
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        input[type="date"],
+        select {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        input[type="submit"] {
+            background-color: #0c0ca0;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        input[type="submit"]:hover {
+            background-color: #0a0a8f;
+        }
+        .property-info {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+        }
+        .property-info h3 {
+            margin-top: 0;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Buy Property</h2>
+        
+        <!-- Display property details -->
+        <div class="property-info">
+            <h3>Property Name: {{ property.property_name }}</h3>
+            <p>Description: {{ property.description }}</p>
+            <p>Price: ${{ property.price }}</p>
+            <p>Location: {{ property.city }}, {{ property.state }}</p>
+        </div>
+
+        <!-- Form for buyer details and payment -->
+        <form action="{% url 'buy_property' property.id %}" method="POST">
+            {% csrf_token %}
+            <label for="name">Full Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" placeholder="Enter your email" required>
+
+            <label for="phone">Contact Number:</label>
+            <input type="text" id="phone" name="phone" placeholder="Enter your contact number" required>
+
+            <label for="date">Purchase Date:</label>
+            <input type="date" id="date" name="purchase_date" required>
+
+            <label for="payment">Payment Method:</label>
+            <select id="payment" name="payment_method" required>
+                <option value="credit_card">Credit Card</option>
+                <option value="debit_card">Debit Card</option>
+                <option value="bank_transfer">Bank Transfer</option>
+                <option value="paypal">PayPal</option>
+            </select>
+
+            <input type="submit" value="Buy Property">
+        </form>
+    </div>
+</body>
+</html>

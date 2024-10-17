@@ -23,58 +23,30 @@
         }
 
     </style>
+<script>
+    function toggleForm(propertyId) {
+        var form = document.getElementById('update-form-' + propertyId);
+        form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
 
-    <script>
-        function toggleForm(propertyId) {
-            var form = document.getElementById('update-form-' + propertyId);
-            form.style.display = form.style.display === 'none' ? 'block' : 'none';
-        }
-
-        function deleteImage(propertyId, imageId) {
-            $.ajax({
-                type: 'POST',
-                url: '{% url "ownerproperty" %}', // The URL for your view
-                data: {
-                    'delete_image': imageId,
-                    'property_id': propertyId,
-                    'csrfmiddlewaretoken': '{{ csrf_token }}' // Pass CSRF token
-                },
-                success: function(response) {
-                    // Remove the deleted image from the DOM
-                    $('#image-thumbnail-' + imageId).remove();
-                },
-                error: function(xhr) {
-                    alert('Error: ' + xhr.responseText);
-                }
-            });
-        }
-
-        function validateField(field, regex, errorMessages) {
-            const value = $(field).val().trim();
-            let errorDiv = $(field).siblings('.error'); // Get the error message div
-            errorDiv.remove(); // Clear previous error messages
-            let errorText = '';
-
-            if (!regex.test(value)) {
-                errorText = errorMessages[0];
-            } else if (value.length < 5) {
-                errorText = errorMessages[1];
-            } else if (/\s/.test(value)) {
-                errorText = errorMessages[2];
+    function deleteImage(propertyId, imageId) {
+        $.ajax({
+            type: 'POST',
+            url: '{% url "ownerproperty" %}', // The URL for your view
+            data: {
+                'delete_image': imageId,
+                'property_id': propertyId,
+                'csrfmiddlewaretoken': '{{ csrf_token }}' // Pass CSRF token
+            },
+            success: function(response) {
+                // Remove the deleted image from the DOM
+                $('#image-thumbnail-' + imageId).remove();
+            },
+            error: function(xhr) {
+                alert('Error: ' + xhr.responseText);
             }
-
-            if (errorText) {
-                if (errorDiv.length === 0) { // Create error div if it doesn't exist
-                    errorDiv = $('<p class="error"></p>');
-                    $(field).after(errorDiv);
-                }
-                errorDiv.text(errorText); // Set the error message
-                return false;
-            } else {
-                errorDiv.remove(); // Remove error if valid
-                return true;
-            }
-        }
+        });
+    }
 
     function validateField(field, regex, errorMessages) {
         const value = $(field).val().trim();
@@ -107,34 +79,45 @@
         let isValid = true;
         const newImages = $('#new_images')[0].files;
 
-        // Validations
-        $('#property_name').on('input focusout', function() {
-    validateField(this, /^[A-Za-z\s]{5,}$/, [
-        'Property name must contain only letters and spaces.',
-        'Property name must be at least 5 characters long.'
-    ]);
-});
-
-
+        // Validate each field
+        isValid &= validateField('#property_name', /^[A-Za-z\s]{5,}$/, [
+            'Property name must contain only letters and spaces.',
+            'Property name must be at least 5 characters long.'
+        ]);
 
         isValid &= validateField('#description', /^.{5,}$/, [
             'Description must be at least 5 characters long.'
         ]);
+
         isValid &= validateField('#address', /^.*$/, [
             'Address cannot be empty.',
             'Address must not contain special characters.',
             'Address must be at least 5 characters long.'
         ]);
+
         isValid &= validateField('#city', /^[a-zA-Z\s]{4,}$/, [
             'City must not contain special characters.',
-            'City must be at least 5 characters long.',
-            'City must not contain spaces at the beginning or end.'
+            'City must be at least 5 characters long.'
         ]);
+
         isValid &= validateField('#state', /^[a-zA-Z\s]{4,}$/, [
             'State must not contain special characters.',
-            'State must be at least 5 characters long.',
-            'State must not contain spaces at the beginning or end.'
+            'State must be at least 5 characters long.'
         ]);
+
+        // Beds validation
+        const beds = parseInt($('#beds').val().trim());
+        let bedsErrorDiv = $('#beds').siblings('.error');
+        if (isNaN(beds) || beds < 0 || !Number.isInteger(beds)) {
+            if (bedsErrorDiv.length === 0) {
+                bedsErrorDiv = $('<p class="error"></p>');
+                $('#beds').after(bedsErrorDiv);
+            }
+            bedsErrorDiv.text('Beds must be a non-negative whole number.');
+            isValid = false;
+        } else {
+            bedsErrorDiv.remove(); // Remove error if valid
+        }
 
         // Price validation
         const price = parseFloat($('#price').val().trim());
@@ -150,7 +133,7 @@
             priceErrorDiv.remove(); // Remove error if valid
         }
 
-        // Image validation
+        // Image validation (JPG/JPEG only)
         if (newImages.length > 0) {
             for (let i = 0; i < newImages.length; i++) {
                 const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
@@ -175,53 +158,54 @@
     $(document).ready(function() {
         // Add event listeners for live validation
         $('#property_name').on('input focusout', function() {
-            validateField(this, /^[A-Z][a-zA-Z]{4,}$/, [
-                'Property name must start with a capital letter.',
+            validateField(this, /^[A-Za-z\s]{5,}$/, [
+                'Property name must contain only letters and spaces.',
                 'Property name must be at least 5 characters long.'
             ]);
         });
+        
         $('#description').on('input focusout', function() {
             validateField(this, /^.{5,}$/, [
                 'Description must be at least 5 characters long.'
             ]);
         });
+
         $('#address').on('input focusout', function() {
             validateField(this, /^.*$/, [
                 'Address cannot be empty.',
-                'Address must not contain special characters.',
                 'Address must be at least 5 characters long.'
             ]);
         });
+
         $('#city').on('input focusout', function() {
             validateField(this, /^[a-zA-Z\s]{4,}$/, [
                 'City must not contain special characters.',
-                'City must be at least 5 characters long.',
-                'City must not contain spaces at the beginning or end.'
-            ]);
-        });
-        $('#state').on('input focusout', function() {
-            validateField(this, /^[a-zA-Z\s]{4,}$/, [
-                'State must not contain special characters.',
-                'State must be at least 5 characters long.',
-                'State must not contain spaces at the beginning or end.'
+                'City must be at least 5 characters long.'
             ]);
         });
 
-    $('#beds').on('input focusout', function() {
-    const beds = parseInt($(this).val().trim());
-    let bedsErrorDiv = $(this).siblings('.error');
-    
-    // Ensure beds is a whole number and non-negative
-    if (isNaN(beds) || beds < 0 || !Number.isInteger(beds)) {
-        if (bedsErrorDiv.length === 0) {
-            bedsErrorDiv = $('<p class="error"></p>');
-            $(this).after(bedsErrorDiv);
-        }
-        bedsErrorDiv.text('Beds must be a non-negative whole number.');
-    } else {
-        bedsErrorDiv.remove(); // Remove error if valid
-    }
-});
+        $('#state').on('input focusout', function() {
+            validateField(this, /^[a-zA-Z\s]{4,}$/, [
+                'State must not contain special characters.',
+                'State must be at least 5 characters long.'
+            ]);
+        });
+
+        $('#beds').on('input focusout', function() {
+            const beds = parseInt($(this).val().trim());
+            let bedsErrorDiv = $(this).siblings('.error');
+            
+            if (isNaN(beds) || beds < 0 || !Number.isInteger(beds)) {
+                if (bedsErrorDiv.length === 0) {
+                    bedsErrorDiv = $('<p class="error"></p>');
+                    $(this).after(bedsErrorDiv);
+                }
+                bedsErrorDiv.text('Beds must be a non-negative whole number.');
+            } else {
+                bedsErrorDiv.remove(); // Remove error if valid
+            }
+        });
+
         $('#price').on('input focusout', function() {
             const price = parseFloat($(this).val().trim());
             let priceErrorDiv = $(this).siblings('.error');
@@ -235,27 +219,9 @@
                 priceErrorDiv.remove(); // Remove error if valid
             }
         });
-
-        $('#new_images').on('change', function() {
-            const newImages = this.files;
-            let errorDiv = $(this).siblings('.error');
-            if (errorDiv.length === 0) {
-                errorDiv = $('<p class="error"></p>');
-                $(this).after(errorDiv);
-            }
-            errorDiv.text(''); // Clear previous error
-            for (let i = 0; i < newImages.length; i++) {
-                const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
-                if (fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
-                    errorDiv.text('Only JPG and JPEG image files are allowed.');
-                    break;
-                } else {
-                    errorDiv.remove(); // Remove error if valid
-                }
-            }
-        });
     });
-    </script>
+</script>
+
     <style> 
         .error {
             color: red;
@@ -360,8 +326,6 @@
                         <input type="text" id="beds" name="beds" value="{{ property.beds }}" required>
                         <div class="error"></div>
                     </div>
-
-
 
                     <div class="form-group">
                         <label for="price">Price:</label>

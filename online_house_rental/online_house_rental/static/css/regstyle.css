@@ -16,6 +16,16 @@ body {
   padding: 10px;
   background: linear-gradient(135deg, #71b7e6, #9b59b6);
 }
+.back-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background-color: #555; /* Gray background */
+  color: white;
+  padding: 10px 15px;
+  border-radius: 5px;
+  text-decoration: none;
+}
 
 .container {
   max-width: 700px;

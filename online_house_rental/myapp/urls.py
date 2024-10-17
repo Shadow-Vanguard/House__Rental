@@ -34,8 +34,6 @@ urlpatterns = [
   path('ownerproperty', views.ownerproperty, name='ownerproperty'),
   path('owner_details/<int:property_id>/', views.owner_details, name='owner_details'),
   path('wishlist/', views.wishlist, name='wishlist'),
-  path('chat/user/<int:owner_id>/', views.user_chat_view, name='user_chat'),
-  path('chat/owner/<int:user_id>/', views.owner_chat_view, name='owner_chat'),
   path('rental-agreement/<int:property_id>/', views.rental_agreement, name='rental_agreement'),
   path('adminproview', views.adminproview, name='adminproview'),
   path('propertywelcom', views.propertywelcom, name='propertywelcom'),
@@ -43,6 +41,10 @@ urlpatterns = [
   path('ownerview/', views.ownerview, name='ownerview'),  
   path('accept-decline-agreement/<int:agreement_id>/', views.accept_decline_agreement, name='accept_decline_agreement'),
   path('rented-properties/', views.rented_properties_view, name='rented_properties'),
-
+  path('buy-property/<int:property_id>/', views.buy_property, name='buy_property'),
+  path('vra/', views.userviewrental, name='userviewrental'),
+  path('verify-otp/', views.verify_otp, name='verify_otp'),
+  path('enter-email/',views.enter_email, name='enter_email'),
+  path('notification', views.notification, name='notification'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

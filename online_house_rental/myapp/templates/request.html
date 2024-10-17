@@ -38,9 +38,21 @@
         a.verify-btn {
             background-color: #0c0ca0; /* Green for verification */
         }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #555; /* Gray background */
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
+     <!-- Back button at the top right -->
+     <a href="javascript:history.back()" class="back-btn">Back</a>
     <h2>Requests</h2>
     <table>
         <thead>

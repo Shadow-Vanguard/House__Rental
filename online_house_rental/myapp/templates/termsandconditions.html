@@ -126,7 +126,7 @@
             const errorField = document.getElementById('terms-error');
             errorField.style.display = 'none'; // Reset the error display
 
-            if (termsField.value.length > 255) {
+            if (termsField.value.length > 300) {
                 event.preventDefault(); // Prevent form submission
                 errorField.textContent = 'Terms and Conditions must not exceed 255 characters.';
                 errorField.style.display = 'block'; // Show the error

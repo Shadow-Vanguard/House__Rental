@@ -13,6 +13,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
 from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage 
+import random
+from django.utils import timezone
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout(request):
@@ -22,6 +25,58 @@ def logout(request):
 
 def index(request):
     return render(request, 'index.html')
+
+from django.core.mail import send_mail
+
+
+otp_storage = {}
+
+def send_otp_email(user_email):
+    otp = random.randint(1000, 9999) 
+    otp_storage[user_email] = otp 
+
+    subject = 'Your OTP for Email Verification'
+    message = f'Your OTP is {otp}. Please use this to verify your email.'
+    from_email = 'haripriyaka2025@mca.ajce.in' 
+    recipient_list = [user_email]
+
+    send_mail(subject, message, from_email, recipient_list)
+
+def enter_email(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        if User.objects.filter(email=email).exists():
+            messages.info(request, "Email is already registered. Please log in.")
+            return redirect('login')
+
+        send_otp_email(email)
+
+        request.session['email'] = email
+
+        return redirect('verify_otp')
+
+    return render(request, 'enter_email.html')
+
+def verify_otp(request):
+    email = request.session.get('email') 
+    if not email:
+        messages.error(request, "Session expired. Please enter your email again.")
+        return redirect('enter_email')
+
+    if request.method == 'POST':
+        otp_input = request.POST.get('otp')
+
+        if otp_storage.get(email) and otp_storage[email] == int(otp_input):
+          
+            del otp_storage[email]
+            request.session['email'] = email
+
+            return redirect('register')
+        else:
+            messages.error(request, "Invalid OTP. Please try again.")
+
+    return render(request, 'verify_otp.html')
 
 
 def login(request):
@@ -51,6 +106,8 @@ def login(request):
     return render(request, 'login.html')
 
 def register(request):
+    role = request.GET.get('role', 'user')
+    email = request.session.get('email', '')
     if request.method == 'POST':
         name = request.POST.get('name')
         address = request.POST.get('address')
@@ -58,43 +115,16 @@ def register(request):
         phone = request.POST.get('contact')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirmPassword')
-        role = request.POST.get('role')
-        # Check if the email already exists
+        role = request.POST.get('role', role)
         if User.objects.filter(email=email).exists():
-            return render(request, 'register.html', {
-                'email_error': 'An account with this email already exists.',
-                'name': name,
-                'address': address,
-                'contact': phone,
-                'role': role,
-            })
-        # Check if the passwords match
+            return render(request, 'register.html', {'email_error': 'An account with this email already exists.', 'name': name, 'address': address, 'contact': phone, 'role': role})
         if password != confirm_password:
-            return render(request, 'register.html', {
-                'error': 'Passwords do not match.',
-                'name': name,
-                'address': address,
-                'contact': phone,
-                'email': email,
-                'role': role,
-            })
-
-        # Create and save the new user
+            return render(request, 'register.html', {'error': 'Passwords do not match.', 'name': name, 'address': address, 'contact': phone, 'email': email, 'role': role})
         user = User(name=name, address=address, email=email, phone=phone, password=password, role=role)
         user.save()
-
-        # Send registration success email
-        send_mail(
-            'Registration Successful',
-            f'Hello {name},\n\nThank you for registering!\n\nBest regards,\nYour Team',
-            settings.DEFAULT_FROM_EMAIL,
-            [email],
-            fail_silently=False,
-        )
-
+        send_mail('Registration Successful', f'Hello {name},\n\nThank you for registering!\n\nBest regards,\nYour Team', settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
         return redirect('login')
-
-    return render(request, 'register.html')
+    return render(request, 'register.html', {'role': role,'email': email })
 
 
 
@@ -555,99 +585,33 @@ def wishlist(request):
 
 
 
-
-def user_chat_view(request, owner_id):
-    owner = get_object_or_404(User, id=owner_id)
-    messages = Message.objects.filter(sender=request.user, receiver=owner) | Message.objects.filter(sender=owner, receiver=request.user)
-    messages = messages.order_by('timestamp')
-    
-    if request.method == 'POST':
-        message_content = request.POST.get('message')
-        if message_content:
-            # Save the new message
-            Message.objects.create(sender=request.user, receiver=owner, message=message_content)
-            return redirect('user_chat', owner_id=owner_id)
-    
-    return render(request, 'user_chat.html', {'messages': messages, 'owner': owner})
-
-
-def owner_chat_view(request, user_id):
-    user = get_object_or_404(User, id=user_id)
-    messages = Message.objects.filter(sender=request.user, receiver=user) | Message.objects.filter(sender=user, receiver=request.user)
-    messages = messages.order_by('timestamp')
-    
-    if request.method == 'POST':
-        message_content = request.POST.get('message')
-        if message_content:
-            # Save the new message
-            Message.objects.create(sender=request.user, receiver=user, message=message_content)
-            return redirect('owner_chat', user_id=user_id)
-    
-    return render(request, 'owner_chat.html', {'messages': messages, 'user': user})
-
-
-
 def rental_agreement(request, property_id):
     property = get_object_or_404(Property, id=property_id)
     user_id = request.session.get('user_id')
-
+    print("User id:",user_id)
     if not user_id:
-        return redirect('login')  # Redirect to login if user is not logged in
-
+        return redirect('login')
     user = get_object_or_404(User, id=user_id)
-
-    # Check if the user already has a rental agreement for this property
-    rental_agreement = RentalAgreement.objects.filter(property=property, renter=user).first()
-
     if request.method == 'POST':
-        # If a rental agreement exists, update it, otherwise create a new one
-        if rental_agreement:
-            start_date = request.POST.get('start_date')
-            end_date = request.POST.get('end_date')
-            terms = request.POST.get('terms') == 'on'
-            digital_signature = request.FILES.get('digital_signature', rental_agreement.digital_signature)
-
-            # Validate that terms and conditions are accepted
-            if not terms:
-                return HttpResponse('You must agree to the terms and conditions.')
-
-            # Update the existing rental agreement
-            rental_agreement.start_date = start_date
-            rental_agreement.end_date = end_date
-            rental_agreement.terms = terms
-            rental_agreement.digital_signature = digital_signature
-            rental_agreement.save()
-
-        else:
-            # Create a new rental agreement
-            start_date = request.POST.get('start_date')
-            end_date = request.POST.get('end_date')
-            terms = request.POST.get('terms') == 'on'
-            digital_signature = request.FILES.get('digital_signature')
-
-            # Validate that terms and conditions are accepted
-            if not terms:
-                return HttpResponse('You must agree to the terms and conditions.')
-
-            rental_agreement = RentalAgreement(
-                property=property,
-                renter=user,
-                start_date=start_date,
-                end_date=end_date,
-                terms=terms,
-                digital_signature=digital_signature,
-            )
-            rental_agreement.save()
-
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        terms = request.POST.get('terms') == 'on'
+        digital_signature = request.FILES.get('digital_signature')
+        if not terms:
+            return HttpResponse('You must agree to the terms and conditions.')
+        rental_agreement = RentalAgreement(
+            property=property,
+            renter=user,
+            start_date=start_date,
+            end_date=end_date,
+            terms=terms,
+            digital_signature=digital_signature 
+        )
+        rental_agreement.save()
         return HttpResponse('Rental agreement submitted successfully!')
-
-    # If there is an existing rental agreement, pass the details to the template for display
-    context = {
-        'property': property,
-        'rental_agreement': rental_agreement,
-    }
-
-    return render(request, 'rental_agreement.html', context)
+    return render(request, 'rental_agreement.html', {
+        'property': property
+        })
     
 def adminproview(request):
     properties = Property.objects.all()  # Fetch all properties
@@ -671,10 +635,11 @@ def termsandconditions(request, property_id):
 
 def ownerview(request):
     if request.session.get('user_id'):
-        user_id = request.session.get('user_id')
-        owner = get_object_or_404(User, id=user_id)
         owner_name = request.session.get('name')
+        print("Owner Name:",owner_name)
+        owner=User.objects.get(name=owner_name)
         owner_properties = Property.objects.filter(owner=owner)
+        print("Property:",owner_properties)
         rental_agreements = RentalAgreement.objects.filter(property__in=owner_properties)
         return render(request, 'ownerview.html', {
             'owner_name': owner_name,
@@ -697,6 +662,10 @@ def accept_decline_agreement(request, agreement_id):
                 # Check if there's a digital signature uploaded
                 if 'owner_digital_signature' in request.FILES:
                     rental_agreement.owner_digital_signature = request.FILES['owner_digital_signature']  # Save the uploaded signature image
+                
+                # Update notification date when the agreement is accepted
+                rental_agreement.notification_date = timezone.now()
+                rental_agreement.save()
 
                 # Send email notification to the renter
                 subject = 'Your Rental Agreement has been Approved'
@@ -731,3 +700,70 @@ def accept_decline_agreement(request, agreement_id):
 def rented_properties_view(request):
     rented_properties = RentalAgreement.objects.select_related('property', 'renter').all()
     return render(request, 'rented_properties.html', {'rented_properties': rented_properties})
+
+
+def buy_property(request, property_id):
+    # Get the property object based on the ID from the URL
+    property = get_object_or_404(Property, id=property_id)
+
+    if request.method == 'POST':
+        # Handle form submission
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        purchase_date = request.POST.get('purchase_date')
+        payment_method = request.POST.get('payment_method')
+
+        # Simulate processing the purchase (e.g., store transaction in the database)
+        # Here, you can add logic to create a Purchase object or store the transaction
+
+        # Send a confirmation email (optional)
+        send_mail(
+            'Property Purchase Confirmation',
+            f'Dear {name},\n\nThank you for purchasing the property: {property.property_name}.',
+            'from@example.com',  # Replace with your email
+            [email],
+            fail_silently=False,
+        )
+
+        # Add a success message and redirect to another page, e.g., a success page or property list
+        messages.success(request, 'Property purchased successfully!')
+        return redirect('property_list')  # Replace with the appropriate view for redirection
+
+    # If GET request, render the form with the property details
+    context = {
+        'property': property,
+    }
+    return render(request, 'buy_property.html', context)
+
+
+
+def userviewrental(request):
+    user_id = request.session.get('user_id')
+    print(user_id)
+    if not user_id:
+        return redirect('login')
+    user=User.objects.get(id=user_id)
+    print(user)
+    rental_agreements = RentalAgreement.objects.all()
+    print(rental_agreements)
+    return render(request, 'userviewrental.html', {
+        'rental_agreements': rental_agreements
+    })
+
+def notification(request):
+    if request.session.get('user_id'):
+        user_id = request.session['user_id']
+        
+        # Fetch all rental agreements that have been accepted (status=True) for the logged-in user
+        rental_agreements = RentalAgreement.objects.filter(renter_id=user_id, status=True).order_by('-notification_date')
+        
+        return render(request, 'notification.html', {
+            'rental_agreements': rental_agreements
+        })
+
+    return redirect('login')
+
+
+
+

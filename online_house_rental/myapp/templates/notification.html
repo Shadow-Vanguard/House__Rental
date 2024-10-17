@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Notifications</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="" name="keywords">
+  <meta content="" name="description">
+  <!-- Include Montserrat font from Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="{% static 'template_landingpage/img/favicon.png' %}" rel="icon">
+  <link href="{% static 'template_landingpage/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+  <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/animate/animate.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/ionicons/css/ionicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/css/style.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
+  <style>
+      body {
+          background-color: #f0f4f7;
+          font-family:'Open Sans', sans-serif;
+          color: #333;
+      }
+      .notification-container {
+          margin-top: 40px;
+          max-width: 900px;
+          margin-left: auto;
+          margin-right: auto;
+      }
+      .notification-card {
+          position: relative;
+          border: 1px solid #007bff;
+          border-radius: 10px;
+          padding: 20px;
+          margin-bottom: 25px;
+          background: linear-gradient(135deg, #f9f9f9, #e3f2fd);
+          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+          transition: all 0.3s ease;
+      }
+      .notification-card:hover {
+          transform: scale(1.03);
+          box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+      }
+      .notification-header {
+          font-size: 1.3em;
+          font-weight: bold;
+          color: #333;
+      }
+      .notification-header span {
+          color: #28a745;
+      }
+      .notification-header .declined {
+          color: #dc3545;
+      }
+      .notification-content {
+        margin: 15px 0;
+        font-family: 'Open Sans', sans-serif;
+        font-size: 1.1em;
+      }
+      .notification-footer {
+          display: flex;
+          justify-content: flex-end;
+          align-items: center;
+      }
+      .notification-footer a {
+          margin-left: 15px;
+      }
+      .notification-footer .btn {
+          border-radius: 20px;
+          padding: 10px 20px;
+          font-weight: bold;
+          transition: background-color 0.3s ease;
+      }
+      .btn-view {
+          background-color: #cf8610;
+          color: #fff;
+          border: none;
+      }
+      .btn-view:hover {
+          background-color: #b56605;
+      }
+      .btn-pay {
+          background-color: #28a745;
+          color: #fff;
+          border: none;
+      }
+      .btn-pay:hover {
+          background-color: #218838;
+      }
+      .notification-date {
+        position: absolute;
+        bottom: 20px;
+        left: 20px; /* This positions the date on the bottom left corner */
+        font-size: 0.95em;
+        color: #333; /* Light black color */
+    }
+    .notification-date {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    font-size: 0.95em;
+    color: #333; /* Light black color */
+}
+      h2.text-center {
+          font-size: 2.2em;
+          font-family: 'Lora', serif; 
+          color: #007bff;
+          font-weight: bold;
+          margin-bottom: 30px;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+          border-bottom: 3px solid #007bff;
+          padding-bottom: 10px;
+          display: inline-block;
+          letter-spacing: 1px;
+      }
+      p.no-notifications {
+          font-size: 1.2em;
+          color: #555;
+          text-align: center;
+          margin-top: 50px;
+      }
+      .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #06618b; /* Gray background */
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+  </style>
+</head>
+<body>
+    <!-- Back button at the top right -->
+    <a href="javascript:history.back()" class="back-btn">Back</a>
+     <!--/ Nav Start /-->
+  <nav class="navbar navbar-default navbar-trans navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand text-brand" href="#">Estate<span class="color-b">Agency</span></a>
+      <div class="navbar-collapse collapse justify-content-center" id="navbarDefault">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'index' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'updateprofile' %}">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'wishlist' %}">Wishlist</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'userviewrental' %}">View Rental Agreement</a>
+          </li>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'notification' %}">Notification</a>
+        </li>
+
+          <li class="nav-item">
+            <a href="#" class="nav-link" id="logout-btn">Logout</a>
+          </li>  
+        </ul>
+        {% if error %}
+        <div class="error-box">
+          {{ error }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+  <!--/ Nav End /-->
+
+  <!--/ Notification Section Start /-->
+  <div class="container notification-container">
+    <h2 class="text-center">Notifications</h2>
+
+    {% for agreement in rental_agreements %}
+    <div class="notification-card">
+        <div class="notification-header">
+            Hi {{ agreement.renter.name }}, your rental agreement for the property <span>{{ agreement.property.property_name }}</span> has been 
+            {% if agreement.status %}
+                <span>Accepted</span> by the owner. You can now pay the security amount.
+            {% else %}
+                <span class="declined">Declined</span> by the owner.
+            {% endif %}
+        </div>
+        <div class="notification-date">
+            {{ agreement.notification_date|date:"Y-m-d H:i" }}
+        </div>
+        <div class="notification-content">
+            <p><strong>Property Address:</strong> {{ agreement.property.address }}, {{ agreement.property.city }}, {{ agreement.property.state }}</p>
+        </div>
+        <div class="notification-footer">
+            <a href="" class="btn btn-view">View</a>
+            {% if agreement.status %}
+            <a href="" class="btn btn-pay">Pay</a>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <p class="no-notifications">No notifications available.</p>
+    {% endfor %}
+  </div>
+  <!--/ Notification Section End /-->
+
+  <!-- JavaScript Libraries -->
+  <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/jquery/jquery-migrate.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/popper/popper.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/bootstrap/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/easing/easing.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/owlcarousel/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/scrollreveal/scrollreveal.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/contactform/contactform.js' %}"></script>
+  <script src="{% static 'template_landingpage/js/main.js' %}"></script>
+</body>
+</html>

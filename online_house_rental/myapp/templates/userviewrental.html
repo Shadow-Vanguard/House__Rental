@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>EstateAgency Bootstrap Template</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="" name="keywords">
+  <meta content="" name="description">
+  <link href="{% static 'template_landingpage/img/favicon.png' %}" rel="icon">
+  <link href="{% static 'template_landingpage/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+  <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/animate/animate.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/ionicons/css/ionicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/css/style.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
+  <style>
+      .rental-agreement {
+          border: 2px solid #007bff;
+          border-radius: 10px;
+          padding: 20px;
+          margin: 20px 0;
+          background-color: #f9f9f9;
+          box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+      }
+      .agreement-header {
+          font-size: 1.5em;
+          font-weight: bold;
+          text-align: center;
+          margin-bottom: 15px;
+      }
+      .agreement-content {
+          font-size: 1.1em;
+          margin: 10px 0;
+      }
+      .agreement-footer {
+          font-size: 0.9em;
+          text-align: right;
+          margin-top: 20px;
+      }
+      h2.text-center {
+    font-size: 2em;
+    color: #007bff; /* Change color to suit your design */
+    font-weight: bold;
+    margin: 20px 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    border-bottom: 3px solid #007bff;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+  </style>
+</head>
+<body>
+
+  <div class="click-closed"></div>
+
+  <!--/ Nav Start /-->
+  <nav class="navbar navbar-default navbar-trans navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand text-brand" href="#">Estate<span class="color-b">Agency</span></a>
+      <div class="navbar-collapse collapse justify-content-center" id="navbarDefault">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'index' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'updateprofile' %}">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'wishlist' %}">Wishlist</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'userviewrental' %}">View Rental Agreement</a>
+          </li>
+          <li class="nav-item">
+            <a href="#" class="nav-link" id="logout-btn">Logout</a>
+          </li>
+        </ul>
+        {% if error %}
+        <div class="error-box">
+          {{ error }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+  <!--/ Nav End /-->
+  <!-- Rental Agreement Display Section -->
+  <div class="container">
+      <h2 class="text-center">Your Rental Agreements</h2>
+      {% for agreement in rental_agreements %}
+      <div class="rental-agreement">
+          <div class="agreement-header">Your Rental Agreements</div>
+          <div class="agreement-content">
+              <p><strong>Property:</strong> {{ agreement.property.property_name }}</p>
+              <p><strong>Start Date:</strong> {{ agreement.start_date }}</p>
+              <p><strong>End Date:</strong> {{ agreement.end_date }}</p>
+              <p><strong>Terms Accepted:</strong> {{ agreement.terms|yesno:"Yes,No" }}</p>
+              <p><strong>Digital Signature:</strong>
+                {% if agreement.digital_signature %}
+                  <img src="{{ agreement.digital_signature.url }}" alt="Signature" width="100">
+                {% else %}
+                  <span>No digital signature available</span>
+                {% endif %}
+              </p>
+              
+              <p><strong>Owner's Digital Signature:</strong>
+                {% if agreement.owner_digital_signature %}
+                  <img src="{{ agreement.owner_digital_signature.url }}" alt="Signature" width="100">
+                {% else %}
+                  <span>No owner's digital signature available</span>
+                {% endif %}
+              </p>
+              
+            </div>
+      </div>
+      {% empty %}
+      <p>No rental agreements found.</p>
+      {% endfor %}
+  </div>
+  <!-- End Rental Agreement Display Section -->
+
+  <!-- JavaScript Libraries -->
+  <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/jquery/jquery-migrate.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/popper/popper.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/bootstrap/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/easing/easing.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/owlcarousel/owl.carousel.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/lib/scrollreveal/scrollreveal.min.js' %}"></script>
+  <script src="{% static 'template_landingpage/contactform/contactform.js' %}"></script>
+  <script src="{% static 'template_landingpage/js/main.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    document.getElementById('logout-btn').addEventListener('click', function (e) {
+      e.preventDefault(); // Prevent the default link behavior
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You will be logged out!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, log me out!',
+        cancelButtonText: 'Cancel'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          // Redirect to logout URL
+          window.location.href = "{% url 'logout' %}";
+        }
+      });
+    });
+  </script>
+
+</body>
+</html>

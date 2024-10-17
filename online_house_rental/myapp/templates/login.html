@@ -64,7 +64,7 @@
 					{% endif %}
 
 					<div class="container-login100-form-btn m-t-32">
-						<button class="login100-form-btn" type="submit">
+						<button class="login100-form-btn" type="submit" id="login">
 							Login
 						</button>
 					</div>
@@ -72,12 +72,12 @@
 						<a href="{% url 'forgotpass' %}">Forgot Password?</a>
 					</div>
 					<div class="register-link text-center m-t-10">
-						<p>Not yet registered? <a href="{% url 'register' %}">Register here</a></p>
+						<p>Not yet registered? <a href="{% url 'enter_email' %}?role=user">Register here</a></p>
 					</div>
 					<hr>
-					<div class="google-signin text-center">
+					<!-- <div class="google-signin text-center">
 						<center><button class="login100-form-btn google-btn"> Sign in with Google</button></center>
-					</div>
+					</div> -->
 				</form>
 			</div>
 		</div>

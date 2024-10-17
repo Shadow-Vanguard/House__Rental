@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Verify OTP</title>
+
+    <link href="https://fonts.googleapis.com/css?family=Poppins:200,300,400,500,600,700,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    <style>
+        body {
+            background-size: cover;
+            background-position: center;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .otp-container {
+            width: 400px;
+            padding: 20px;
+            margin: 50px auto;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+           
+            
+        }
+
+        .otp-content {
+            width: 400px;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .otp-content h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .otp-content label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .otp-content input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .otp-content button {
+            padding: 10px 20px;
+            background-color: #007bff; /* Same color as the send OTP button */
+            border: none;
+            color: white;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .otp-content button:hover {
+            background-color: #0056b3; /* Same hover color as the send OTP button */
+        }
+
+        .otp-content .message {
+            color: red;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .otp-content .success {
+            color: green;
+        }
+
+        /* Navbar styles */
+        .navbar {
+            background-color: #343a40;
+        }
+
+        .navbar .nav-link {
+            color: #ffffff;
+        }
+
+        .navbar .nav-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+            <!-- <div class="collapse navbar-collapse" id="ftco-nav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active"><a href="{% url 'index' %}" class="nav-link">Home</a></li>
+                    <li class="nav-item"><a href="{% url 'about' %}" class="nav-link">About</a></li>
+                    <li class="nav-item"><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
+                    <li class="nav-item"><a href="{% url 'login' %}" class="nav-link">Login</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav> -->
+
+    <!-- OTP Form -->
+    <div class="otp-container">
+        <div class="otp-content">
+            <h1>Email Verification</h1>
+            <form method="POST">
+                {% csrf_token %}
+                <label for="otp">Enter the OTP sent to your email:</label>
+                <input type="text" id="otp" name="otp" placeholder="Enter OTP" required>
+                <button type="submit">Verify</button>
+
+                {% if messages %}
+                    {% for message in messages %}
+                        <p class="message {% if 'success' in message.tags %}success{% endif %}">{{ message }}</p>
+                    {% endfor %}
+                {% endif %}
+
+                {% if error %}
+                    <p class="message">{{ error }}</p>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -4,72 +4,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Responsive Registration Form | CodingLab</title>
+  <title>Responsive Registration Form</title>
   <link rel="stylesheet" href="{% static 'css/regstyle.css' %}">
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    /* Add styles for error messages */
+    .error-message {
+      color: red;
+      font-size: 12px;
+      margin-top: 5px;
+      display: none; /* Hide initially */
+    }
+    .valid {
+      border-color: green;
+    }
+    .invalid {
+      border-color: red;
+    }
+  </style>
 </head>
 <body>
+  <a href="javascript:history.back()" class="back-btn">Back</a>
   <div class="container" style="background-image: url('{% static 'path/to/your/background/image.jpg' %}'); background-size: cover;">
-    <!-- Title section -->
     <div class="title">Registration</div>
     <div class="content">
-      <!-- Registration form -->
-      <form method="POST" action="{% url 'register' %}">
+      <form id="registrationForm" method="POST" action="{% url 'register' %}">
         {% csrf_token %}
         <div class="user-details">
-          <!-- Input for Full Name -->
           <div class="input-box">
             <span class="details">Name</span>
             <input type="text" id="name" name="name" placeholder="Enter your name" required>
-            <span id="nameError" style="color: red; display: none;">Please fill out this field.</span>
+            <span class="error-message" id="name-error">Name must contain at least 3 letters and only letters.</span>
           </div>
-          <!-- Input for Address -->
           <div class="input-box">
             <span class="details">Address</span>
             <input type="text" id="address" name="address" placeholder="Enter your address" required>
-            <span id="addressError" style="color: red; display: none;">Please fill out this field.</span>
+            <span class="error-message" id="address-error">Address must contain at least 3 letters.</span>
           </div>
-          <!-- Input for Email -->
           <div class="input-box">
             <span class="details">Email</span>
-            <input type="email" id="email" name="email" placeholder="Enter your email" required>
-            <!-- Error message placeholder -->
+            <input type="email" id="email" name="email" value="{{ email }}" placeholder="Enter your email" required>
+            <span class="error-message" id="email-error">Please enter a valid email address.</span>
             <span id="emailError" style="color: red;">
               {% if email_error %}
                 {{ email_error }}
               {% endif %}
             </span>
           </div>
-          <!-- Input for Phone Number -->
           <div class="input-box">
             <span class="details">Contact</span>
             <input type="text" id="contact" name="contact" placeholder="Enter your number" required>
-            <span id="contactError" style="color: red; display: none;">Please enter a valid 10-digit phone number.</span>
+            <span class="error-message" id="contact-error">Please enter a valid 10-digit contact number starting with 6, 7, 8, or 9.</span>
           </div>
-          <!-- Input for Password -->
           <div class="input-box">
             <span class="details">Password</span>
-            <input type="password" id="password" name="password" placeholder="Enter your password" required>
-            <span id="passwordError" style="color: red; display: none;">Please fill out this field.</span>
+            <input type="password" id="password" name="password" placeholder="Enter your password" required minlength="8">
+            <span class="error-message" id="password-error">Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.</span>
           </div>
-          <!-- Input for Confirm Password -->
           <div class="input-box">
             <span class="details">Confirm Password</span>
             <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" required>
-            <span id="confirmPasswordError" style="color: red; display: none;">Please fill out this field.</span>
+            <span class="error-message" id="confirmPassword-error">Passwords do not match.</span>
           </div>
-          <!-- Dropdown for Role Selection -->
-          <div class="input-box">
-            <span class="details">Register as:</span>
-            <select id="role" name="role" required>
-              <option value="" disabled selected>Select your role</option>
-              <option value="owner">Property Owner</option>
-              <option value="user">User</option>
-            </select>
-            <span id="roleError" style="color: red; display: none;">Please select your role.</span>
-          </div>
+          <input type="hidden" name="role" value="{{ role }}">
         </div>
-        <!-- Submit button -->
         <div class="button">
           <input type="submit" value="Register">
         </div>
@@ -77,139 +75,138 @@
     </div>
   </div>
 
-<script>
-  jQuery.noConflict();
-  (function($) {
-    $(document).ready(function() {
-      setTimeout(function() {
-        $('#errorMessage').fadeOut('slow');
-      }, 1000);
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const form = document.getElementById('registrationForm');
+      const name = document.getElementById('name');
+      const address = document.getElementById('address');
+      const email = document.getElementById('email');
+      const contact = document.getElementById('contact');
+      const password = document.getElementById('password');
+      const confirmPassword = document.getElementById('confirmPassword');
 
-      // Live validation for email
-      document.getElementById('email').addEventListener('input', function() {
-        const emailField = document.getElementById('email');
-        const emailError = document.getElementById('emailError');
-        const emailValue = emailField.value.trim();
+      // Function to show error
+      function showError(message, elementId) {
+        const errorElement = document.getElementById(elementId);
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+      }
 
-        // Check if the email field is empty or invalid
-        if (emailValue === '') {
-          emailError.textContent = 'Please enter an email address.';
-          emailError.style.display = 'inline';
-        } else if (!emailValue.includes('@') || !emailValue.includes('.')) {
-          emailError.textContent = 'Please enter a valid email address.';
-          emailError.style.display = 'inline';
+      // Function to clear error
+      function clearError(elementId) {
+        const errorElement = document.getElementById(elementId);
+        errorElement.textContent = '';
+        errorElement.style.display = 'none';
+      }
+
+      // Validation functions
+      function validateName(name) {
+        return /^[A-Za-z\s]{3,}$/.test(name);
+      }
+
+      function validateAddress(address) {
+        return /^[A-Za-z\s]{3,}$/.test(address);
+      }
+
+      function validateEmail(email) {
+        return /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(email);
+      }
+
+      function validatePhoneNumber(phoneNumber) {
+        return /^[6789]\d{9}$/.test(phoneNumber);
+      }
+
+      function validatePassword(password) {
+        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/.test(password);
+      }
+
+      function passwordsMatch(password, confirmPassword) {
+        return password === confirmPassword;
+      }
+
+      // Live validation for each field
+      name.addEventListener('input', function() {
+        if (!validateName(name.value.trim())) {
+          showError('Name must contain at least 3 letters and only letters.', 'name-error');
         } else {
-          // Clear previous error message
-          emailError.textContent = '';
-          emailError.style.display = 'none';
-
-          // Check if email exists in the database
-          $.ajax({
-            type: 'POST',
-            url: '/check_email/', // Update with your email check URL
-            data: {
-              email: emailValue,
-              csrfmiddlewaretoken: '{{ csrf_token }}' // Use Django's CSRF token
-            },
-            success: function(response) {
-              if (response.exists) {
-                emailError.textContent = 'An account with this email already exists.';
-                emailError.style.display = 'inline';
-              }
-            }
-          });
+          clearError('name-error');
         }
       });
 
-      // Other input validations (name, password, contact, address)
-      document.getElementById('name').addEventListener('input', function() {
-        const nameField = document.getElementById('name');
-        const nameError = document.getElementById('nameError');
-        const nameValue = nameField.value.trim(); // Trim whitespace from start and end
-
-        if (nameValue.length < 3) {
-          nameError.textContent = 'Name must be at least 3 characters long.';
-          nameError.style.display = 'inline';
-        } else if (!/^[A-Z][a-zA-Z]*( [A-Z][a-zA-Z]*)*$/.test(nameValue)) {
-          nameError.textContent = 'Name should start with a capital letter.';
-          nameError.style.display = 'inline';
+      address.addEventListener('input', function() {
+        if (!validateAddress(address.value.trim())) {
+          showError('Address must contain at least 3 letters.', 'address-error');
         } else {
-          nameError.textContent = '';
-          nameError.style.display = 'none'; // Hide error
+          clearError('address-error');
         }
       });
 
-      document.getElementById('password').addEventListener('input', function() {
-        const passwordField = document.getElementById('password');
-        const passwordError = document.getElementById('passwordError');
-        const passwordValue = passwordField.value;
-
-        if (/\s/.test(passwordValue)) {
-          passwordError.textContent = 'Password should not contain whitespace.';
-          passwordError.style.display = 'inline';
-        } else if (passwordValue.length < 8) {
-          passwordError.textContent = 'Password must be at least 8 characters long.';
-          passwordError.style.display = 'inline';
-        } else if (!/[A-Z]/.test(passwordValue)) {
-          passwordError.textContent = 'Password must contain at least one uppercase letter.';
-          passwordError.style.display = 'inline';
-        } else if (!/[a-z]/.test(passwordValue)) {
-          passwordError.textContent = 'Password must contain at least one lowercase letter.';
-          passwordError.style.display = 'inline';
-        } else if (!/[^A-Za-z0-9]/.test(passwordValue)) {
-          passwordError.textContent = 'Password must contain at least one special character.';
-          passwordError.style.display = 'inline';
+      email.addEventListener('input', function() {
+        if (!validateEmail(email.value.trim())) {
+          showError('Please enter a valid email address.', 'email-error');
         } else {
-          passwordError.textContent = '';
-          passwordError.style.display = 'none';
+          clearError('email-error');
         }
       });
 
-      document.getElementById('contact').addEventListener('input', function() {
-        const contactField = document.getElementById('contact');
-        const contactError = document.getElementById('contactError');
-        const contactValue = contactField.value;
-
-        if (!/^[6-9]\d{9}$/.test(contactValue)) {
-          contactError.textContent = 'Enter a valid contact number.';
-          contactError.style.display = 'inline';
+      contact.addEventListener('input', function() {
+        if (!validatePhoneNumber(contact.value.trim())) {
+          showError('Phone number must start with 6, 7, 8, or 9 and be 10 digits long.', 'contact-error');
         } else {
-          contactError.textContent = '';
-          contactError.style.display = 'none';
+          clearError('contact-error');
         }
       });
 
-      document.getElementById('address').addEventListener('input', function() {
-        const addressField = document.getElementById('address');
-        const addressError = document.getElementById('addressError');
-        const addressValue = addressField.value.trim();
-
-        if (addressValue === '') {
-          addressError.textContent = 'Please enter your address.';
-          addressError.style.display = 'inline';
-        } else if (/[^a-zA-Z0-9\s]/.test(addressValue)) {
-          addressError.textContent = 'Address should not contain special characters.';
-          addressError.style.display = 'inline';
+      password.addEventListener('input', function() {
+        if (!validatePassword(password.value.trim())) {
+          showError('Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.', 'password-error');
         } else {
-          addressError.textContent = '';
-          addressError.style.display = 'none';
+          clearError('password-error');
         }
       });
 
-      document.querySelector('form').addEventListener('submit', function(event) {
-        const nameError = document.getElementById('nameError').textContent;
-        const emailError = document.getElementById('emailError').textContent;
-        const passwordError = document.getElementById('passwordError').textContent;
-        const contactError = document.getElementById('contactError').textContent;
-        const addressError = document.getElementById('addressError').textContent;
+      confirmPassword.addEventListener('input', function() {
+        if (!passwordsMatch(password.value.trim(), confirmPassword.value.trim())) {
+          showError('Passwords do not match.', 'confirmPassword-error');
+        } else {
+          clearError('confirmPassword-error');
+        }
+      });
 
-        if (nameError || emailError || passwordError || contactError || addressError) {
-          event.preventDefault(); // Prevent form submission
-          alert('Please correct the errors in the form.');
+      // On form submit, validate all fields
+      form.addEventListener('submit', function(event) {
+        let valid = true;
+
+        if (!validateName(name.value.trim())) {
+          showError('Name must contain at least 3 letters and only letters.', 'name-error');
+          valid = false;
+        }
+        if (!validateAddress(address.value.trim())) {
+          showError('Address must contain at least 3 letters.', 'address-error');
+          valid = false;
+        }
+        if (!validateEmail(email.value.trim())) {
+          showError('Please enter a valid email address.', 'email-error');
+          valid = false;
+        }
+        if (!validatePhoneNumber(contact.value.trim())) {
+          showError('Phone number must start with 6, 7, 8, or 9 and be 10 digits long.', 'contact-error');
+          valid = false;
+        }
+        if (!validatePassword(password.value.trim())) {
+          showError('Password must be at least 8 characters long and include uppercase, lowercase, number, and special character.', 'password-error');
+          valid = false;
+        }
+        if (!passwordsMatch(password.value.trim(), confirmPassword.value.trim())) {
+          showError('Passwords do not match.', 'confirmPassword-error');
+          valid = false;
+        }
+
+        if (!valid) {
+          event.preventDefault();
         }
       });
     });
-  })(jQuery);
-</script>
+  </script>
 </body>
 </html>
