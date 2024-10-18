@@ -103,7 +103,7 @@
                             <button type="submit" name="add_to_wishlist" class="btn contact-btn">Wishlist</button>
                         </form>
                         <button class="btn contact-btn">
-                            <a href="{% url 'owner_details' property.id %}" class="contact-link">Contact Owner</a>
+                            <a href="{% url 'conversation' property.id %}" class="btn btn-primary">Contact Owner</a>
                         </button>
                     {% endif %}
                 </div>

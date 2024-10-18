@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement
+from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message
 from django.contrib import messages
 import logging
 from django.utils.crypto import get_random_string
@@ -15,6 +15,8 @@ from django.http import HttpResponse
 from django.core.files.storage import FileSystemStorage 
 import random
 from django.utils import timezone
+from django.db.models import Q
+from django.shortcuts import render, get_object_or_404
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -368,13 +370,11 @@ def updateproperty(request):
 
 def ownerproperty(request):
     properties = Property.objects.all()
-
     if request.method == 'POST':
         delete_image_id = request.POST.get('delete_image')
         property_id = request.POST.get('property_id')
         deactivate_property_id = request.POST.get('deactivate_property')
         activate_property_id = request.POST.get('activate_property')
-
         # Handle image deletion
         if delete_image_id:
             property_instance = get_object_or_404(Property, id=property_id)
@@ -382,21 +382,18 @@ def ownerproperty(request):
             if image_to_delete:
                 image_to_delete.delete()
                 return JsonResponse({'status': 'success'})
-
         # Handle property deactivation
         if deactivate_property_id:
             property_instance = get_object_or_404(Property, id=deactivate_property_id)
             property_instance.status = False  # Deactivate the property
             property_instance.save()
             return redirect('ownerproperty')
-
         # Handle property activation
         if activate_property_id:
             property_instance = get_object_or_404(Property, id=activate_property_id)
             property_instance.status = True  # Activate the property
             property_instance.save()
             return redirect('ownerproperty')
-
         # Handle property update
         property_instance = get_object_or_404(Property, id=property_id)
         property_instance.property_name = request.POST.get('property_name')
@@ -408,21 +405,17 @@ def ownerproperty(request):
         property_instance.price = request.POST.get('price')
         property_instance.property_type = request.POST.get('property_type')
         property_instance.listing_type = request.POST.get('listing_type')
-
         monthly_rent = request.POST.get('monthly_rent')
         if monthly_rent:
             property_instance.monthly_rent = int(monthly_rent)
-        
         property_instance.save()
-
         # Handle adding new images
         new_images = request.FILES.getlist('new_images')
         for image in new_images:
             PropertyImage.objects.create(property=property_instance, image=image)
-
         return redirect('ownerproperty')
-
     return render(request, 'ownerproperty.html', {'properties': properties})
+
 
 def manageproperty(request):
     properties = Property.objects.all()  # Fetch all properties
@@ -766,4 +759,78 @@ def notification(request):
 
 
 
+def send_message(request, property_id):
+    # Check if the user is logged in via session
+    if request.session.get('user_id'):
+        user_id = request.session['user_id']
+        
+        if request.method == 'POST':
+            message_content = request.POST.get('message')
+            property = get_object_or_404(Property, id=property_id)
+            owner = property.owner  # Assuming your Property model has an owner field
+            
+            # Create a new message from the user to the owner
+            Message.objects.create(
+                sender_id=user_id,  # Use user_id from session
+                receiver=owner,
+                property=property,
+                message=message_content
+            )
+            return redirect('conversation', property_id=property_id)
+    
+    # If the user is not authenticated, redirect to login
+    return redirect('login')
 
+
+def conversation(request, property_id):
+    # Check if the user is logged in via session
+    if request.session.get('user_id'):
+        user_id = request.session['user_id']
+        
+        # Get the property and the owner
+        property = get_object_or_404(Property, id=property_id)
+        owner = property.owner
+        
+        # Fetch all messages related to this property between the user and the owner
+        messages = Message.objects.filter(
+            property=property,
+            sender_id=user_id,
+            receiver=owner
+        ) | Message.objects.filter(
+            property=property,
+            sender=owner,
+            receiver_id=user_id
+        )
+
+        # Order the combined messages by timestamp
+        messages = messages.order_by('timestamp')
+
+        # Handle sending a new message
+        if request.method == "POST":
+            message_content = request.POST.get('message')
+            if message_content:
+                new_message = Message.objects.create(
+                    sender_id=user_id,  # Use user_id from session
+                    receiver=owner,
+                    property=property,
+                    message=message_content
+                )
+                return redirect('conversation', property_id=property.id)
+
+        context = {
+            'property': property,
+            'owner': owner,
+            'messages': messages,
+        }
+        return render(request, 'conversation.html', context)
+    
+    # If user is not authenticated, redirect to login
+    return redirect('login')
+
+
+def certificate(request, agreement_id):
+    rental_agreement = get_object_or_404(RentalAgreement, id=agreement_id)
+    context = {
+        'agreement': rental_agreement,  # Rename this to match your template
+    }
+    return render(request, 'certificate.html', context)

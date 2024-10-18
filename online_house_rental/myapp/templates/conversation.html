@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Conversation about {{ property.property_name }}</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <link href="{% static 'template_landingpage/img/favicon.png' %}" rel="icon">
+    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f4f7;
+            font-family: 'Roboto', sans-serif;
+            color: #333;
+        }
+        h2 {
+            font-family: 'Lora', serif;
+            color: #007bff;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
+        }
+        .chat-box {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #007bff;
+            border-radius: 10px;
+            background: #fff;
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            height: 400px;
+            overflow-y: auto;
+        }
+        .user-message {
+            background-color: #d1e7dd;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            align-self: flex-end;
+        }
+        .owner-message {
+            background-color: #cfe2ff;
+            border-radius: 10px;
+            padding: 10px;
+            margin: 10px 0;
+            align-self: flex-start;
+        }
+        .chat-box div {
+            display: flex;
+            flex-direction: column;
+        }
+        small {
+            font-size: 0.8em;
+            color: #666;
+            text-align: right;
+        }
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            display: flex;
+            flex-direction: column;
+        }
+        textarea {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+            margin-bottom: 10px;
+            font-family: 'Roboto', sans-serif;
+        }
+        button {
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h2>Conversation about {{ property.property_name }}</h2>
+
+    <div class="chat-box">
+        {% for message in messages %}
+            <div class="{% if message.sender == user %}user-message{% else %}owner-message{% endif %}">
+                <p>{{ message.message }}</p>
+                <small>{{ message.timestamp }}</small>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Form to send a new message -->
+    <form method="POST" action="{% url 'send_message' property.id %}">
+        {% csrf_token %}
+        <textarea name="message" rows="4" required placeholder="Type your message here..."></textarea>
+        <button type="submit">Send Message</button>
+    </form>
+
+    <!-- JavaScript Libraries -->
+    <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'template_landingpage/lib/bootstrap/js/bootstrap.min.js' %}"></script>
+</body>
+</html>

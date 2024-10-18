@@ -196,8 +196,8 @@
             <p><strong>Property Address:</strong> {{ agreement.property.address }}, {{ agreement.property.city }}, {{ agreement.property.state }}</p>
         </div>
         <div class="notification-footer">
-            <a href="" class="btn btn-view">View</a>
-            {% if agreement.status %}
+          <a href="{% url 'certificate' agreement.id %}" class="btn btn-view">View</a>
+          {% if agreement.status %}
             <a href="" class="btn btn-pay">Pay</a>
             {% endif %}
         </div>

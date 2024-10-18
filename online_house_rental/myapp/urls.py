@@ -46,5 +46,8 @@ urlpatterns = [
   path('verify-otp/', views.verify_otp, name='verify_otp'),
   path('enter-email/',views.enter_email, name='enter_email'),
   path('notification', views.notification, name='notification'),
+  path('property/<int:property_id>/conversation/', views.conversation, name='conversation'),
+  path('property/<int:property_id>/send_message/', views.send_message, name='send_message'),
+  path('certificate/<int:agreement_id>/', views.certificate, name='certificate'),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

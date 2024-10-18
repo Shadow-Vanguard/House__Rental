@@ -1,0 +1,123 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rental Agreement</title>
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+    <style>
+        @media print {
+            /* Hide everything except the agreement container */
+            body * {
+                visibility: hidden;
+            }
+            .agreement, .agreement * {
+                visibility: visible;
+            }
+            .agreement {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            /* Hide the download button on print */
+            button {
+                display: none;
+            }
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+
+        .agreement {
+            border: 1px solid #000; /* Reduce the border width */
+            padding: 20px;
+            margin: 20px auto; /* Center the agreement */
+            background: #f8f8f8;
+            font-family: Arial, sans-serif;
+            width: 210mm; /* A4 width */
+            height: auto;
+            max-width: 100%; /* Ensure responsiveness */
+            box-sizing: border-box;
+        }
+
+        .stamp {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTskL2oxOAmX6BDVfLEciT_z3THaIFONjYWMg&s');
+            background-size: contain;
+            background-repeat: no-repeat;
+            z-index: -1;
+        }
+
+        img.cover {
+            width: 100%; /* Cover full width of the page */
+            max-width: 800px; /* Adjust max-width to control size */
+            height: auto;
+            max-height: 300px;
+            margin-bottom: 20px;
+        }
+
+        /* Adjust p size */
+        p {
+            font-size: 15px; /* Make p text larger */
+            line-height: 1.6;
+        }
+
+        /* Style for the download button */
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="agreement">
+        <!-- Use static link to the image in static folder -->
+        <img src="{% static 'image/cover.jpeg' %}" alt="Agreement Header Image"
+             style="width: 100%; max-width: 800px; height: auto; max-height: 300px;" class="cover">
+
+
+        <p>This agreement made on this <strong>{{ agreement.start_date|date:"d" }}</strong> day of 
+            <strong>{{ agreement.start_date|date:"F" }}</strong>, {{ agreement.start_date|date:"Y" }}</p>
+
+         <p>between <strong>{{ agreement.renter.name }}</strong>, with <strong>{{ agreement.renter.phone }}</strong> 
+            as Mobile Number, residing at <strong>{{ agreement.renter.address }}</strong>,</p>
+
+         <p>hereinafter referred to as the 'LESSOR' of the One Part AND <strong>{{ agreement.property.owner.name }}</strong>, 
+            with <strong>{{ agreement.property.owner.phone }}</strong> as Mobile Number, residing at <strong>{{ agreement.property.address }}</strong>, 
+            hereinafter referred to as the 'LESSEE(s)' of the other Part;</p>
+         
+         <p>WHEREAS the Lessor is the lawful owner of, and otherwise well sufficiently entitled to, 
+            <strong>{{ agreement.property.description }}</strong> and comprising present in Floor 
+            <strong>{{ agreement.property.area }} sqft</strong>, without Parking hereinafter referred to as the 'said premises'.</p>
+         
+         <p>AND WHEREAS at the request of the Lessee, the Lessor has agreed to let the said premises upon 
+            the terms and conditions contained herein.</p>
+         
+         <p>Signature: <img src="{{ agreement.digital_signature.url }}" alt="Signature" width="200"></p><p>Owner Signature: <img src="{{ agreement.owner_digital_signature.url }}" alt="Owner's Digital Signature" width="200"></p>
+         <!-- Button to print/download the agreement -->
+    <button onclick="window.print()">Download as PDF</button>        
+    </div>
+</body>
+</html>
