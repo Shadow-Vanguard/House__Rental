@@ -44,7 +44,7 @@ class Property(models.Model):
     status = models.BooleanField(default=True)
     owner = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
     monthly_rent = models.IntegerField(null=True, blank=True)
-    terms_and_conditions = models.CharField(max_length=300, null=True, blank=True)
+    terms_and_conditions = models.CharField(max_length=3000, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     
 
@@ -80,7 +80,6 @@ class RentalAgreement(models.Model):
     notification_date = models.DateTimeField(blank=True, null=True)  # Field to track notification timestamp
 
 
-  
 
     def __str__(self):
         return f'Rental Agreement for {self.property.property_name}'
@@ -94,6 +93,10 @@ class Message(models.Model):
     message = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
+    notification_date = models.DateTimeField(blank=True, null=True)  # Added for tracking notification time
+    token_advance = models.BooleanField(default=False)
+    token_status = models.CharField(max_length=10, choices=[('pending', 'Pending'), ('accepted', 'Accepted'),('rejected', 'Rejected')], null=True, blank=True)
+    token_price = models.IntegerField(blank=True, null=True)
 
 
         

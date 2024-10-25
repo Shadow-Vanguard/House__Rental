@@ -280,6 +280,7 @@
             
             <!-- Terms and Conditions Button -->
             <a href="{% url 'termsandconditions' property.id %}" class="terms-btn">Terms and Conditions</a>
+            <a href="{% url 'owner_conversation_view' property.id %}" class="terms-btn">View Messages</a>
 
             <form method="POST" action="{% url 'ownerproperty' %}" style="display:inline;">
                 {% csrf_token %}

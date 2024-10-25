@@ -1,0 +1,239 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Notifications</title>
+    <link rel="stylesheet" href="{% static 'css/styleowner.css' %}">
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            background-color: #10bddb;
+            color: white;
+            padding: 30px 20px;
+            width: 100%;
+            text-align: center;
+            border-radius: 10px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+        }
+
+        .welcome h1 {
+            font-size: 32px;
+            font-weight: 500;
+        }
+
+        main {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        h2.text-center {
+            text-align: center;
+            font-size: 26px;
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        .notification-card {
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            margin-bottom: 25px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            border-left: 6px solid #3498db;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification-card::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background-color: #3498db;
+            z-index: 0;
+            transition: all 0.4s ease;
+            opacity: 0.05;
+            transform: rotate(45deg);
+        }
+
+        .notification-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .notification-header {
+            font-weight: 600;
+            font-size: 20px;
+            color: #3498db;
+            margin-bottom: 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .notification-header span {
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        .notification-content p {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            position: relative;
+            z-index: 1;
+        }
+
+        .notification-footer {
+            display: flex;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .btn {
+            text-decoration: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 500;
+            font-size: 14px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .btn-view {
+            background-color: #3498db;
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .btn-view:hover {
+            background-color: #fff;
+            color: #3498db;
+            border-color: #3498db;
+        }
+
+        .btn-clear {
+            background-color: #e74c3c;
+            color: white;
+            border: 2px solid transparent;
+        }
+
+        .btn-clear:hover {
+            background-color: #fff;
+            color: #e74c3c;
+            border-color: #e74c3c;
+        }
+
+        .no-notifications {
+            text-align: center;
+            color: #7f8c8d;
+            font-size: 18px;
+            margin-top: 30px;
+            font-style: italic;
+        }
+
+        .back-button {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            padding: 10px 20px;
+            background-color: #490527;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="{% url 'owner' %}" class="back-button">Back</a>
+        <div class="welcome">
+            <h1>{{ owner_name }}</h1>
+        </div>
+    </header>
+    <main>
+        <h2 class="text-center">Notifications</h2>
+        {% if grouped_messages %}
+            {% for key, messages in grouped_messages.items %}
+                {% for message in messages %}
+                    <div class="notification-card">
+                        <div class="notification-header">
+                            Message from <span>{{ key.0.name }}</span> regarding <span>{{ key.1.property_name }}</span>
+                        </div>
+                        <div class="notification-content">
+                            <p>{{ message.message }}</p>
+                            <small>{{ message.timestamp }}</small>
+                        </div>
+                        <div class="notification-footer">
+                            <a href="{% url 'owner_conversation' key.1.id %}?user_id={{ key.0.id }}" class="btn btn-view">View Chat</a>
+                            <a href="{% url 'clear_messages' key.0.id key.1.id %}" class="btn btn-clear">Clear</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        {% else %}
+            <p class="no-notifications">No unread messages available.</p>
+        {% endif %}
+             {% if token_messages %}
+                {% for message in token_messages %}
+                <div class="notification-card">
+                    <div class="notification-header">
+                        Token Request from <span>{{ message.sender.name }}</span> regarding <span>{{ message.property.property_name }}</span>
+                    </div>
+                    <div class="notification-content">
+                        <p>{{ message.token_message }}</p>
+                        <p>Price: {{ message.token_price }}</p>
+                        <small>{{ message.timestamp }}</small>
+                    </div>
+                    <div class="notification-footer">
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="message_id" value="{{ message.id }}">
+                            <input type="hidden" name="status" value="accepted">
+                            <button type="submit" class="btn btn-view">Accept</button>
+                        </form>
+                        <form method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="message_id" value="{{ message.id }}">
+                            <input type="hidden" name="status" value="rejected">
+                            <button type="submit" class="btn btn-clear">Reject</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            {% endif %}
+    </main>
+</body>
+</html>

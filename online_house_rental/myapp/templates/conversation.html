@@ -9,102 +9,75 @@
     <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <style>
-        body {
-            background-color: #f0f4f7;
-            font-family: 'Roboto', sans-serif;
-            color: #333;
-        }
-        h2 {
-            font-family: 'Lora', serif;
-            color: #007bff;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-align: center;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
-        }
-        .chat-box {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #007bff;
-            border-radius: 10px;
-            background: #fff;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-            height: 400px;
-            overflow-y: auto;
-        }
-        .user-message {
-            background-color: #d1e7dd;
-            border-radius: 10px;
-            padding: 10px;
-            margin: 10px 0;
-            align-self: flex-end;
-        }
-        .owner-message {
-            background-color: #cfe2ff;
-            border-radius: 10px;
-            padding: 10px;
-            margin: 10px 0;
-            align-self: flex-start;
-        }
-        .chat-box div {
-            display: flex;
-            flex-direction: column;
-        }
-        small {
-            font-size: 0.8em;
-            color: #666;
-            text-align: right;
-        }
-        form {
-            max-width: 600px;
-            margin: 20px auto;
-            display: flex;
-            flex-direction: column;
-        }
-        textarea {
-            padding: 10px;
-            border: 1px solid #ccc;
+        body { background-color: #e5ddd5; font-family: 'Roboto', sans-serif; color: #333; }
+        h2 { font-family: 'Lora', serif; color: #007bff; font-weight: bold; margin-bottom: 20px; text-align: center; }
+        .chat-box { max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 10px; background: #fff; height: 400px; overflow-y: auto; display: flex; flex-direction: column; }
+        .user-message { background-color: #68894e; border-radius: 20px 20px 0 20px; padding: 10px; margin: 10px 0; align-self: flex-end; }
+        .owner-message { background-color: #fff; border-radius: 20px 20px 20px 0; padding: 10px; margin: 10px 0; align-self: flex-start; border: 1px solid #ccc; }
+        form { max-width: 600px; margin: 20px auto; display: flex; flex-direction: column; }
+        textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: none; margin-bottom: 10px; }
+        button { padding: 10px; background-color: #007bff; color: #fff; border: none; border-radius: 5px; font-weight: bold; }
+        button:hover { background-color: #0056b3; }
+        .token-request-btn { background-color: #28a745; margin-top: 10px; color: white; }
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); padding-top: 60px; }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; }
+        .center {text-align: center;}
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #555; /* Gray background */
+            color: white;
+            padding: 10px 15px;
             border-radius: 5px;
-            resize: none;
-            margin-bottom: 10px;
-            font-family: 'Roboto', sans-serif;
-        }
-        button {
-            padding: 10px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            border-radius: 5px;
-            font-weight: bold;
-            transition: background-color 0.3s;
-        }
-        button:hover {
-            background-color: #0056b3;
+            text-decoration: none;
         }
     </style>
 </head>
 <body>
+    <a href="javascript:history.back()" class="back-btn">Back</a>
     <h2>Conversation about {{ property.property_name }}</h2>
-
     <div class="chat-box">
         {% for message in messages %}
             <div class="{% if message.sender == user %}user-message{% else %}owner-message{% endif %}">
                 <p>{{ message.message }}</p>
-                <small>{{ message.timestamp }}</small>
             </div>
         {% endfor %}
     </div>
-
-    <!-- Form to send a new message -->
     <form method="POST" action="{% url 'send_message' property.id %}">
         {% csrf_token %}
         <textarea name="message" rows="4" required placeholder="Type your message here..."></textarea>
         <button type="submit">Send Message</button>
     </form>
+    <form method="POST" action="{% url 'clear_message' property.id %}">
+        {% csrf_token %}
+        <button type="submit" style="margin-bottom: 20px; background-color: #dc3545;">Clear Messages</button>
+    </form>
+        {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}
+                <div style="text-align: center;">
+                    <div style="text-align: center;">
+                        <p>If you're interested, make a token request</p>
+                    <button class="token-request-btn" id="tokenRequestBtn">Token Request</button>
+                </div>
 
-    <!-- JavaScript Libraries -->
-    <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>
-    <script src="{% static 'template_landingpage/lib/bootstrap/js/bootstrap.min.js' %}"></script>
+        {% endif %}
+
+        <div id="tokenModal" class="modal">
+            <div class="modal-content">
+                <span id="closeModal" style="cursor:pointer; float:right;">&times;</span>
+                <h2>Token Request</h2>
+                <form method="POST" action="{% url 'conversation' property.id %}">
+                    {% csrf_token %}
+                    <input type="number" name="token_price" placeholder="Price" required>
+                    <textarea name="token_message" rows="4" required placeholder="Message"></textarea>
+                    <button type="submit">Send Token Request</button>
+                </form>
+            </div>
+        </div>
+    <script>
+        document.getElementById('tokenRequestBtn').onclick = function() { document.getElementById('tokenModal').style.display = 'block'; }
+        document.getElementById('closeModal').onclick = function() { document.getElementById('tokenModal').style.display = 'none'; }
+        window.onclick = function(event) { if (event.target == document.getElementById('tokenModal')) { document.getElementById('tokenModal').style.display = 'none'; } }
+    </script>
 </body>
 </html>

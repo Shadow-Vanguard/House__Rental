@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Details</title>
+    <link rel="stylesheet" href="{% static 'css/biling_details.css' %}">
+</head>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+        textarea {
+            height: 100px;
+        }
+        .total-amount {
+            font-size: 1.4em;
+            color: #007bff;
+            font-weight: bold;
+            text-align: right;
+        }
+        .button-container {
+            text-align: center;
+            margin-top: 30px;
+        }
+        .button {
+            background-color: #28a745;
+            color: #fff;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Payment Details</h1>
+        <form method="POST" action="">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="property-name">Property Name:</label>
+                <input type="text" id="property-name" name="property-name" value="{{ property.name }}" readonly>
+            </div>
+    
+            <div class="form-group">
+                <label for="billing-address">Billing Address:</label>
+                <textarea id="billing-address" name="billing-address">{{ user.billing_address }}</textarea>
+            </div>
+    
+            <div class="form-group">
+                <label for="payment-method">Payment Method:</label>
+                <select id="payment-method" name="payment-method">
+                    <option value="credit-card" {% if selected_payment == 'credit-card' %}selected{% endif %}>Credit Card</option>
+                    <option value="debit-card" {% if selected_payment == 'debit-card' %}selected{% endif %}>Debit Card</option>
+                    <option value="bank-transfer" {% if selected_payment == 'bank-transfer' %}selected{% endif %}>Bank Transfer</option>
+                    <option value="paypal" {% if selected_payment == 'paypal' %}selected{% endif %}>PayPal</option>
+                </select>
+            </div>
+    
+            <div class="form-group">
+                <label for="amount">Amount:</label>
+                <input type="text" id="amount" name="amount" value="{{ property.amount }}" readonly>
+            </div>
+    
+            <div class="form-group">
+                <label for="amount-to-be-paid">Amount to be Paid:</label>
+                <input type="text" id="amount-to-be-paid" name="amount-to-be-paid" value="{{ amount_to_be_paid }}" readonly>
+            </div>
+    
+            <div class="button-container">
+                <button type="submit" class="button">Confirm and Pay</button>
+            </div>
+        </form>
+    </div>
+    
+    </body>
+    </html>

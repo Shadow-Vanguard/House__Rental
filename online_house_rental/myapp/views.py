@@ -11,7 +11,7 @@ from django.http import JsonResponse
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
-from django.http import HttpResponse
+from django.http import HttpResponse,HttpResponseRedirect
 from django.core.files.storage import FileSystemStorage 
 import random
 from django.utils import timezone
@@ -47,37 +47,31 @@ def send_otp_email(user_email):
 def enter_email(request):
     if request.method == 'POST':
         email = request.POST.get('email')
-
+        role = request.GET.get('role')  # Get role from the query parameters
         if User.objects.filter(email=email).exists():
             messages.info(request, "Email is already registered. Please log in.")
             return redirect('login')
-
         send_otp_email(email)
-
         request.session['email'] = email
-
+        request.session['role'] = role  # Store role in session
         return redirect('verify_otp')
-
     return render(request, 'enter_email.html')
 
+
 def verify_otp(request):
-    email = request.session.get('email') 
+    email = request.session.get('email')
+    role = request.session.get('role')  # Get role from session
     if not email:
         messages.error(request, "Session expired. Please enter your email again.")
         return redirect('enter_email')
-
     if request.method == 'POST':
         otp_input = request.POST.get('otp')
-
         if otp_storage.get(email) and otp_storage[email] == int(otp_input):
-          
             del otp_storage[email]
             request.session['email'] = email
-
-            return redirect('register')
+            return redirect(f"{reverse('register')}?role={role}")  # Correctly construct the URL
         else:
             messages.error(request, "Invalid OTP. Please try again.")
-
     return render(request, 'verify_otp.html')
 
 
@@ -117,7 +111,7 @@ def register(request):
         phone = request.POST.get('contact')
         password = request.POST.get('password')
         confirm_password = request.POST.get('confirmPassword')
-        role = request.POST.get('role', role)
+        role = request.POST.get('role', role)  # Use role from POST if it exists
         if User.objects.filter(email=email).exists():
             return render(request, 'register.html', {'email_error': 'An account with this email already exists.', 'name': name, 'address': address, 'contact': phone, 'role': role})
         if password != confirm_password:
@@ -126,7 +120,7 @@ def register(request):
         user.save()
         send_mail('Registration Successful', f'Hello {name},\n\nThank you for registering!\n\nBest regards,\nYour Team', settings.DEFAULT_FROM_EMAIL, [email], fail_silently=False)
         return redirect('login')
-    return render(request, 'register.html', {'role': role,'email': email })
+    return render(request, 'register.html', {'role': role, 'email': email})
 
 
 
@@ -522,17 +516,30 @@ def bookconf(request):
     return render(request, 'bookconf.html')
 
 def contactowner(request, property_id):
+    if not request.session.get('user_id'):
+        return redirect('login')  # Redirect to login if no session exists
+
+    # Retrieve property and owner information
     property = get_object_or_404(Property, id=property_id)
     owner = property.owner
-    messages = Message.objects.filter(property=property)
+    current_user_id = request.session.get('user_id')  # Retrieve current user from session
+    current_user = get_object_or_404(User, id=current_user_id)  # Get current user object
+
+    # Fetch messages related to the property between the current user and the owner
+    messages = Message.objects.filter(property=property, sender=current_user, receiver=owner) | \
+               Message.objects.filter(property=property, sender=owner, receiver=current_user)
+    messages = messages.order_by('timestamp')  # Order messages by timestamp
 
     if request.method == 'POST':
         message_text = request.POST.get('message')
+        
+        # Create a new message with the current user as sender
         Message.objects.create(
-            sender=request.user,
+            sender=current_user,
             receiver=owner,
             property=property,
             message=message_text,
+            timestamp=timezone.now(),
         )
 
     return render(request, 'contactowner.html', {
@@ -540,7 +547,6 @@ def contactowner(request, property_id):
         'messages': messages,
         'property': property,
     })
-
 
 def owner_details(request, property_id):
     # Get the property object based on the provided property_id
@@ -601,7 +607,7 @@ def rental_agreement(request, property_id):
             digital_signature=digital_signature 
         )
         rental_agreement.save()
-        return HttpResponse('Rental agreement submitted successfully!')
+        return HttpResponseRedirect('thank')
     return render(request, 'rental_agreement.html', {
         'property': property
         })
@@ -751,10 +757,23 @@ def notification(request):
         # Fetch all rental agreements that have been accepted (status=True) for the logged-in user
         rental_agreements = RentalAgreement.objects.filter(renter_id=user_id, status=True).order_by('-notification_date')
         
+        # Fetch all unread messages where the sender is an owner and receiver is the logged-in user
+        unread_messages = Message.objects.filter(receiver_id=user_id, sender__role='owner', is_read=False).order_by('-timestamp')
+        
         return render(request, 'notification.html', {
-            'rental_agreements': rental_agreements
+            'rental_agreements': rental_agreements,
+            'unread_messages': unread_messages
         })
 
+    return redirect('login')
+
+def clear_message(request, message_id):
+    if request.session.get('user_id'):
+        message = get_object_or_404(Message, id=message_id, receiver_id=request.session['user_id'])
+        # Mark the message as read
+        message.is_read = True
+        message.save()
+        return redirect('notification')
     return redirect('login')
 
 
@@ -769,64 +788,68 @@ def send_message(request, property_id):
             property = get_object_or_404(Property, id=property_id)
             owner = property.owner  # Assuming your Property model has an owner field
             
-            # Create a new message from the user to the owner
-            Message.objects.create(
-                sender_id=user_id,  # Use user_id from session
-                receiver=owner,
-                property=property,
-                message=message_content
-            )
-            return redirect('conversation', property_id=property_id)
-    
-    # If the user is not authenticated, redirect to login
-    return redirect('login')
-
-
-def conversation(request, property_id):
-    # Check if the user is logged in via session
-    if request.session.get('user_id'):
-        user_id = request.session['user_id']
-        
-        # Get the property and the owner
-        property = get_object_or_404(Property, id=property_id)
-        owner = property.owner
-        
-        # Fetch all messages related to this property between the user and the owner
-        messages = Message.objects.filter(
-            property=property,
-            sender_id=user_id,
-            receiver=owner
-        ) | Message.objects.filter(
-            property=property,
-            sender=owner,
-            receiver_id=user_id
-        )
-
-        # Order the combined messages by timestamp
-        messages = messages.order_by('timestamp')
-
-        # Handle sending a new message
-        if request.method == "POST":
-            message_content = request.POST.get('message')
-            if message_content:
-                new_message = Message.objects.create(
+            # Validate message content
+            if message_content:  # Check if message is not empty
+                # Create a new message from the user to the owner
+                Message.objects.create(
                     sender_id=user_id,  # Use user_id from session
                     receiver=owner,
                     property=property,
                     message=message_content
                 )
-                return redirect('conversation', property_id=property.id)
+                return redirect('conversation', property_id=property_id)
+            else:
+                # Handle the case where the message is empty
+                return render(request, 'conversation.html', {
+                    'property': property,
+                    'error': 'Message cannot be empty.',  # Pass an error message to the template
+                })
+    
+    # If the user is not authenticated, redirect to login
+    return redirect('login')
 
+
+
+def conversation(request, property_id):
+    if request.session.get('user_id'):
+        user_id = request.session['user_id']
+        property = get_object_or_404(Property, id=property_id)
+        messages = Message.objects.filter(
+            property=property,
+            token_advance=False
+        ).filter(
+            Q(sender_id=user_id) | Q(receiver_id=user_id)
+        ).order_by('timestamp')
+        if request.method == "POST":
+            if 'token_price' in request.POST:
+                token_price = request.POST.get('token_price')
+                token_message = request.POST.get('token_message')
+                Message.objects.create(
+                    sender_id=user_id,
+                    receiver_id=property.owner.id,
+                    property=property,
+                    message=token_message,
+                    token_advance=True,
+                    token_status='pending',
+                    token_price=token_price
+                )
+                return redirect('conversation', property_id=property.id)
+            message_content = request.POST.get('message')
+            if message_content:
+                receiver_id = property.owner.id if user_id != property.owner.id else request.POST.get('receiver_id')
+                Message.objects.create(
+                    sender_id=user_id,
+                    receiver_id=receiver_id,
+                    property=property,
+                    message=message_content
+                )
+                return redirect('conversation', property_id=property.id)
         context = {
             'property': property,
-            'owner': owner,
             'messages': messages,
         }
         return render(request, 'conversation.html', context)
-    
-    # If user is not authenticated, redirect to login
     return redirect('login')
-
 
 def certificate(request, agreement_id):
     rental_agreement = get_object_or_404(RentalAgreement, id=agreement_id)
@@ -834,3 +857,137 @@ def certificate(request, agreement_id):
         'agreement': rental_agreement,  # Rename this to match your template
     }
     return render(request, 'certificate.html', context)
+
+
+
+# Views.py
+
+def owner_conversation(request, property_id):
+    if request.session.get('user_id'):
+        owner_id = request.session['user_id']
+        property_instance = get_object_or_404(Property, id=property_id, owner_id=owner_id)
+        inquirer_id = request.GET.get('user_id')
+        if inquirer_id:
+            messages = Message.objects.filter(
+                property=property_instance,
+                sender_id__in=[owner_id, inquirer_id],
+                receiver_id__in=[owner_id, inquirer_id]
+            ).order_by('timestamp')
+        else:
+            messages = []
+        if request.method == "POST":
+            message_content = request.POST.get('message')
+            if message_content and inquirer_id:
+                Message.objects.create(
+                    sender_id=owner_id,
+                    receiver_id=inquirer_id,
+                    property=property_instance,
+                    message=message_content
+                )
+                return redirect(
+                    f'/owner/conversation/{property_id}/?user_id={inquirer_id}')  # Redirect with inquirer_id
+        context = {
+            'property': property_instance,
+            'messages': messages,
+            'inquirer_id': inquirer_id
+        }
+        return render(request, 'owner_conversation.html', context)
+    return redirect('login')
+
+
+
+def clear_messages(request, sender_id, property_id):
+    # Check if the user is logged in via session
+    if request.session.get('user_id'):
+        user_id = request.session['user_id']
+        
+        # Get the property for which messages are to be cleared
+        property = get_object_or_404(Property, id=property_id)
+
+        # Clear all messages related to the property and sender
+        Message.objects.filter(property=property, sender_id=sender_id).delete()
+
+        # Redirect back to the notification page
+        return redirect('notification_owner')
+    
+    # If the user is not authenticated, redirect to login
+    return redirect('login')
+
+
+def owner_conversation_viewuser(request, property_id):
+    if request.session.get('user_id'):
+        user_id = request.session['user_id']
+        
+        # Get the property, ensuring it belongs to the logged-in owner
+        property = get_object_or_404(Property, id=property_id, owner_id=user_id)
+        
+        # Get distinct senders of messages related to the property, excluding the owner
+        messages = Message.objects.filter(property=property).exclude(sender_id=user_id).values('sender_id').distinct()
+        
+        # Get user objects for those sender IDs
+        users = User.objects.filter(id__in=[msg['sender_id'] for msg in messages])
+        
+        # Pass property and users to the template
+        return render(request, 'owner_conversation_viewuser.html', {'property': property, 'users': users})
+    return redirect('login')
+
+def notification_owner(request):
+    owner_id = request.session.get('user_id')
+    if owner_id:
+        if request.method == "POST":
+            message_id = request.POST.get('message_id')
+            status = request.POST.get('status')
+            if message_id and status:
+                Message.objects.filter(id=message_id).update(token_status=status, is_read=True)
+                return redirect('notification_owner')
+
+        unread_messages = Message.objects.filter(
+            receiver_id=owner_id,
+            sender__role='user',
+            is_read=False,
+            token_advance=False
+        ).select_related('property', 'sender').order_by('-timestamp')
+        grouped_messages = {}
+        for message in unread_messages:
+            key = (message.sender, message.property)
+            if key not in grouped_messages:
+                grouped_messages[key] = []
+            grouped_messages[key].append(message)
+
+        token_messages = Message.objects.filter(
+            receiver_id=owner_id,
+            sender__role='user',
+            is_read=False,
+            token_advance=True
+        ).select_related('property', 'sender').order_by('-timestamp')
+        owner_name = User.objects.get(id=owner_id).name
+        return render(request, 'notification_owner.html', {
+            'grouped_messages': grouped_messages,
+            'token_messages': token_messages,
+            'owner_name': owner_name
+        })
+    return redirect('login')
+
+def clear_owner_messages(request, property_id):
+    if request.session.get('user_id'):
+        owner_id = request.session['user_id']
+        property_instance = get_object_or_404(Property, id=property_id, owner_id=owner_id)
+        inquirer_id = request.GET.get('user_id')
+        if inquirer_id:
+            Message.objects.filter(
+                property=property_instance,
+                sender_id__in=[owner_id, inquirer_id],
+                receiver_id__in=[owner_id, inquirer_id]
+            ).delete()
+        return redirect(f'/owner/conversation/{property_id}/?user_id={inquirer_id}')
+    return redirect('login')
+
+
+def buyer(request):
+    return render(request, 'buyer.html')
+
+def biling_details(request):
+    return render(request, 'biling_details.html')
+
+def thank(request):
+    return render(request, 'thank.html')

@@ -208,14 +208,30 @@
             }
         });
 
-        areaInput.addEventListener('input', function() {
-            const value = parseInt(areaInput.value);
-            const areaError = document.getElementById('areaError');
-            areaError.textContent = '';
-            if (value < 0) {
-                areaError.textContent = 'Area cannot be negative.';
-            }
-        });
+        // Area validation
+    areaInput.addEventListener('input', function() {
+        const value = parseInt(areaInput.value);
+        const areaError = document.getElementById('areaError');
+        areaError.textContent = '';
+        
+        // Check if the input is empty
+        if (areaInput.value.trim() === '') {
+            areaError.textContent = 'Area cannot be empty.';
+            return;
+        }
+
+        // Check if the area is a valid number
+        if (isNaN(value)) {
+            areaError.textContent = 'Area must be a number.';
+            return;
+        }
+
+        // Check if the area is negative
+        if (value < 0) {
+            areaError.textContent = 'Area cannot be negative.';
+        }
+    });
+
 
         priceInput.addEventListener('input', function() {
             const value = parseFloat(priceInput.value);

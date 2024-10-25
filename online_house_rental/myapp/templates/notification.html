@@ -21,118 +21,114 @@
   <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
   <style>
       body {
-          background-color: #f0f4f7;
-          font-family:'Open Sans', sans-serif;
-          color: #333;
-      }
-      .notification-container {
-          margin-top: 40px;
-          max-width: 900px;
-          margin-left: auto;
-          margin-right: auto;
-      }
-      .notification-card {
-          position: relative;
-          border: 1px solid #007bff;
-          border-radius: 10px;
-          padding: 20px;
-          margin-bottom: 25px;
-          background: linear-gradient(135deg, #f9f9f9, #e3f2fd);
-          box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-          transition: all 0.3s ease;
-      }
-      .notification-card:hover {
-          transform: scale(1.03);
-          box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-      }
-      .notification-header {
-          font-size: 1.3em;
-          font-weight: bold;
-          color: #333;
-      }
-      .notification-header span {
-          color: #28a745;
-      }
-      .notification-header .declined {
-          color: #dc3545;
-      }
-      .notification-content {
-        margin: 15px 0;
-        font-family: 'Open Sans', sans-serif;
-        font-size: 1.1em;
-      }
-      .notification-footer {
-          display: flex;
-          justify-content: flex-end;
-          align-items: center;
-      }
-      .notification-footer a {
-          margin-left: 15px;
-      }
-      .notification-footer .btn {
-          border-radius: 20px;
-          padding: 10px 20px;
-          font-weight: bold;
-          transition: background-color 0.3s ease;
-      }
-      .btn-view {
-          background-color: #cf8610;
-          color: #fff;
-          border: none;
-      }
-      .btn-view:hover {
-          background-color: #b56605;
-      }
-      .btn-pay {
-          background-color: #28a745;
-          color: #fff;
-          border: none;
-      }
-      .btn-pay:hover {
-          background-color: #218838;
-      }
-      .notification-date {
-        position: absolute;
-        bottom: 20px;
-        left: 20px; /* This positions the date on the bottom left corner */
-        font-size: 0.95em;
-        color: #333; /* Light black color */
-    }
-    .notification-date {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    font-size: 0.95em;
-    color: #333; /* Light black color */
+        body {
+    font-family: 'Arial', sans-serif;
+    background-color: #e9ecef;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
-      h2.text-center {
-          font-size: 2.2em;
-          font-family: 'Lora', serif; 
-          color: #007bff;
-          font-weight: bold;
-          margin-bottom: 30px;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.15);
-          border-bottom: 3px solid #007bff;
-          padding-bottom: 10px;
-          display: inline-block;
-          letter-spacing: 1px;
+
+h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-size: 1.8em;
+}
+
+.container.notification-container {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.notification-card {
+    background: #f8f9fa;
+    border-left: 4px solid #3498db;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: background 0.3s, transform 0.3s;
+    position: relative;
+}
+
+.notification-card:hover {
+    background: #ecf0f1;
+    transform: translateY(-2px);
+}
+
+.notification-header {
+    font-size: 1.1em;
+    color: #2c3e50;
+}
+
+.notification-header span {
+    font-weight: bold;
+    color: #3498db;
+}
+
+.notification-header .declined {
+    color: #e74c3c;
+}
+
+.notification-date {
+    font-size: 0.9em;
+    color: #7f8c8d;
+    margin-top: 10px;
+}
+
+.notification-content {
+    margin-top: 10px;
+}
+
+.notification-content p {
+    margin: 5px 0;
+}
+
+.notification-footer {
+    margin-top: 15px;
+}
+
+.btn {
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+    color: white;
+    background-color: #3498db;
+    transition: background 0.3s;
+}
+
+.btn:hover {
+    background-color: #2980b9;
+}
+
+.btn-pay {
+    background-color: #2ecc71;
+}
+
+.btn-pay:hover {
+    background-color: #27ae60;
+}
+
+.no-notifications {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 1.2em;
+}
+
+.text-center {
+    text-align: center;
+}
       }
-      p.no-notifications {
-          font-size: 1.2em;
-          color: #555;
-          text-align: center;
-          margin-top: 50px;
-      }
-      .back-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #06618b; /* Gray background */
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-        }
+
   </style>
 </head>
 <body>
@@ -207,6 +203,47 @@
     {% endfor %}
   </div>
   <!--/ Notification Section End /-->
+<!-- Message Notification Section Start -->
+<h2 class="text-center">Messages</h2>
+
+{% if unread_messages %}
+    <!-- Grouping unread messages by the sender (Owner) -->
+    {% regroup unread_messages by sender as owner_messages %}
+    
+    <!-- Loop through the grouped messages -->
+    {% for group in owner_messages %}
+    
+        <!-- Display separate boxes for each message sent by the owner -->
+        {% for message in group.list %}
+        <div class="notification-card">
+            <div class="notification-header">
+                Message from <span>{{ group.grouper.name }}</span> (Owner) regarding property: 
+                <span>{{ message.property.property_name }}</span>
+            </div>
+
+            <div class="notification-content">
+                <p>{{ message.message }}</p>
+            </div>
+
+            <div class="notification-footer">
+                <a href="{% url 'contactowner' group.grouper.id %}" class="btn btn-view">View Chat</a>
+                <a href="{% url 'clear_message' message.id %}" class="btn btn-clear">Clear</a>
+            </div>
+
+            <div class="notification-date">
+                {{ message.timestamp|date:"Y-m-d H:i" }}
+            </div>
+        </div>
+        {% endfor %}
+        
+    {% endfor %}
+{% else %}
+<p class="no-notifications">No unread messages available.</p>
+{% endif %}
+<!-- Message Notification Section End -->
+
+
+
 
   <!-- JavaScript Libraries -->
   <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>

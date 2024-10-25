@@ -187,10 +187,20 @@ small {
     color: red;
     font-size: 0.9em;
 }
+.back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #2f8cd7; /* Gray background */
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-
+    <a href="javascript:history.back()" class="back-btn">Back</a>
 <div class="container">
     <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
@@ -205,6 +215,7 @@ small {
         <div>
             <label for="end_date">End Date:</label>
             <input type="date" id="end_date" name="end_date" required>
+            <span id="endDateError" style="color: red;"></span>
         </div>
 
         <div>
@@ -217,6 +228,7 @@ small {
             <p>
                 Please read and agree to the <span class="terms-link" id="openTermsModal">terms and conditions</span> before proceeding.
             </p>
+            <span id="termsError" style="color: red;"></span>
             <input type="checkbox" id="terms" name="terms" required> I agree to the terms and conditions
         </div>
 
@@ -271,8 +283,15 @@ document.getElementById('rentalForm').addEventListener('submit', function(event)
     document.getElementById('endDateError').textContent = '';
     document.getElementById('termsError').textContent = '';
     document.getElementById('signatureError').textContent = '';
+    // Get date values
+    const startDate = new Date(document.getElementById('start_date').value);
+    const endDate = new Date(document.getElementById('end_date').value);
 
-   
+    // Date validation: Check if end date is after start date
+    if (startDate >= endDate) {
+        document.getElementById('endDateError').textContent = 'End date must be after the start date.';
+        formValid = false;
+    }
 
     // Terms Checkbox Validation
     const terms = document.getElementById('terms');
