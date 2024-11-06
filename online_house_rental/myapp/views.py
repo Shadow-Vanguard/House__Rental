@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message
+from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment
 from django.contrib import messages
 import logging
 from django.utils.crypto import get_random_string
@@ -14,6 +14,7 @@ from django.conf import settings
 from django.http import HttpResponse,HttpResponseRedirect
 from django.core.files.storage import FileSystemStorage 
 import random
+import time
 from django.utils import timezone
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
@@ -591,6 +592,12 @@ def rental_agreement(request, property_id):
     if not user_id:
         return redirect('login')
     user = get_object_or_404(User, id=user_id)
+
+     # Check if an agreement already exists for this user and property
+    existing_agreement = RentalAgreement.objects.filter(property=property, renter=user).exists()
+    if existing_agreement:
+        # Show a message if the agreement has already been submitted
+        return HttpResponse('You have already submitted a rental agreement for this property.')
     if request.method == 'POST':
         start_date = request.POST.get('start_date')
         end_date = request.POST.get('end_date')
@@ -607,7 +614,8 @@ def rental_agreement(request, property_id):
             digital_signature=digital_signature 
         )
         rental_agreement.save()
-        return HttpResponseRedirect('thank')
+        return redirect('thank')
+        # return HttpResponse('submitted succesfully')
     return render(request, 'rental_agreement.html', {
         'property': property
         })
@@ -651,50 +659,21 @@ def ownerview(request):
 def accept_decline_agreement(request, agreement_id):
     if request.session.get('user_id'):
         rental_agreement = get_object_or_404(RentalAgreement, id=agreement_id)
-
         if request.method == "POST":
             action = request.POST.get('action')
-
             if action == "accept":
                 rental_agreement.status = True
-                
-                # Check if there's a digital signature uploaded
                 if 'owner_digital_signature' in request.FILES:
-                    rental_agreement.owner_digital_signature = request.FILES['owner_digital_signature']  # Save the uploaded signature image
-                
-                # Update notification date when the agreement is accepted
+                    rental_agreement.owner_digital_signature = request.FILES['owner_digital_signature']
                 rental_agreement.notification_date = timezone.now()
                 rental_agreement.save()
-
-                # Send email notification to the renter
-                subject = 'Your Rental Agreement has been Approved'
-                message = (
-                    f"Dear {rental_agreement.renter.name},\n\n"  # Using the renter's username or name
-                    "Your rental agreement has been approved. You can continue with the next steps.\n\n"
-                    "Thank you for using our service!\n"
-                    "Best regards,\n"
-                    "The Rental Team"
-                )
-                recipient_list = [rental_agreement.renter.email]  # Correctly referencing the renter's email
-
-                # Sending the email
-                send_mail(
-                    subject,
-                    message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    recipient_list,
-                    fail_silently=False,  # Set to True to suppress errors
-                )
-            
-            elif action == "decline":
+                messages.success(request, 'Agreement accepted successfully!')
+            elif action == "decline" and rental_agreement.status is None:
                 rental_agreement.status = False
-            
-            rental_agreement.save()  # Save the status change and signature
-            
-            return redirect('ownerview')  # Redirect to the owner view after processing
-
-    return redirect('login')  # Redirect if user is not authenticated
-
+                rental_agreement.save()
+                messages.success(request, 'Agreement declined successfully!')
+            return redirect('ownerview')
+    return redirect('login')
 
 def rented_properties_view(request):
     rented_properties = RentalAgreement.objects.select_related('property', 'renter').all()
@@ -926,7 +905,6 @@ def owner_conversation_viewuser(request, property_id):
         
         # Get user objects for those sender IDs
         users = User.objects.filter(id__in=[msg['sender_id'] for msg in messages])
-        
         # Pass property and users to the template
         return render(request, 'owner_conversation_viewuser.html', {'property': property, 'users': users})
     return redirect('login')
@@ -984,10 +962,151 @@ def clear_owner_messages(request, property_id):
 
 
 def buyer(request):
-    return render(request, 'buyer.html')
+    if 'user_id' in request.session:
+        user_id = request.session['user_id']
+        user = get_object_or_404(User, id=user_id)
+        rental_agreement_id = request.GET.get('agreement_id')
+        rental_agreement = get_object_or_404(RentalAgreement, id=rental_agreement_id, renter=user)
+        
+        if request.method == 'POST':
+            payment = Payment.objects.create(
+                rental_agreement=rental_agreement,
+                user=user,
+                amount=rental_agreement.property.monthly_rent,
+                billing_address=request.POST.get('billing_address'),
+                city=request.POST.get('city'),
+                state=request.POST.get('state'),
+                pin_code=request.POST.get('pin_code'),
+                payment_status='pending',
+                transaction_id=f"TXN_{int(time.time())}"
+            )
+            return redirect('biling_details', payment_id=payment.id)
+            
+        return render(request, 'buyer.html', {
+            'user': user,
+            'rental_agreement': rental_agreement
+        })
+    return redirect('login')
 
-def biling_details(request):
-    return render(request, 'biling_details.html')
+def biling_details(request, payment_id):
+    if 'user_id' in request.session:
+        payment = get_object_or_404(Payment, id=payment_id)
+        return render(request, 'biling_details.html', {
+            'payment': payment,
+            'rental_agreement': payment.rental_agreement,
+            'property': payment.rental_agreement.property,
+            'user': payment.user,
+            'razorpay_key_id': settings.RAZORPAY_KEY_ID  # Use from Django settings
+        })
+    return redirect('login')
 
 def thank(request):
     return render(request, 'thank.html')
+
+def feedback_page(request, property_id):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+    user = get_object_or_404(User, id=user_id)
+    property = get_object_or_404(Property, id=property_id)
+    feedback_list = Feedback.objects.filter(property=property)\
+        .select_related('user')\
+        .order_by('-created_at')
+    user_feedback = feedback_list.filter(user=user)
+    other_feedback = feedback_list.exclude(user=user)
+    if request.method == "POST":
+        if request.POST.get('delete_feedback'):
+            feedback_id = request.POST.get('feedback_id')
+            feedback = get_object_or_404(Feedback, id=feedback_id, user=user)
+            feedback.delete()
+            return JsonResponse({'status': 'success'})
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        if rating and comment:
+            try:
+                Feedback.objects.create(
+                    property=property,
+                    user=user,
+                    rating=int(rating),
+                    comment=comment
+                )
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Feedback submitted successfully!'
+                })
+            except Exception as e:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': str(e)
+                }, status=500)
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Please provide both rating and comment'
+            }, status=400)
+    
+    return render(request, 'feedback_page.html', {
+        'property': property,
+        'feedback_list': feedback_list,
+        'user_feedback': user_feedback,
+        'other_feedback': other_feedback,
+        'current_user': user
+    })
+
+
+# views.py
+# views.py
+import razorpay
+from django.shortcuts import render, get_object_or_404, redirect
+from django.http import JsonResponse
+from .models import Payment
+from django.conf import settings
+
+from decimal import Decimal
+
+def create_order(request, payment_id):
+    if 'user_id' in request.session:
+        payment = get_object_or_404(Payment, id=payment_id)
+        amount_in_paise = int(payment.amount * Decimal(100))
+
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET_KEY))
+
+        try:
+            order_data = {
+                'amount': amount_in_paise,
+                'currency': 'INR',
+                'receipt': f'receipt_{payment.id}',
+                'payment_capture': '1'
+            }
+            razorpay_order = client.order.create(data=order_data)
+            payment.transaction_id = razorpay_order['id']
+            payment.save()
+
+            return JsonResponse({
+                'id': razorpay_order['id'],
+                'amount': razorpay_order['amount'],
+                'currency': razorpay_order['currency']
+            })
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+
+    return redirect('login')
+
+def payment_success(request):
+    payment_id = request.GET.get('payment_id')
+    if payment_id:
+        try:
+            client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET_KEY))
+            payment = client.payment.fetch(payment_id)
+
+            if payment['status'] == 'captured':
+                payment_record = get_object_or_404(Payment, transaction_id=payment['order_id'])
+                payment_record.status = 'Paid'
+                payment_record.save()
+                return HttpResponse("Payment successful!")
+            else:
+                return HttpResponse("Payment verification failed.")
+        except Exception as e:
+            return HttpResponse(f"An error occurred: {str(e)}")
+    else:
+        return HttpResponse("Payment ID not found.")

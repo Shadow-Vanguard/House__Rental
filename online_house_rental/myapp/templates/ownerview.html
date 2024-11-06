@@ -88,6 +88,26 @@
             border-radius: 5px;
             text-decoration: none;
         }
+        .message-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            animation: fadeInOut 3s forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(-20px); }
+            10% { opacity: 1; transform: translateY(0); }
+            90% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
     </style>
 </head>
 <body>
@@ -97,6 +117,14 @@
         <h2>Welcome, {{ owner_name }}</h2>
 
         <h3>Your Rental Agreements</h3>
+
+        {% if messages %}
+        <div class="message-container">
+            {% for message in messages %}
+                <div class="success-message">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
 
         {% if rental_agreements %}
         {% for rental_agreement in rental_agreements %}
@@ -153,14 +181,6 @@
                         <input type="file" id="owner_digital_signature" name="owner_digital_signature" accept="image/*">
                         
                         <button type="submit" name="action" value="accept" class="accept">Accept</button>
-                        <button type="submit" name="action" value="decline" class="decline">Decline</button>
-                    </form>
-                </div>
-            {% elif rental_agreement.status == 1 %}
-                <!-- If accepted, show the decline button -->
-                <div class="actions">
-                    <form method="post" action="{% url 'accept_decline_agreement' rental_agreement.id %}">
-                        {% csrf_token %}
                         <button type="submit" name="action" value="decline" class="decline">Decline</button>
                     </form>
                 </div>

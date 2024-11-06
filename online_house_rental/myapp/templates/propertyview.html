@@ -39,12 +39,23 @@
         .red-text {
     color: red;
 }
+.back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background-color: #cae770; /* Gray background */
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
     </style>
 </head>
 <body>
-    <div class="top-right">
+    <a href="javascript:history.back()" class="back-btn">Back</a>
+    <!-- <div class="top-right">
         <button><a href="{% url 'userpage' %}" class="back-button">Back to Properties</a></button>
-    </div>
+    </div> -->
 
     <div class="container">
         <h1 id="propertyName">{{ property.property_name }}</h1>
@@ -96,12 +107,15 @@
                     {% endif %}
                     {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
                     <button class="btn contact-btn">
-                        <a href="{% url 'rental_agreement' property.id %}" class="contact-link">Rent Now</a>
+                        <a href="{% url 'rental_agreement' property.id %}" class="contact-link" id="rent">Rent Now</a>
                     </button>
                         <form method="post" style="display:inline;">
                             {% csrf_token %}
                             <button type="submit" name="add_to_wishlist" class="btn contact-btn">Wishlist</button>
                         </form>
+                        <button class="btn contact-btn">
+                            <a href="{% url 'feedback_page' property.id %}" class="btn btn-primary">Feedback</a>
+                        </button>
                         <button class="btn contact-btn">
                             <a href="{% url 'conversation' property.id %}" class="btn btn-primary">Contact Owner</a>
                         </button>

@@ -1,0 +1,339 @@
+<!-- feedback_page.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback for {{ property.property_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/feedback.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .feedback-form {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+            border: 1px solid #c3e6cb;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .submit-btn {
+            background-color: #0eaac5;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .submit-btn:hover {
+            background-color: #0c8fa6;
+        }
+
+        .feedback-container {
+            margin-top: 30px;
+        }
+
+        .feedback-item {
+            background: white;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            transition: transform 0.2s;
+        }
+
+        .feedback-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .delete-feedback {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            float: right;
+            transition: background-color 0.3s;
+        }
+
+        .delete-feedback:hover {
+            background-color: #c82333;
+        }
+
+        textarea {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #0eaac5;
+            box-shadow: 0 0 0 2px rgba(14,170,197,0.2);
+        }
+
+        .star-rating {
+            display: flex;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 30px;
+            color: #ddd;
+            cursor: pointer;
+            padding: 0 2px;
+            transition: color 0.2s;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: #ffd700;
+        }
+
+        .star-rating label:hover:before,
+        .star-rating label:hover ~ label:before,
+        .star-rating input:checked ~ label:before {
+            content: '★';
+            position: absolute;
+        }
+
+        .feedback-stars {
+            color: #ffd700;
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #0eaac5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .back-button:hover {
+            background-color: #0c8fa6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .back-button i {
+            font-size: 20px;
+        }
+
+        .feedback-section {
+            margin-top: 30px;
+        }
+
+        .feedback-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #0eaac5;
+        }
+
+        .feedback-container {
+            margin-bottom: 30px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function() {
+        // Form submission handler
+        $('#feedback-form').on('submit', function(e) {
+            e.preventDefault();
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: $(this).serialize(),
+                success: function(response) {
+                    if(response.status === 'success') {
+                        // Show success message
+                        $('.success-message')
+                            .text(response.message)
+                            .slideDown()
+                            .delay(3000)
+                            .slideUp();
+                        
+                        // Clear the form
+                        $('#feedback-form')[0].reset();
+                        
+                        // Reload the feedback list after a short delay
+                        setTimeout(function() {
+                            location.reload();
+                        }, 3500);
+                    }
+                },
+                error: function(xhr) {
+                    alert(xhr.responseJSON.message || 'Error submitting feedback');
+                }
+            });
+        });
+
+        // Delete feedback handler
+        $('.delete-feedback').click(function(e) {
+            e.preventDefault();
+            var feedbackId = $(this).data('feedback-id');
+            var feedbackDiv = $(this).closest('.feedback-item');
+            
+            $.ajax({
+                url: '{% url "feedback_page" property.id %}',
+                type: 'POST',
+                data: {
+                    'delete_feedback': true,
+                    'feedback_id': feedbackId,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    feedbackDiv.fadeOut(1000, function() {
+                        $(this).remove();
+                        if ($('.feedback-item').length === 0) {
+                            $('#feedback-container').html('<p>No feedback yet</p>');
+                        }
+                    });
+                }
+            });
+        });
+    });
+    </script>
+</head>
+<body>
+    <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+
+    <div class="container">
+        <h1>Leave Feedback for {{ property.property_name }}</h1>
+
+        <div class="feedback-form">
+            <form id="feedback-form" method="post" action="{% url 'feedback_page' property.id %}">
+                {% csrf_token %}
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5" required>
+                    <label for="star5">★</label>
+                    <input type="radio" id="star4" name="rating" value="4">
+                    <label for="star4">★</label>
+                    <input type="radio" id="star3" name="rating" value="3">
+                    <label for="star3">★</label>
+                    <input type="radio" id="star2" name="rating" value="2">
+                    <label for="star2">★</label>
+                    <input type="radio" id="star1" name="rating" value="1">
+                    <label for="star1">★</label>
+                </div>
+                <div>
+                    <textarea name="comment" required rows="4" style="width: 100%;" 
+                        placeholder="Share your experience with this property..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">Submit Feedback</button>
+            </form>
+        </div>
+
+        <div class="success-message" style="display: none;"></div>
+
+        <div class="feedback-section">
+            {% if feedback_list %}
+                <!-- Current User's Feedback -->
+                {% if user_feedback %}
+                    <h3>Your Feedback</h3>
+                    <div class="feedback-container">
+                        {% for feedback in user_feedback %}
+                            <div class="feedback-item">
+                                <p>
+                                    <strong>{{ feedback.user.name }}</strong> - 
+                                    <span class="feedback-stars">
+                                        {% for i in ''|ljust:feedback.rating %}★{% endfor %}
+                                    </span>
+                                </p>
+                                <p>{{ feedback.comment }}</p>
+                                <small>{{ feedback.created_at|date:"Y-m-d H:i" }}</small>
+                                <button class="delete-feedback" data-feedback-id="{{ feedback.id }}">Delete</button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Other Users' Feedback -->
+                {% if other_feedback %}
+                    <h3>Other Reviews</h3>
+                    <div class="feedback-container">
+                        {% for feedback in other_feedback %}
+                            <div class="feedback-item">
+                                <p>
+                                    <strong>{{ feedback.user.name }}</strong> - 
+                                    <span class="feedback-stars">
+                                        {% for i in ''|ljust:feedback.rating %}★{% endfor %}
+                                    </span>
+                                </p>
+                                <p>{{ feedback.comment }}</p>
+                                <small>{{ feedback.created_at|date:"Y-m-d H:i" }}</small>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% else %}
+                <p class="no-feedback">No feedback yet</p>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

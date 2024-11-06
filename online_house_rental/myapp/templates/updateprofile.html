@@ -13,9 +13,13 @@
                 <span class="estate">Estate</span><span class="agency">Agency</span>
             </div>
             <ul class="nav-links">
+
                 <li><a href="{% url 'userpage' %}">Home</a></li>
                 <li><a href="{% url 'updateprofile' %}">Profile</a></li>
-                <li><a href="#">Logout</a></li>
+                <li><a href="{% url 'wishlist' %}">wishlist</a></li>
+                <li><a href="{% url 'userviewrental' %}">View Rental Agreement</a></li>
+                <li><a href="{% url 'notification' %}">Notification</a></li>
+                <li><a href="{% url 'logout' %}">Logout</a></li>
             </ul>
         </nav>
     </header>

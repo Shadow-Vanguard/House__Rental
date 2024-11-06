@@ -197,6 +197,9 @@ small {
             border-radius: 5px;
             text-decoration: none;
         }
+        .error {
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -231,11 +234,12 @@ small {
             <span id="termsError" style="color: red;"></span>
             <input type="checkbox" id="terms" name="terms" required> I agree to the terms and conditions
         </div>
-
+                                                                                                                                                     
         <div>
             <label for="digital_signature">Digital Signature:</label>
             <input type="file" id="digital_signature" name="digital_signature" accept="image/*" required>
             <small>Please upload an image of your signature.</small>
+            <span id="signatureError" style="color: red;"></span>
         </div>
 
         <button type="submit">Submit Agreement</button>
@@ -273,8 +277,85 @@ small {
             termsModal.style.display = "none";
         }
     }
+    // Validate form fields
+    function validateForm() {
+            let valid = true;
+
+            // Terms and Conditions validation
+            const termsCheckbox = document.getElementById("terms");
+            const termsError = document.getElementById("termsError");
+            if (!termsCheckbox.checked) {
+                termsError.textContent = "You must agree to the terms and conditions.";
+                valid = false;
+            } else {
+                termsError.textContent = "";
+            }
+
+            // End Date validation
+            const startDate = new Date(document.getElementById("start_date").value);
+            const endDate = new Date(document.getElementById("end_date").value);
+            const endDateError = document.getElementById("endDateError");
+            if (endDate <= startDate) {
+                endDateError.textContent = "End date must be after the start date.";
+                valid = false;
+            } else {
+                endDateError.textContent = "";
+            }
+
+            // Digital Signature validation
+            const signatureInput = document.getElementById("digital_signature");
+            const signatureError = document.getElementById("signatureError");
+            if (signatureInput.files.length === 0) {
+                signatureError.textContent = "Please upload a digital signature.";
+                valid = false;
+            } else {
+                const file = signatureInput.files[0];
+                const fileType = file.type;
+                if (fileType !== "image/jpeg" && fileType !== "image/png") {
+                    signatureError.textContent = "Only JPG or PNG format is allowed.";
+                    valid = false;
+                } else {
+                    signatureError.textContent = "";
+                }
+            }
+
+            return valid;
+        }
+
+        // Live validation for terms and conditions
+        document.getElementById("terms").onchange = function() {
+            if (this.checked) {
+                document.getElementById("termsError").textContent = "";
+            }
+        };
+
+        // Live validation for end date
+        document.getElementById("end_date").onchange = function() {
+            const startDate = new Date(document.getElementById("start_date").value);
+            const endDate = new Date(this.value);
+            const endDateError = document.getElementById("endDateError");
+            if (endDate <= startDate) {
+                endDateError.textContent = "End date must be after the start date.";
+            } else {
+                endDateError.textContent = "";
+            }
+        };
+
+        // Live validation for signature file type
+        document.getElementById("digital_signature").onchange = function() {
+            const file = this.files[0];
+            const signatureError = document.getElementById("signatureError");
+            if (file) {
+                const fileType = file.type;
+                if (fileType !== "image/jpeg" && fileType !== "image/png") {
+                    signatureError.textContent = "Only JPG or PNG format is allowed.";
+                } else {
+                    signatureError.textContent = "";
+                }
+            }
+        };
 </script>
-<script>
+<!-- <script>
 document.getElementById('rentalForm').addEventListener('submit', function(event) {
     let formValid = true;
 
@@ -319,6 +400,6 @@ document.getElementById('rentalForm').addEventListener('submit', function(event)
         event.preventDefault();
     }
 });
-</script>
+</script> -->
 </body>
 </html>

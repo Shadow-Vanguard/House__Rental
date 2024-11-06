@@ -10,19 +10,21 @@
 <body>
     <div class="container">
         <h2>Buyer Details</h2>
-        <form method="POST" action="" enctype="multipart/form-data">
+        <form method="POST" enctype="multipart/form-data">
             {% csrf_token %}
+            
+            <!-- Displaying Buyer's Details -->
             <label for="name">Buyer's Name:</label>
-            <input type="text" id="name" name="name" value="{{ user.name }}" required><br>
+            <input type="text" id="name" name="name" value="{{ user.name }}" readonly><br>
 
             <label for="email">Buyer's Email:</label>
-            <input type="email" id="email" name="email" value="{{ user.email }}" required><br>
+            <input type="email" id="email" name="email" value="{{ user.email }}" readonly><br>
 
             <label for="phone">Buyer's Phone Number:</label>
-            <input type="tel" id="phone" name="phone" value="{{ user.phone }}" required><br>
+            <input type="tel" id="phone" name="phone" value="{{ user.phone }}" readonly><br>
 
             <label for="billing_address">Billing Address:</label>
-            <textarea id="billing_address" name="billing_address" rows="4" required></textarea><br>
+            <textarea id="billing_address" name="billing_address" rows="4" required>{{ user.address }}</textarea><br>
 
             <label for="city">City:</label>
             <input type="text" id="city" name="city" required><br>
@@ -33,10 +35,7 @@
             <label for="pin_code">Pin Code:</label>
             <input type="text" id="pin_code" name="pin_code" required><br>
 
-            <form method="POST" action="{% url 'biling_details' %}">
-                {% csrf_token %}
-                <button type="submit">Save and Continue</button>
-            </form>
+            <button type="submit">Save and Continue</button>
         </form>
     </div>
 </body>

@@ -5,112 +5,211 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Details</title>
-    <link rel="stylesheet" href="{% static 'css/biling_details.css' %}">
-</head>
+    <link rel="stylesheet" href="{% static 'css/billing_details.css' %}">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
     <style>
+        /* Base styling */
         body {
             font-family: 'Arial', sans-serif;
-            background-color: #f4f4f9;
+            background-color: #f4f4f4;
             margin: 0;
             padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
+
         .container {
-            max-width: 800px;
-            margin: 50px auto;
-            background-color: #fff;
-            padding: 30px;
+            background-color: #ffffff;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px;
         }
+
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 30px;
+            color: #333333;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
+
         .form-group {
             margin-bottom: 20px;
         }
+
         label {
-            font-weight: bold;
             display: block;
-            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555555;
+            margin-bottom: 8px;
         }
-        input, select, textarea {
+
+        input[type="text"],
+        textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            border: 1px solid #cccccc;
             border-radius: 5px;
+            font-size: 16px;
             background-color: #f9f9f9;
         }
+
         textarea {
-            height: 100px;
+            resize: vertical;
+            min-height: 80px;
         }
-        .total-amount {
-            font-size: 1.4em;
-            color: #007bff;
-            font-weight: bold;
-            text-align: right;
+
+        .form-group input[readonly] {
+            background-color: #eeeeee;
         }
+
+        .form-group input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .radio-label {
+            font-weight: normal;
+            color: #333333;
+            font-size: 16px;
+        }
+
+        .radio-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+        }
+
         .button-container {
-            text-align: center;
-            margin-top: 30px;
-        }
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.pay-button {
+    background-color: #28a745;
+}
+
+.pay-button:hover {
+    background-color: #218838;
+}
         .button {
-            background-color: #28a745;
-            color: #fff;
-            padding: 12px 25px;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 20px;
             border: none;
             border-radius: 5px;
-            font-size: 1.2em;
+            font-size: 16px;
             cursor: pointer;
+            width: 80%;
+            max-width: 200px;
         }
+
         .button:hover {
-            background-color: #218838;
+            background-color: #0056b3;
         }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .button {
+                width: 100%;
+            }
+        }
+
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Payment Details</h1>
-        <form method="POST" action="">
-            {% csrf_token %}
-            
-            <div class="form-group">
-                <label for="property-name">Property Name:</label>
-                <input type="text" id="property-name" name="property-name" value="{{ property.name }}" readonly>
-            </div>
-    
-            <div class="form-group">
-                <label for="billing-address">Billing Address:</label>
-                <textarea id="billing-address" name="billing-address">{{ user.billing_address }}</textarea>
-            </div>
-    
-            <div class="form-group">
-                <label for="payment-method">Payment Method:</label>
-                <select id="payment-method" name="payment-method">
-                    <option value="credit-card" {% if selected_payment == 'credit-card' %}selected{% endif %}>Credit Card</option>
-                    <option value="debit-card" {% if selected_payment == 'debit-card' %}selected{% endif %}>Debit Card</option>
-                    <option value="bank-transfer" {% if selected_payment == 'bank-transfer' %}selected{% endif %}>Bank Transfer</option>
-                    <option value="paypal" {% if selected_payment == 'paypal' %}selected{% endif %}>PayPal</option>
-                </select>
-            </div>
-    
-            <div class="form-group">
-                <label for="amount">Amount:</label>
-                <input type="text" id="amount" name="amount" value="{{ property.amount }}" readonly>
-            </div>
-    
-            <div class="form-group">
-                <label for="amount-to-be-paid">Amount to be Paid:</label>
-                <input type="text" id="amount-to-be-paid" name="amount-to-be-paid" value="{{ amount_to_be_paid }}" readonly>
-            </div>
-    
-            <div class="button-container">
-                <button type="submit" class="button">Confirm and Pay</button>
-            </div>
-        </form>
+<div class="container">
+    <h1>Payment Details</h1>
+    <div class="details-group">
+        <h2>Property Details</h2>
+        <p><strong>Property Name:</strong> {{ property.property_name }}</p>
+        <p><strong>Monthly Rent:</strong> ₹{{ property.monthly_rent }}</p>
     </div>
-    
-    </body>
-    </html>
+
+    <div class="details-group">
+        <h2>Rental Agreement Details</h2>
+        <p><strong>Start Date:</strong> {{ rental_agreement.start_date }}</p>
+        <p><strong>End Date:</strong> {{ rental_agreement.end_date }}</p>
+    </div>
+
+    <div class="details-group">
+        <h2>Payment Information</h2>
+        <p><strong>Amount:</strong> ₹{{ payment.amount }}</p>
+        <!-- <p><strong>Transaction ID:</strong> {{ payment.transaction_id }}</p> -->
+        <p><strong>Status:</strong> {{ payment.get_payment_status_display }}</p>
+        <p><strong>Payment Date:</strong> {{ payment.payment_date }}</p>
+    </div>
+
+    <div class="details-group">
+        <h2>Billing Details</h2>
+        <p><strong>Billing Address:</strong> {{ payment.billing_address }}</p>
+        <p><strong>City:</strong> {{ payment.city }}</p>
+        <p><strong>State:</strong> {{ payment.state }}</p>
+        <p><strong>Pin Code:</strong> {{ payment.pin_code }}</p>
+    </div>
+
+    <!-- Add Razorpay button here later -->
+    <div class="button-container">
+        <button type="button" class="button" onclick="window.print()">Print Details</button>
+        <button type="button" class="button pay-button">Pay Amount</button>
+    </div>
+</div>
+<script>
+    document.querySelector('.pay-button').onclick = function () {
+        const csrfToken = '{{ csrf_token }}';
+        const paymentId = '{{ payment.id }}';  // Add the payment ID context to the template
+
+        fetch(`/create-order/${paymentId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            }
+        })
+        .then(response => response.json())
+        .then(orderData => {
+            let options = {
+                "key": "{{ settings.RAZORPAY_KEY_ID }}",  // Razorpay key
+                "amount": orderData.amount,
+                "currency": "INR",
+                "name": "Estate Agency",
+                "description": "Property Rent Payment",
+                "order_id": orderData.id,
+                "handler": function (response) {
+                    alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
+                    // Optional: Call a Django view to update payment status or show success message
+                    window.location.href = "/payment-success/?payment_id=" + response.razorpay_payment_id;
+                },
+                "prefill": {
+                    "name": "{{ user.name }}",
+                    "email": "{{ user.email }}",
+                    "contact": "{{ user.phone }}"
+                },
+                "theme": {
+                    "color": "#007bff"
+                }
+            };
+            let rzp1 = new Razorpay(options);
+            rzp1.open();
+        })
+        .catch(error => {
+            console.error('Error creating order:', error);
+            alert('Something went wrong while initiating the payment.');
+        });
+    };
+</script>
+</body>
+</html>

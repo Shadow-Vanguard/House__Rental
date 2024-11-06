@@ -56,8 +56,12 @@ urlpatterns = [
   path('notification_owner', views.notification_owner, name='notification_owner'),
   path('clear_message/<int:sender_id>/<int:property_id>/', views.clear_message, name='clear_message'),
   path('owner/conversation/<int:property_id>/clear/', views.clear_owner_messages, name='clear_owner_messages'),
-  path('buyer', views.buyer, name='buyer'),
-  path('biling_details', views.biling_details, name='biling_details'),
-  path('thank/', views.thank, name='thank'),
+  path('buyer/', views.buyer, name='buyer'),
+  path('biling_details/<int:payment_id>/', views.biling_details, name='biling_details'),
+  path('thank', views.thank, name='thank'),
+  path('property/<int:property_id>/feedback/',views.feedback_page, name='feedback_page'),
+  path('create-order/<int:payment_id>/', views.create_order, name='create-order'),
+  path('payment-success/', views.payment_success, name='payment-success'),
+
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

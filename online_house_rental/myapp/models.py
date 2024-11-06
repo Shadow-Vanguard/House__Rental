@@ -98,5 +98,29 @@ class Message(models.Model):
     token_status = models.CharField(max_length=10, choices=[('pending', 'Pending'), ('accepted', 'Accepted'),('rejected', 'Rejected')], null=True, blank=True)
     token_price = models.IntegerField(blank=True, null=True)
 
+class Feedback(models.Model):
+    property = models.ForeignKey(Property, related_name="feedback", on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    rating = models.PositiveSmallIntegerField()  # Store a rating from 1 to 5
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class Payment(models.Model):
+    PAYMENT_STATUS = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed')
+    ]
+    rental_agreement = models.ForeignKey(RentalAgreement, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    billing_address = models.TextField()
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100)
+    pin_code = models.CharField(max_length=10)
+    payment_date = models.DateTimeField(auto_now_add=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    transaction_id = models.CharField(max_length=100, unique=True, null=True)
+
 
         

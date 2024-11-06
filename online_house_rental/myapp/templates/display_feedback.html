@@ -152,6 +152,9 @@ h2 {
           <li class="nav-item">
             <a class="nav-link" href="{% url 'userviewrental' %}">View Rental Agreement</a>
           </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'display_feedback' property_id=property.id %}">Feedback</a>
+          </li>
         </li>
         <li class="nav-item">
           <a class="nav-link" href="{% url 'notification' %}">Notification</a>
@@ -170,90 +173,28 @@ h2 {
     </div>
   </nav>
   <!--/ Nav End /-->
+    <title>Feedback for {{ property.property_name }}</title>
+    <link rel="stylesheet" href="{% static 'css/feedback.css' %}">
+</head>
+<body>
+    <h1>Feedback for {{ property.property_name }}</h1>
 
-  <!--/ Notification Section Start /-->
-  <div class="container notification-container">
-    <h2 class="text-center">Notifications</h2>
-
-    {% for agreement in rental_agreements %}
-    <div class="notification-card">
-        <div class="notification-header">
-            Hi {{ agreement.renter.name }}, your rental agreement for the property <span>{{ agreement.property.property_name }}</span> has been 
-            {% if agreement.status %}
-                <span>Accepted</span> by the owner. You can now pay the security amount.
-            {% else %}
-                <span class="declined">Declined</span> by the owner.
-            {% endif %}
-        </div>
-        <div class="notification-date">
-            {{ agreement.notification_date|date:"Y-m-d H:i" }}
-        </div>
-        <div class="notification-content">
-            <p><strong>Property Address:</strong> {{ agreement.property.address }}, {{ agreement.property.city }}, {{ agreement.property.state }}</p>
-        </div>
-        <div class="notification-footer">
-          <a href="{% url 'certificate' agreement.id %}" class="btn btn-view">View</a>
-          {% if agreement.status %}
-          <a href="{% url 'buyer' %}?agreement_id={{ agreement.id }}" class="btn btn-pay">Pay</a>
-          {% endif %}
-        </div>
-    </div>
-    {% empty %}
-    <p class="no-notifications">No notifications available.</p>
-    {% endfor %}
-  </div>
-  <!--/ Notification Section End /-->
-<!-- Message Notification Section Start -->
-<h2 class="text-center">Messages</h2>
-
-{% if unread_messages %}
-    <!-- Grouping unread messages by the sender (Owner) -->
-    {% regroup unread_messages by sender as owner_messages %}
-    
-    <!-- Loop through the grouped messages -->
-    {% for group in owner_messages %}
-    
-        <!-- Display separate boxes for each message sent by the owner -->
-        {% for message in group.list %}
-        <div class="notification-card">
-            <div class="notification-header">
-                Message from <span>{{ group.grouper.name }}</span> (Owner) regarding property: 
-                <span>{{ message.property.property_name }}</span>
+    {% if feedback_list %}
+        {% for feedback in feedback_list %}
+            <div class="feedback-item">
+                <p><strong>{{ feedback.user.username }}</strong> - {{ feedback.rating }}★</p>
+                <p>{{ feedback.comment }}</p>
+                <small>Submitted on {{ feedback.created_at|date:"Y-m-d H:i" }}</small>
             </div>
-
-            <div class="notification-content">
-                <p>{{ message.message }}</p>
-            </div>
-
-            <div class="notification-footer">
-                <a href="{% url 'contactowner' group.grouper.id %}" class="btn btn-view">View Chat</a>
-                <a href="{% url 'clear_message' message.id %}" class="btn btn-clear">Clear</a>
-            </div>
-
-            <div class="notification-date">
-                {{ message.timestamp|date:"Y-m-d H:i" }}
-            </div>
-        </div>
+            <hr>
         {% endfor %}
-        
-    {% endfor %}
-{% else %}
-<p class="no-notifications">No unread messages available.</p>
-{% endif %}
-<!-- Message Notification Section End -->
+    {% else %}
+        <p>No feedback has been provided for this property yet.</p>
+    {% endif %}
 
-
-
-
-  <!-- JavaScript Libraries -->
-  <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>
-  <script src="{% static 'template_landingpage/lib/jquery/jquery-migrate.min.js' %}"></script>
-  <script src="{% static 'template_landingpage/lib/popper/popper.min.js' %}"></script>
-  <script src="{% static 'template_landingpage/lib/bootstrap/js/bootstrap.min.js' %}"></script>
-  <script src="{% static 'template_landingpage/lib/easing/easing.min.js' %}"></script>
-  <script src="{% static 'template_landingpage/lib/owlcarousel/owl.carousel.min.js' %}"></script>
-  <script src="{% static 'template_landingpage/lib/scrollreveal/scrollreveal.min.js' %}"></script>
-  <script src="{% static 'template_landingpage/contactform/contactform.js' %}"></script>
-  <script src="{% static 'template_landingpage/js/main.js' %}"></script>
+    <div>
+        <a href="{% url 'feedback_page' property.id %}">Leave Feedback</a>
+        <a href="">Back to Property</a>
+    </div>
 </body>
 </html>
