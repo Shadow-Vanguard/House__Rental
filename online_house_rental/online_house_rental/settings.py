@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-algdv^m%t4tc2m21b=l+-@p4@&8ehvh#$gzd9b$!dosf*ptzr2
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,6 +43,7 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -73,17 +74,27 @@ WSGI_APPLICATION = 'online_house_rental.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'rentalsystem',
+#         'USER': 'root',
+#         'PASSWORD':'',
+#         'HOST': 'localhost',  # Set to your database host
+#         'PORT': '3306'
+#     }
+# }
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rentalsystem',
-        'USER': 'root',
-        'PASSWORD':'',
-        'HOST': 'localhost',  # Set to your database host
-        'PORT': '3306'
+        'NAME': 'rentalsystem_funridedug',
+        'USER': 'rentalsystem_funridedug',
+        'PASSWORD':'94b249c4c6aaf8fcd910c698ad7b77fd3015b710',
+        'HOST': 'f-irn.h.filess.io',  # Set to your database host
+        'PORT': '3307'
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
