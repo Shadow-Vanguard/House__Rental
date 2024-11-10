@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deactivate User</title>
+    <link rel="stylesheet" href="">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 50%;
+            margin: 50px auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        h2 {
+            text-align: center;
+            color: #e74c3c;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        input[type="submit"] {
+            background-color: #e74c3c;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        input[type="submit"]:disabled {
+            background-color: #dcdcdc;
+            cursor: not-allowed;
+        }
+
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 15px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+        }
+    
+    </style>
+</head>
+<body>
+    <a href="{% url 'manage_users' role=user.role %}" class="back-button">Back</a>
+    <div class="container">
+        <h2>Deactivate User: {{ user.name }}</h2>
+        <form method="post" id="deactivateForm">
+            {% csrf_token %}
+            <label for="reason">Reason for Deactivation:</label>
+            <textarea id="reason" name="reason" rows="4" cols="50" required></textarea>
+            <span id="reason-error" style="color: red; display: none;">Please provide a reason.</span>
+            <input type="submit" value="Deactivate User" id="submitButton" disabled>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const reasonInput = document.getElementById("reason");
+            const submitButton = document.getElementById("submitButton");
+            const reasonError = document.getElementById("reason-error");
+
+            reasonInput.addEventListener("input", function() {
+                const reasonText = reasonInput.value.trim();
+
+                // Validate if reason text has at least 10 characters
+                if (reasonText.length >= 10) {
+                    reasonError.style.display = "none";  // Hide error message
+                    submitButton.disabled = false;       // Enable submit button
+                } else {
+                    reasonError.style.display = "block"; // Show error message
+                    submitButton.disabled = true;        // Disable submit button
+                }
+            });
+
+            // Optional: Prevent form submission if reason is invalid
+            document.getElementById("deactivateForm").addEventListener("submit", function(event) {
+                if (reasonInput.value.trim().length < 10) {
+                    event.preventDefault(); // Stop form submission
+                }
+            });
+        });
+    </script>
+</body>
+</html>

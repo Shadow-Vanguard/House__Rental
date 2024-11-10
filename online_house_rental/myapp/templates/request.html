@@ -68,7 +68,6 @@
             {% for property in properties %}
                 <tr>
                     <td>{{ property.property_name }}</td>
-                    <td>{{ property.description }}</td>
                     <td>${{ property.price }}</td>
                     <td>{{ property.is_verified|yesno:"Verified,Not Verified" }}</td>
                     <td>

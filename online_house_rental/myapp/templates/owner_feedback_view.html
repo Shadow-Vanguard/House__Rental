@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Feedback</title>
+    <link rel="stylesheet" href="{% static 'css/feedback.css' %}">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 60px auto;
+            padding: 20px;
+            background: rgb(235, 234, 231);
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2em;
+        }
+
+        .feedback-item {
+            background: #f8f9fa;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 10px;
+            border: 1px solid #eee;
+            transition: transform 0.2s;
+        }
+
+        .feedback-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .property-name {
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #0eaac5;
+            margin-bottom: 5px;
+        }
+
+        .feedback-user {
+            color: #555;
+            margin-bottom: 10px;
+        }
+
+        .feedback-stars {
+            color: #ffd700;
+            font-size: 1.2em;
+            margin-right: 5px;
+        }
+
+        .feedback-text {
+            color: #333;
+        }
+
+        .feedback-date {
+            color: #888;
+            font-size: 0.9em;
+        }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background-color: #0eaac5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .back-button:hover {
+            background-color: #0c8fa6;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .back-button i {
+            font-size: 20px;
+        }
+
+    </style>
+</head>
+<body>
+    <a href="javascript:history.back()" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+    <div class="container">
+        <h1>Feedback for Your Properties</h1>
+        {% if feedback_list %}
+            {% for feedback in feedback_list %}
+                <div class="feedback-item">
+                    <div class="property-name">{{ feedback.property.property_name }}</div>
+                    <div class="feedback-user">By: {{ feedback.user.name }}</div>
+                    <div class="feedback-stars">
+                        {% for i in ''|ljust:feedback.rating %}★{% endfor %}
+                    </div>
+                    <p class="feedback-text">{{ feedback.comment }}</p>
+                    <div class="feedback-date">{{ feedback.created_at|date:"Y-m-d H:i" }}</div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No feedback available for your properties.</p>
+        {% endif %}
+    </div>
+</body>
+</html>

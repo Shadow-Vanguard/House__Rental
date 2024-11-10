@@ -8,10 +8,16 @@
 /* Body Styling */
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #e7a1a1;
     color: #333;
     line-height: 1.6;
     padding: 20px;
+    background-image: url("https://static.vecteezy.com/system/resources/thumbnails/041/440/557/small/street-of-wooden-houses-figures-a-town-of-houses-and-trees-in-beautiful-colors-investments-in-real-estate-buy-a-house-photo.jpg");
+    background-size: cover;           /* Make the image cover the entire background */
+    background-position: center;      /* Center the image */
+    background-repeat: no-repeat;     /* Prevent the image from repeating */
+    background-attachment: fixed;     /* Keep the image fixed when scrolling */
+    color: white;
 }
 
 /* Container Styling */
@@ -101,4 +107,33 @@ button:active {
         padding: 20px;
     }
 }
+.back-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #0eaac5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.back-button:hover {
+    background-color: #0c8fa6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.back-button i {
+    font-size: 20px;
+}
+
 

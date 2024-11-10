@@ -6,8 +6,107 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Buyer Details</title>
     <link rel="stylesheet" href="{% static 'css/buyer_details.css' %}">
+    <style>
+    
+    .back-button {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    padding: 10px 20px;
+    background-color: #0eaac5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.back-button:hover {
+    background-color: #0c8fa6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.back-button i {
+    font-size: 20px;
+}
+    </style>
+    <script>
+        // Live validation functions
+        function validateForm() {
+            let isValid = true;
+
+            // Validate billing address
+            const billingAddress = document.getElementById("billing_address").value;
+            if (!billingAddress.trim()) {
+                document.getElementById("billing_address_error").textContent = "Billing address cannot be empty.";
+                isValid = false;
+            } else {
+                document.getElementById("billing_address_error").textContent = "";
+            }
+
+            // Validate city (no special characters)
+            const city = document.getElementById("city").value;
+            const cityPattern = /^[A-Za-z\s]+$/; // Only letters and spaces allowed
+            if (!city.trim()) {
+                document.getElementById("city_error").textContent = "City is required.";
+                isValid = false;
+            } else if (!cityPattern.test(city)) {
+                document.getElementById("city_error").textContent = "City should contain only letters and spaces.";
+                isValid = false;
+            } else {
+                document.getElementById("city_error").textContent = "";
+            }
+
+            // Validate state (no special characters)
+            const state = document.getElementById("state").value;
+            const statePattern = /^[A-Za-z\s]+$/; // Only letters and spaces allowed
+            if (!state.trim()) {
+                document.getElementById("state_error").textContent = "State is required.";
+                isValid = false;
+            } else if (!statePattern.test(state)) {
+                document.getElementById("state_error").textContent = "State should contain only letters and spaces.";
+                isValid = false;
+            } else {
+                document.getElementById("state_error").textContent = "";
+            }
+
+            // Validate pin code
+            const pinCode = document.getElementById("pin_code").value;
+            const pinCodePattern = /^[0-9]{6}$/;
+            if (!pinCode.trim() || !pinCodePattern.test(pinCode)) {
+                document.getElementById("pin_code_error").textContent = "Pin code must be 6 digits.";
+                isValid = false;
+            } else {
+                document.getElementById("pin_code_error").textContent = "";
+            }
+
+            // Return the validation result
+            return isValid;
+        }
+
+        // Attach validation function to form submit
+        document.addEventListener("DOMContentLoaded", function() {
+            const form = document.querySelector("form");
+            form.addEventListener("submit", function(event) {
+                if (!validateForm()) {
+                    event.preventDefault(); // Prevent form submission if validation fails
+                }
+            });
+        });
+    </script>
 </head>
 <body>
+    <body>
+        <a href="javascript:history.back()" class="back-button">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
     <div class="container">
         <h2>Buyer Details</h2>
         <form method="POST" enctype="multipart/form-data">
@@ -25,15 +124,19 @@
 
             <label for="billing_address">Billing Address:</label>
             <textarea id="billing_address" name="billing_address" rows="4" required>{{ user.address }}</textarea><br>
+            <span id="billing_address_error" style="color: red;"></span><br>
 
             <label for="city">City:</label>
             <input type="text" id="city" name="city" required><br>
+            <span id="city_error" style="color: red;"></span><br>
 
             <label for="state">State:</label>
             <input type="text" id="state" name="state" required><br>
+            <span id="state_error" style="color: red;"></span><br>
 
             <label for="pin_code">Pin Code:</label>
             <input type="text" id="pin_code" name="pin_code" required><br>
+            <span id="pin_code_error" style="color: red;"></span><br>
 
             <button type="submit">Save and Continue</button>
         </form>

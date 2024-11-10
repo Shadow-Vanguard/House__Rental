@@ -99,12 +99,12 @@
                     </div>
                 </div>
 
-                <div class="action-buttons">
+                <!-- <div class="action-buttons">
                     {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}
                     <button class="btn buy-btn">
                         <a href="{% url 'buy_property' property.id %}" class="buy-link">Buy Now</a>
                     </button>
-                    {% endif %}
+                    {% endif %} -->
                     {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
                     <button class="btn contact-btn">
                         <a href="{% url 'rental_agreement' property.id %}" class="contact-link" id="rent">Rent Now</a>

@@ -100,20 +100,16 @@
 
         <p>This agreement made on this <strong>{{ agreement.start_date|date:"d" }}</strong> day of 
             <strong>{{ agreement.start_date|date:"F" }}</strong>, {{ agreement.start_date|date:"Y" }}</p>
-
          <p>between <strong>{{ agreement.renter.name }}</strong>, with <strong>{{ agreement.renter.phone }}</strong> 
             as Mobile Number, residing at <strong>{{ agreement.renter.address }}</strong>,</p>
-
          <p>hereinafter referred to as the 'LESSOR' of the One Part AND <strong>{{ agreement.property.owner.name }}</strong>, 
             with <strong>{{ agreement.property.owner.phone }}</strong> as Mobile Number, residing at <strong>{{ agreement.property.address }}</strong>, 
-            hereinafter referred to as the 'LESSEE(s)' of the other Part;</p>
-         
+            hereinafter referred to as the 'LESSEE(s)' of the other Part;The monthly rent of{{ agreement.property.monthly_rent }}  is due on the 1st day of each month</p>
          <p>WHEREAS the Lessor is the lawful owner of, and otherwise well sufficiently entitled to, 
             <strong>{{ agreement.property.description }}</strong> and comprising present in Floor 
             <strong>{{ agreement.property.area }} sqft</strong>, without Parking hereinafter referred to as the 'said premises'.</p>
-         
          <p>AND WHEREAS at the request of the Lessee, the Lessor has agreed to let the said premises upon 
-            the terms and conditions contained herein.</p>
+            the terms and conditions contained herein.The Tenant agrees to maintain the property in good condition and notify the Landlord of any required repairs.</p>
          
          <p>Signature: <img src="{{ agreement.digital_signature.url }}" alt="Signature" width="200"></p><p>Owner Signature: <img src="{{ agreement.owner_digital_signature.url }}" alt="Owner's Digital Signature" width="200"></p>
          <!-- Button to print/download the agreement -->

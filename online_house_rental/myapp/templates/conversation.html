@@ -12,7 +12,7 @@
         body { background-color: #e5ddd5; font-family: 'Roboto', sans-serif; color: #333; }
         h2 { font-family: 'Lora', serif; color: #007bff; font-weight: bold; margin-bottom: 20px; text-align: center; }
         .chat-box { max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 10px; background: #fff; height: 400px; overflow-y: auto; display: flex; flex-direction: column; }
-        .user-message { background-color: #68894e; border-radius: 20px 20px 0 20px; padding: 10px; margin: 10px 0; align-self: flex-end; }
+        .user-message { background-color: #ffffff; border: 1px solid #000; border-radius: 20px 20px 0 20px; padding: 10px; margin: 10px 0; align-self: flex-end; }
         .owner-message { background-color: #fff; border-radius: 20px 20px 20px 0; padding: 10px; margin: 10px 0; align-self: flex-start; border: 1px solid #ccc; }
         form { max-width: 600px; margin: 20px auto; display: flex; flex-direction: column; }
         textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: none; margin-bottom: 10px; }
@@ -49,8 +49,9 @@
         <textarea name="message" rows="4" required placeholder="Type your message here..."></textarea>
         <button type="submit">Send Message</button>
     </form>
-    <form method="POST" action="{% url 'clear_message' property.id %}">
+    <form method="POST">
         {% csrf_token %}
+        <input type="hidden" name="clear_messages" value="true">
         <button type="submit" style="margin-bottom: 20px; background-color: #dc3545;">Clear Messages</button>
     </form>
         {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}

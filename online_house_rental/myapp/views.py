@@ -435,22 +435,32 @@ def view_profile(request, user_id):
 
 def deactivate_user(request, id):
     user = get_object_or_404(User, id=id)
-    user.status = False  # Set the status to inactive
-    user.save()
-
-    # Send an email notification
-    send_mail(
-        'Account Deactivation',
-        f'Hello {user.name},\n\nYour account has been deactivated. If you have any questions, please contact support.',
-        'your_email@example.com',  # Replace with your email or from_email
-        [user.email],
-        fail_silently=False,
-    )
-
-    messages.success(request, 'User has been deactivated and notified via email.')
     
-    # Redirect to manage_users with the role parameter
-    return redirect('manage_users', role=user.role)  # Adjust user.role based on how you retrieve it
+    # If the request method is POST, capture the reason for deactivation
+    if request.method == 'POST':
+        reason = request.POST.get('reason', '').strip()
+
+        # Set the user's status to inactive
+        user.status = False
+        user.save()
+
+        # Send an email notification with the reason for deactivation
+        send_mail(
+            'Account Deactivation',
+            f'Hello {user.name},\n\nYour account has been deactivated. If you have any questions, please contact support.\n\nReason for deactivation: {reason}',
+            'your_email@example.com',  # Replace with your email or from_email
+            [user.email],  # The recipient's email
+            fail_silently=False,
+        )
+
+        # Display a success message
+        messages.success(request, 'User has been deactivated and notified via email.')
+
+        # Redirect to manage_users with the role parameter
+        return redirect('manage_users', role=user.role)
+    else:
+        # Handle the GET request to show the confirmation page with the deactivation form
+        return render(request, 'deactivate_user.html', {'user': user})
 
 def activate_user(request, id):
     user = get_object_or_404(User, id=id)
@@ -792,40 +802,45 @@ def send_message(request, property_id):
 def conversation(request, property_id):
     if request.session.get('user_id'):
         user_id = request.session['user_id']
-        property = get_object_or_404(Property, id=property_id)
+        user = get_object_or_404(User, id=user_id)
+        property_instance = get_object_or_404(Property, id=property_id)
         messages = Message.objects.filter(
-            property=property,
+            property=property_instance,
             token_advance=False
         ).filter(
             Q(sender_id=user_id) | Q(receiver_id=user_id)
         ).order_by('timestamp')
         if request.method == "POST":
+            if 'clear_messages' in request.POST:
+                Message.objects.filter(property=property_instance).delete()
+                return redirect('conversation', property_id=property_id)
             if 'token_price' in request.POST:
                 token_price = request.POST.get('token_price')
                 token_message = request.POST.get('token_message')
                 Message.objects.create(
                     sender_id=user_id,
-                    receiver_id=property.owner.id,
-                    property=property,
+                    receiver_id=property_instance.owner.id,
+                    property=property_instance,
                     message=token_message,
                     token_advance=True,
                     token_status='pending',
                     token_price=token_price
                 )
-                return redirect('conversation', property_id=property.id)
+                return redirect('conversation', property_id=property_instance.id)
             message_content = request.POST.get('message')
             if message_content:
-                receiver_id = property.owner.id if user_id != property.owner.id else request.POST.get('receiver_id')
+                receiver_id = property_instance.owner.id if user_id != property_instance.owner.id else request.POST.get('receiver_id')
                 Message.objects.create(
                     sender_id=user_id,
                     receiver_id=receiver_id,
-                    property=property,
+                    property=property_instance,
                     message=message_content
                 )
-                return redirect('conversation', property_id=property.id)
+                return redirect('conversation', property_id=property_instance.id)
         context = {
-            'property': property,
+            'property': property_instance,
             'messages': messages,
+            'user': user,
         }
         return render(request, 'conversation.html', context)
     return redirect('login')
@@ -1110,3 +1125,16 @@ def payment_success(request):
             return HttpResponse(f"An error occurred: {str(e)}")
     else:
         return HttpResponse("Payment ID not found.")
+
+def owner_feedback_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+    
+    owner = get_object_or_404(User, id=user_id)
+    properties = Property.objects.filter(owner=owner)
+    feedback_list = Feedback.objects.filter(property__in=properties).select_related('user', 'property').order_by('-created_at')
+    
+    return render(request, 'owner_feedback_view.html', {
+        'feedback_list': feedback_list,
+    })

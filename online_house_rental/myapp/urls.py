@@ -21,7 +21,7 @@ urlpatterns = [
   path('propertyadd', views.propertyadd, name='propertyadd'),
   path('logout', views.logout, name='logout'),
   path('manageproperty', views.manageproperty, name='manageproperty'),
-  path('deactivate_user/<int:id>/',views. deactivate_user, name='deactivate_user'),
+  path('deactivate_user/<int:id>/', views.deactivate_user, name='deactivate_user'),
   path('activate_user/<int:id>/', views.activate_user, name='activate_user'),
   path('manage_users/<str:role>/', views.manage_users, name='manage_users'),
   path('view_profile/<int:user_id>/', views.view_profile, name='view_profile'),
@@ -60,6 +60,7 @@ urlpatterns = [
   path('biling_details/<int:payment_id>/', views.biling_details, name='biling_details'),
   path('thank', views.thank, name='thank'),
   path('property/<int:property_id>/feedback/',views.feedback_page, name='feedback_page'),
+  path('owner/view_feedback/', views.owner_feedback_view, name='owner_feedback_view'),
   path('create-order/<int:payment_id>/', views.create_order, name='create-order'),
   path('payment-success/', views.payment_success, name='payment-success'),
 
