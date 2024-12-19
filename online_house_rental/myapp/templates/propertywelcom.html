@@ -2,13 +2,189 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
+    <!-- <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manage Properties</title>
-    <link rel="stylesheet" href="{% static 'css/propertywelcom.css' %}">
+    <link rel="stylesheet" href="{% static 'css/propertywelcom.css' %}"> -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{% static 'css/adminstyle.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
+<style>
+    /* Add these styles to your CSS */
+    .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .sidebar h1 {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 24px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar nav ul li {
+            padding: 0;
+        }
+
+        .sidebar nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        .sidebar nav ul li a i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            flex: 1;
+        }
+        .top-nav {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 250px;
+        height: 60px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 1000;
+    }
+
+    .top-nav h1 {
+        color: #2c3e50;
+        font-size: 24px;
+        margin: 0;
+    }
+
+    .top-nav-icons {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .icon-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #2c3e50;
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+    .icon-wrapper i {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    .icon-wrapper span {
+        font-size: 12px;
+    }
+
+    .icon-wrapper:hover {
+        background-color: #f0f0f0;
+    }
+    .content {
+        margin-left: 250px;
+        margin-top: 60px;
+        padding: 20px;
+        flex: 1;
+    } 
+    .cards { 
+    display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .card {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+
+    .card h2 {
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+
+    .card p {
+        color: #950303;
+        margin: 0;
+    }
+</style>
 <body>
-    <div class="header">
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="{% url 'propertywelcom' %}"><i class="fas fa-building"></i> Manage Properties</a></li>
+                    <li><a href="{% url 'manage_users' 'user' %}"><i class="fas fa-users"></i> Manage Users</a></li>
+                    <li><a href="{% url 'request' %}"><i class="fas fa-bell"></i> Requests</a></li>
+                    <li><a href="{% url 'manage_users' 'owner' %}"><i class="fas fa-user-tie"></i> Manage Property Owners</a></li>
+                    <li><a href="{% url 'admin_feedback' %}"><i class="fas fa-comments"></i> Feedback Analysis</a></li>
+                    <li><a href="{% url 'login' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+        <div class="top-nav">
+            <h1>Admin Dashboard</h1>
+            <div class="top-nav-icons">
+                <a href="#" class="icon-wrapper">
+                    <i class="fas fa-user"></i>
+                    <span>Admin</span>
+                </a>
+                <a href="{% url 'login' %}" class="icon-wrapper">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </div>
+        </div>
+    <!-- <div class="header">
         <div class="header-buttons">
             <a href="{% url 'adminproview' %}" class="header-link">Property Added</a>
             <a href="#" class="header-link">Bought Property</a>
@@ -22,7 +198,32 @@
 
     <div class="quote-section">
         <blockquote>"Managing properties is about handling people, not just real estate."</blockquote>
-    </div>
+    </div> -->
+    <main class="content">
+        <div class="cards">
+            <a href="{% url 'adminproview' %}" class="card" id="manage-owners">
+            <div class="card" id="manage-owners">
+                <h2>Property Added</h2>
+                <p>View and manage all properties listed on the platform</p>
+            </div>
+            <div class="card" >
+                <a href="{% url 'rented_properties' %}" class="card" id="feedback-analysis"></a>
+                <h2>Rented Property</h2>
+                <p>Track and manage all rented properties.</p>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    function showSection(sectionId) {
+        var cards = document.querySelectorAll('.card');
+        cards.forEach(function(card) {
+            card.classList.remove('active');
+        });
+        document.getElementById(sectionId).classList.add('active');
+    }
+</script>
 
     <!-- Content goes here -->
 </body>

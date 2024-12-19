@@ -44,16 +44,17 @@ body {
 
 /* Table styles */
 .users-list {
-    width: 80%;
-    margin: 40px auto;
+    width: 67%;
+    margin: 20px auto;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    padding: 20px;
+    padding: 30px;
+    overflow: hidden;
 }
 
 table {
-    width: 100%;
+    width: 67%;
     border-collapse: collapse;
 }
 
@@ -89,7 +90,7 @@ table td {
 /* Button styles */
 .action-buttons {
     display: flex;
-    gap: 10px; /* Space between buttons */
+    gap:10x; /* Space between buttons */
 }
 
 .deactivate-btn, .reactivate-btn {

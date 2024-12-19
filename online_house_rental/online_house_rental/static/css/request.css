@@ -46,24 +46,23 @@ a:hover {
     opacity: 0.9; /* Slight opacity change on hover */
 }
 
-a.verify {
+.verify {
     background-color: #3111b0; /* Green for Verify button */
 }
 
-a.reject {
+.reject {
     background-color: #5c0d08; /* Red for Reject button */
 }
-
-a.verify:hover {
+.verify:hover {
     background-color: #45a049; /* Darker green on hover */
 }
 
-a.reject:hover {
+.reject:hover {
     background-color: #d32f2f; /* Darker red on hover */
 }
 
 /* Status Styles */
-span {
+ span {
     font-weight: bold; /* Bold text for verified status */
-    color: #4CAF50; /* Green color for verified text */
-}
+    color: #1b1e1b; /* Green color for verified text */
+ }

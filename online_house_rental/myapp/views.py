@@ -602,6 +602,10 @@ def rental_agreement(request, property_id):
     if not user_id:
         return redirect('login')
     user = get_object_or_404(User, id=user_id)
+    # Check if property is already rented
+    if property.is_rented:
+        messages.error(request, 'This property is no longer available for rent.')
+        return redirect('propertyview', property_id=property_id)
 
      # Check if an agreement already exists for this user and property
     existing_agreement = RentalAgreement.objects.filter(property=property, renter=user).exists()
@@ -649,7 +653,6 @@ def termsandconditions(request, property_id):
             property_instance.save()
             return redirect('termsandconditions', property_id=property_id)
     return render(request, 'termsandconditions.html', {'property': property_instance})
-
 def ownerview(request):
     if request.session.get('user_id'):
         owner_name = request.session.get('name')
@@ -672,7 +675,11 @@ def accept_decline_agreement(request, agreement_id):
         if request.method == "POST":
             action = request.POST.get('action')
             if action == "accept":
-                rental_agreement.status = True
+                rental_agreement.status = 1
+                # Set the property as rented
+                property = rental_agreement.property
+                property.is_rented = True
+                property.save()
                 if 'owner_digital_signature' in request.FILES:
                     rental_agreement.owner_digital_signature = request.FILES['owner_digital_signature']
                 rental_agreement.notification_date = timezone.now()
@@ -1138,3 +1145,15 @@ def owner_feedback_view(request):
     return render(request, 'owner_feedback_view.html', {
         'feedback_list': feedback_list,
     })
+
+def admin_feedback(request):
+    # Ensure admin session is active
+    admin_id = request.session.get('admin_id')
+    # Retrieve all feedback, including related User and Property details
+    feedbacks = Feedback.objects.select_related('user', 'property__owner').order_by('-created_at')
+
+    # Debugging: Check if feedbacks are being fetched
+    print(f"Feedbacks retrieved: {feedbacks}")
+
+    # Pass feedback to the template
+    return render(request, 'admin_feedback.html', {'feedbacks': feedbacks})

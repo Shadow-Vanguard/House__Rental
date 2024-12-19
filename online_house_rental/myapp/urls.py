@@ -63,6 +63,7 @@ urlpatterns = [
   path('owner/view_feedback/', views.owner_feedback_view, name='owner_feedback_view'),
   path('create-order/<int:payment_id>/', views.create_order, name='create-order'),
   path('payment-success/', views.payment_success, name='payment-success'),
+  path('adminfeedback/', views.admin_feedback, name='admin_feedback'),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
