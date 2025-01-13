@@ -1,0 +1,264 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token Advance List</title>
+    <link rel="stylesheet" href="{% static 'css/adminstyle.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f4f7fc;
+            margin: 0;
+        }
+
+        .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .sidebar h1 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #34495e;
+            padding-bottom: 10px;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .sidebar nav ul li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        .sidebar nav ul li a:hover,
+        .sidebar nav ul li a.active {
+            background-color: #34495e;
+        }
+
+        .sidebar nav ul li a i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        /* Top Navigation */
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 250px;
+            right: 0;
+            height: 60px;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .top-nav h1 {
+            font-size: 20px;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        /* Main Content */
+        .content {
+            margin-left: 250px;
+            margin-top: 60px;
+            padding: 20px;
+        }
+
+        .token-list {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .token-list h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            border-bottom: 2px solid #34495e;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Search Box */
+        .search-box {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .search-box input {
+            width: 95%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+            font-size: 16px;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        table th, table td {
+            padding: 15px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        table th {
+            background: #f5f5f5;
+            color: #2c3e50;
+            text-transform: uppercase;
+            font-weight: 600;
+            border-bottom: 2px solid #ddd;
+        }
+
+        table tbody tr:nth-child(odd) {
+            background: #fafafa;
+        }
+
+        table tbody tr:hover {
+            background: #f4f7fc;
+        }
+
+        /* Status Tags */
+        .status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .status-pending {
+            background: #ffe082;
+            color: #ef6c00;
+        }
+
+        .status-completed {
+            background: #c8e6c9;
+            color: #388e3c;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h1>Admin Panel</h1>
+            <nav>
+                <ul>
+                    <li><a href="{% url 'propertywelcom' %}"><i class="fas fa-building"></i> Manage Properties</a></li>
+                    <li><a href="{% url 'manage_users' 'user' %}"><i class="fas fa-users"></i> Manage Users</a></li>
+                    <li><a href="{% url 'request' %}"><i class="fas fa-bell"></i> Requests</a></li>
+                    <li><a href="{% url 'manage_users' 'owner' %}"><i class="fas fa-user-tie"></i> Manage Owners</a></li>
+                    <li><a href="{% url 'admin_feedback' %}"><i class="fas fa-comments"></i> Feedback Analysis</a></li>
+                    <li><a href="{% url 'token_advance_list' %}" class="active"><i class="fas fa-money-bill-wave"></i> Token Advances</a></li>
+                    <li><a href="{% url 'login' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="token-list">
+                <h2>Token Advance Payments</h2>
+
+                <!-- Search Box -->
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search by property name, tenant, or owner...">
+                </div>
+
+                <!-- Token Advances Table -->
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Property Name</th>
+                            <th>Tenant Name</th>
+                            <th>Owner Name</th>
+                            <th>Amount</th>
+                            <!-- <th>Status</th> -->
+                            <th>Payment Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {% for request in token_requests %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ request.property.property_name }}</td>
+                            <td>{{ request.tenant.name }}</td>
+                            <td>{{ request.owner.name }}</td>
+                            <td>₹{{ request.amount }}</td>
+                            <!-- <td>
+                                <span class="status 
+                                    {% if request.status == 'Completed' %}status-completed{% else %}status-pending{% endif %}">
+                                    {{ request.status }}
+                                </span>
+                            </td> -->
+                            <td>{{ request.payment_date }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('keyup', function () {
+            const filter = this.value.toLowerCase();
+            const rows = document.querySelectorAll('#tableBody tr');
+
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                row.style.display = text.includes(filter) ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

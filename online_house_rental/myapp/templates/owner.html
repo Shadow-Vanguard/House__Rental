@@ -1,4 +1,4 @@
-{% load static %}
+<!-- {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,8 +47,8 @@
 <body>
     <header>
         <div class="welcome">
-            <h1>Hi, {{owner_name }}!</h1> <!-- Display the property owner's name -->
-        </div>
+            <h1>Hi, {{owner_name }}!</h1> <Display the property owner's name -->
+        <!-- </div>
         <nav>
             <ul>
                 <li><a href="{% url 'propertyadd' %}" >Add Property</a></li>
@@ -58,8 +58,8 @@
                 <li><a href="{% url 'notification_owner' %}">Notification</a></li>
 
 
-                <!-- <li><a href="{% url 'index' %}">Logout</a></li> -->
-                <li>
+                 <li><a href="{% url 'index' %}">Logout</a></li> -->
+                <!-- <li>
                     <div class="dropdown">
                     <a href="#" class="dropbtn">My Profile</a>
                     <div class="dropdown-content">
@@ -114,5 +114,235 @@
         });
         </script>
       
+</body>
+</html>  -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Property Owner Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .welcome h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+        /* Add some styling for the dropdown */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 250px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            left: 0; 
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 10px;
+            text-decoration: none;
+            display: block;
+            text-align: left; 
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a i {
+            margin-right: 8px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            margin: 20px auto;
+            max-width: 1200px;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .card i {
+            font-size: 40px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .card h2 {
+            font-size: 20px;
+            margin: 10px 0;
+        }
+
+        .card p {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        footer {
+            /* background-color: #dde4eb; */
+            color: rgb(33, 6, 89);
+            text-align: center;
+            padding: 10px 0;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="welcome">
+            <h1>Welcome, {{ owner_name }}!</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{% url 'propertyadd' %}"><i class="fas fa-plus-square"></i> Add Property</a></li>
+                <li><a href="{% url 'owner_feedback_view' %}"><i class="fas fa-comments"></i> Feedback</a></li>
+                <li><a href="{% url 'ownerview' %}"><i class="fas fa-file-signature"></i> Rental Agreements</a></li>
+                <li><a href="{% url 'ownerproperty' %}"><i class="fas fa-eye"></i> View Properties</a></li>
+                <li><a href="{% url 'notification_owner' %}"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li>
+                    <div class="dropdown">
+                        <a href="#" class="dropbtn"><i class="fas fa-user-circle"></i> My Profile</a>
+                        <div class="dropdown-content">
+                            <a href="{% url 'ownerupdate' %}">Update Profile</a>
+                            <a href="{% url 'view_profile' user.id %}">View Profile</a>
+                            <a href="#" id="logout-link">Logout</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <i class="fas fa-plus-square"></i>
+            <h2>Add Property</h2>
+            <p>Quickly list your properties for tenants to see.</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-comments"></i>
+            <h2>View Feedback</h2>
+            <p>Understand your tenants' experience through feedback.</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-file-signature"></i>
+            <h2>Rental Agreements</h2>
+            <p>Review and manage rental agreements.</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-eye"></i>
+            <h2>View Properties</h2>
+            <p>See all properties you have listed.</p>
+        </div>
+        <div class="card">
+            <i class="fas fa-bell"></i>
+            <h2>Notifications</h2>
+            <p>Stay updated with important alerts.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Property Management System. All rights reserved.</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        document.getElementById('logout-link').addEventListener('click', function(event) {
+            event.preventDefault();
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You will be logged out!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, log me out!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{% url 'logout' %}";
+                }
+            });
+        });
+    </script>
 </body>
 </html>

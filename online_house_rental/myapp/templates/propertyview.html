@@ -1,152 +1,344 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ property.property_name }}</title>
-    <link rel="stylesheet" href="{% static 'css/propertyview.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .contact-btn {
-            background-color: #0eaac5; /* Button color */
-            border: none; /* Remove border */
-            border-radius: 5px; /* Rounded corners */
-            color: white; /* Text color */
-            cursor: pointer; /* Pointer cursor on hover */
-            padding: 10px 15px; /* Padding */
-            font-size: 16px; /* Font size */
-            text-align: center; /* Center text */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
         }
-        .contact-btn a {
-            text-decoration: none; /* Remove underline */
-            color: white; /* Ensure text is white */
-        }
-        .success-message {
-            background-color: #d4edda; /* Light green background */
-            color: #155724; /* Dark green text */
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #c3e6cb; /* Border color */
-            display: none; /* Initially hidden */
-        }
-        .alert-message {
-            background-color: #f8d7da; /* Light red background for errors */
-            color: #721c24; /* Dark red text */
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #f5c6cb; /* Border color */
-        }
-        .red-text {
-    color: red;
-}
-.back-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #cae770; /* Gray background */
-            color: white;
-            padding: 10px 15px;
-            border-radius: 5px;
-            text-decoration: none;
-        }
-        .contact-btn[disabled] {
-    cursor: not-allowed;
-    opacity: 0.7;
-}
 
-.contact-btn[disabled] span {
-    color: #666;
-}
+        body {
+            background-color: #f4f6f8;
+            color: #2c3e50;
+        }
+
+        .property-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 20px;
+        }
+
+        .property-header {
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+                        url('{{ property.images.first.image.url }}');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 4rem 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .property-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .property-location {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-5px);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+        }
+
+        .property-details {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        .main-info {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .info-section {
+            margin-bottom: 2rem;
+        }
+
+        .info-section h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.4rem;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .feature-item i {
+            color: #3498db;
+            font-size: 1.2rem;
+        }
+
+        .sidebar {
+            position: sticky;
+            top: 2rem;
+        }
+
+        .price-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .price-amount {
+            font-size: 2rem;
+            color: #e74c3c;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .btn {
+            padding: 1rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #2c3e50;
+            border: 1px solid #dee2e6;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .owner-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .owner-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .owner-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+        }
+
+        .video-section {
+            margin-top: 2rem;
+        }
+
+        .video-section video {
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        @media (max-width: 768px) {
+            .property-details {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+
+            .property-title {
+                font-size: 2rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <!-- <a href="javascript:history.back()" class="back-btn">Back</a> -->
-    <!-- <div class="top-right">
-        <button><a href="{% url 'userpage' %}" class="back-button">Back to Properties</a></button>
-    </div> -->
-
-    
-    <div class="container">
-        <h1 id="propertyName">{{ property.property_name }}</h1>
-        <div class="property-details">
-            <div class="property-images">
-                <!-- Display all images -->
-                {% for image in property.images.all %}
-                    <img src="{{ image.image.url }}" alt="{{ property.property_name }}" class="property-img">
-                {% endfor %}
-            </div>
-
-            <div class="property-videos">
-                {% for video in property.video.all %}
-                    <video width="400" controls>
-                        <source src="{{ video.video.url }}" type="video">
-                        Your browser does not support the video tag.
-                    </video>
-                {% endfor %}
-            </div>
-            <div class="property-info">
-                <p><strong>Description:</strong> <span id="propertyDescription">{{ property.description }}</span></p>
-                <p><strong>Address:</strong> <span id="propertyAddress">{{ property.address }}</span></p>
-                <p><strong>City:</strong> <span id="propertyCity">{{ property.city }}</span></p>
-                <p><strong>State:</strong> <span id="propertyState">{{ property.state }}</span></p>
-                <p><strong>Price:</strong> <span id="propertyPrice">Rs.{{ property.price }}</span></p>
-                <p><strong>Posted Date:</strong> <span id="propertyPostedDate">{{ property.posted_date }}</span></p>
-                <p><strong>Property Type:</strong> <span id="propertyType">{{ property.property_type }}</span></p>
-                <p><strong>Owner:</strong> <span id="propertyOwner">{{ property.owner.name }}</span></p>
-                <p>Click below to view the location on Google Maps.</p>
-                <a href="https://www.google.com/maps/search/?api=1&query={{ property.address }},+{{ property.city }},+{{ property.state }}" target="_blank">
-                    📍Location
-                </a>
-
-                        <!-- Success message div -->
-                    <div class="success-message" id="successMessage">
-                        {% if messages %}
-                            {% for message in messages %}
-                                <div class="alert-message">{{ message }}</div>
-                            {% endfor %}
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- <div class="action-buttons">
-                    {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}
-                    <button class="btn buy-btn">
-                        <a href="{% url 'buy_property' property.id %}" class="buy-link">Buy Now</a>
-                    </button>
-                    {% endif %} -->
-                    <button class="btn contact-btn">
-                        <a href="{% url 'userpage' %}" class="contact-link" id="rent">Go Back</a>
-                    </button>
-                    <!-- Replace the existing Rent Now button with this -->
-                    {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
-                    <button class="btn contact-btn">
-                        <a href="{% url 'rental_agreement' property.id %}" class="contact-link" id="rent">Rent Now</a>
-                    </button>
-                        <form method="post" style="display:inline;">
-                            {% csrf_token %}
-                            <button type="submit" name="add_to_wishlist" class="btn contact-btn">Wishlist</button>
-                        </form>
-                        <button class="btn contact-btn">
-                            <a href="{% url 'feedback_page' property.id %}" class="btn btn-primary">Feedback</a>
-                        </button>
-                        <button class="btn contact-btn">
-                            <a href="{% url 'conversation' property.id %}" class="btn btn-primary">Contact Owner</a>
-                        </button>
-                    {% endif %}
-                </div>
+    <div class="property-container">
+        <div class="property-header">
+            <h1 class="property-title">{{ property.property_name }}</h1>
+            <div class="property-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>{{ property.address }}, {{ property.city }}, {{ property.state }}</span>
             </div>
         </div>
 
+        <div class="gallery-grid">
+            {% for image in property.images.all %}
+            <div class="gallery-item">
+                <img src="{{ image.image.url }}" alt="{{ property.property_name }}">
+            </div>
+            {% endfor %}
+        </div>
 
-    <script>
-        // Show success message for 1 second and then hide it
-        const successMessage = document.getElementById('successMessage');
-        if (successMessage.innerHTML.trim()) {
-            successMessage.style.display = 'block'; // Show the message
-            setTimeout(() => {
-                successMessage.style.display = 'none'; // Hide after 1 second
-            }, 2000);
-        }
-    </script>
+        <div class="property-details">
+            <div class="main-info">
+                <div class="info-section">
+                    <h3>Property Description</h3>
+                    <p>{{ property.description }}</p>
+                </div>
+
+                <div class="info-section">
+                    <h3>Property Features</h3>
+                    <div class="feature-grid">
+                        <div class="feature-item">
+                            <i class="fas fa-home"></i>
+                            <span>{{ property.listing_type }}</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-calendar"></i>
+                            <span>Posted: {{ property.posted_date|date }}</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-map-marked-alt"></i>
+                            <span>{{ property.city }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="video-section">
+                    <h3></h3>
+                    {% for video in property.video.all %}
+                    <video controls>
+                        <source src="{{ video.video.url }}" type="video">
+                        Your browser does not support the video tag.
+                    </video>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="price-card">
+                    <!-- <p><strong>Price:</strong> <span id="propertyPrice">Rs.{{ property.price }}</span></p> -->
+                    <!-- <p><strong>Posted Date:</strong> <span id="propertyPostedDate">{{ property.posted_date }}</span></p> -->
+                    <!-- <p><strong>Property Type:</strong> <span id="propertyType">{{ property.property_type }}</span></p> -->
+                    {% if property.listing_type|lower == 'rent' %}
+                    <p><strong>Rental Amount:</strong> <span id="propertyRentalAmount">Rs. {{ property.monthly_rent }} / month</span></p>
+                {% elif property.listing_type|lower == 'sale' %}
+                    <p><strong>Price:</strong> <span id="propertyPrice">Rs. {{ property.price }}</span></p>
+                {% elif property.listing_type|lower == 'both' %}
+                    <p><strong>Price:</strong> <span id="propertyPrice">Rs. {{ property.price }}</span></p>
+                    <p><strong>Rental Amount:</strong> <span id="propertyRentalAmount">Rs. {{ property.monthly_rent }} / month</span></p>
+                {% else %}
+                    <p><strong>Price Information:</strong> <span id="propertyPriceInfo">Not Available</span></p>
+                {% endif %}
+                    <div class="action-buttons">
+                        {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
+                        <a href="{% url 'rental_agreement' property.id %}" class="btn btn-primary">
+                            <i class="fas fa-key"></i> Rent Now
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'conversation' property.id %}" class="btn btn-secondary">
+                            <i class="fas fa-comments"></i> Contact Owner
+                        </a>
+                        <form method="post">
+                            {% csrf_token %}
+                            <button type="submit" name="add_to_wishlist" class="btn btn-secondary">
+                                <i class="fas fa-heart"></i> Add to Wishlist
+                            </button>
+                        </form>
+                        <a href="{% url 'feedback_page' property.id %}" class="btn btn-secondary">
+                            <i class="fas fa-star"></i> Leave Feedback
+                        </a>
+                        <a href="{% url 'userpage' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Properties
+                        </a>
+                    </div>
+                </div>
+
+                <div class="owner-card">
+                    <div class="owner-info">
+                        <div class="owner-avatar">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <div>
+                            <h3>Property Owner</h3>
+                            <p>{{ property.owner.name }}</p>
+                        </div>
+                    </div>
+                    <a href="https://www.google.com/maps/search/?api=1&query={{ property.address }},+{{ property.city }},+{{ property.state }}" 
+                       target="_blank" 
+                       class="btn btn-secondary">
+                        <i class="fas fa-map-marker-alt"></i> View on Google Maps
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

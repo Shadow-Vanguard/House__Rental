@@ -155,9 +155,26 @@
                   </h2>
                 </div>
                 <div class="card-body-a">
-                  <div class="price-box d-flex">
+                  <!-- <div class="price-box d-flex">
                     <span class="price-a">{{ property.listing_type|lower }} | $ {{ property.price }}</span>
-                  </div>
+                  </div> -->
+                  <!-- <div class="price-box d-flex">
+                    {% if property.listing_type|lower == 'rent' %}
+                      <span class="price-a">Rent |  {{ property.monthly_rent }} / month</span>
+                    {% else %}
+                      <span class="price-a">Sale |  {{ property.price }}</span>
+                    {% endif %}
+                  </div>                   -->
+                  <div class="price-box d-flex">
+                    {% if property.listing_type|lower == 'both' %}
+                      <span class="price-a">Rent |  {{ property.monthly_rent }} / month</span>
+                      <span class="price-a ms-3">Sale |  {{ property.price }}</span>
+                    {% elif property.listing_type|lower == 'rent' %}
+                      <span class="price-a">Rent | {{ property.monthly_rent }} / month</span>
+                    {% else %}
+                      <span class="price-a">Sale |  {{ property.price }}</span>
+                    {% endif %}
+                  </div>                  
                   <a href="{% url 'propertyview' property.id %}" class="link-a">Click here to view
                     <span class="ion-ios-arrow-forward"></span>
                   </a>

@@ -121,6 +121,30 @@ class Payment(models.Model):
     payment_date = models.DateTimeField(auto_now_add=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
     transaction_id = models.CharField(max_length=100, unique=True, null=True)
+    
+class TokenPayment(models.Model):
+    PAYMENT_STATUS = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+    ]
+
+    # Foreign Keys
+    tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='token_payments')  # Tenant making the payment
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_token_payments')  # Property owner
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)  # Associated property
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, null=True, blank=True)  # Associated token request message
+
+    # Fields
+    billing_address = models.TextField(null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
+    state = models.CharField(max_length=100, null=True, blank=True)
+    pin_code = models.CharField(max_length=10, null=True, blank=True)
+
+    amount = models.DecimalField(max_digits=10, decimal_places=2)  # Token amount
+    payment_date = models.DateTimeField(default=timezone.now)  # When the payment was made
+    status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')  # Payment status
+    transaction_id = models.CharField(max_length=100, unique=True, null=True, blank=True)  # Unique transaction ID
 
 
         

@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment
+from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment
 from django.contrib import messages
 import logging
 from django.utils.crypto import get_random_string
@@ -746,21 +746,75 @@ def userviewrental(request):
         'rental_agreements': rental_agreements
     })
 
+# def notification(request):
+#     if request.session.get('user_id'):
+#         user_id = request.session['user_id']
+        
+#         # Fetch all rental agreements that have been accepted (status=True) for the logged-in user
+#         rental_agreements = RentalAgreement.objects.filter(renter_id=user_id, status=True).order_by('-notification_date')
+        
+#         # Fetch all unread messages where the sender is an owner and receiver is the logged-in user
+#         unread_messages = Message.objects.filter(receiver_id=user_id, sender__role='owner', is_read=False).order_by('-timestamp')
+#         return render(request, 'notification.html', {
+#             'rental_agreements': rental_agreements,
+#             'unread_messages': unread_messages,
+
+#         })
+
+#     return redirect('login')
 def notification(request):
     if request.session.get('user_id'):
         user_id = request.session['user_id']
         
-        # Fetch all rental agreements that have been accepted (status=True) for the logged-in user
-        rental_agreements = RentalAgreement.objects.filter(renter_id=user_id, status=True).order_by('-notification_date')
+        # Debug prints
+        print(f"\nChecking notifications for user ID: {user_id}")
         
-        # Fetch all unread messages where the sender is an owner and receiver is the logged-in user
-        unread_messages = Message.objects.filter(receiver_id=user_id, sender__role='owner', is_read=False).order_by('-timestamp')
+        # Fetch rental agreements
+        rental_agreements = RentalAgreement.objects.filter(
+            renter_id=user_id, 
+            status=True
+        ).order_by('-notification_date')
         
-        return render(request, 'notification.html', {
+        # Fetch unread regular messages
+        unread_messages = Message.objects.filter(
+            receiver_id=user_id,
+            sender__role='owner',
+            is_read=False,
+            token_advance=False
+        ).select_related('sender', 'property').order_by('-timestamp')
+        
+        # Fetch token messages
+        token_advance_messages = Message.objects.filter(
+            receiver_id=user_id,
+            sender__role='owner',
+            token_advance=True,
+            token_status='accepted',
+            is_read=False
+        ).select_related('sender', 'property').order_by('-timestamp')
+        
+        # Debug prints
+        print(f"Found {unread_messages.count()} unread messages")
+        print(f"Found {token_advance_messages.count()} token messages")
+        
+        # Print details of each token message
+        for msg in token_advance_messages:
+            print(f"""
+            Token Message Details:
+            - ID: {msg.id}
+            - Sender: {msg.sender.name} ({msg.sender.role})
+            - Property: {msg.property.property_name}
+            - Status: {msg.token_status}
+            - Price: {msg.token_price}
+            """)
+        
+        context = {
             'rental_agreements': rental_agreements,
-            'unread_messages': unread_messages
-        })
-
+            'unread_messages': unread_messages,
+            'token_advance_messages': token_advance_messages,
+        }
+        
+        return render(request, 'notification.html', context)
+    
     return redirect('login')
 
 def clear_message(request, message_id):
@@ -937,16 +991,58 @@ def notification_owner(request):
         if request.method == "POST":
             message_id = request.POST.get('message_id')
             status = request.POST.get('status')
+            
             if message_id and status:
-                Message.objects.filter(id=message_id).update(token_status=status, is_read=True)
-                return redirect('notification_owner')
+                try:
+                    # Get the original token request message
+                    original_message = Message.objects.get(id=message_id)
+                    print(f"Processing message ID: {message_id}, Status: {status}")
+                    
+                    if status == 'accepted':
+                        # Create a new notification message for the user
+                        notification_message = Message.objects.create(
+                            sender_id=owner_id,  # Owner is sending the response
+                            receiver=original_message.sender,  # Send to the original requester
+                            property=original_message.property,
+                            message=f"Your token request for {original_message.property.property_name} has been accepted",
+                            token_advance=True,
+                            token_status='accepted',
+                            token_price=original_message.token_price,
+                            is_read=False
+                        )
+                        print(f"Created new notification message ID: {notification_message.id}")
+                    
+                    # Update the original message
+                    original_message.token_status = status
+                    original_message.is_read = True
+                    original_message.save()
+                    
+                    print(f"Updated original message status to: {status}")
+                    return redirect('notification_owner')
+                    
+                except Message.DoesNotExist:
+                    print(f"Message with ID {message_id} not found")
+                except Exception as e:
+                    print(f"Error processing message: {str(e)}")
 
+        # Get unread messages (non-token)
         unread_messages = Message.objects.filter(
             receiver_id=owner_id,
             sender__role='user',
             is_read=False,
             token_advance=False
-        ).select_related('property', 'sender').order_by('-timestamp')
+        ).select_related('property', 'sender')
+
+        # Get token request messages
+        token_messages = Message.objects.filter(
+            receiver_id=owner_id,
+            sender__role='user',
+            is_read=False,
+            token_advance=True,
+            token_status='pending'
+        ).select_related('property', 'sender')
+
+        # Group regular messages by sender and property
         grouped_messages = {}
         for message in unread_messages:
             key = (message.sender, message.property)
@@ -954,19 +1050,51 @@ def notification_owner(request):
                 grouped_messages[key] = []
             grouped_messages[key].append(message)
 
-        token_messages = Message.objects.filter(
-            receiver_id=owner_id,
-            sender__role='user',
-            is_read=False,
-            token_advance=True
-        ).select_related('property', 'sender').order_by('-timestamp')
         owner_name = User.objects.get(id=owner_id).name
+        
         return render(request, 'notification_owner.html', {
             'grouped_messages': grouped_messages,
             'token_messages': token_messages,
             'owner_name': owner_name
         })
     return redirect('login')
+
+# def notification_owner(request):
+#     owner_id = request.session.get('user_id')
+#     if owner_id:
+#         if request.method == "POST":
+#             message_id = request.POST.get('message_id')
+#             status = request.POST.get('status')
+#             if message_id and status:
+#                 Message.objects.filter(id=message_id).update(token_status=status, is_read=True)
+#                 return redirect('notification_owner')
+
+#         unread_messages = Message.objects.filter(
+#             receiver_id=owner_id,
+#             sender__role='user',
+#             is_read=False,
+#             token_advance=False
+#         ).select_related('property', 'sender').order_by('-timestamp')
+#         grouped_messages = {}
+#         for message in unread_messages:
+#             key = (message.sender, message.property)
+#             if key not in grouped_messages:
+#                 grouped_messages[key] = []
+#             grouped_messages[key].append(message)
+
+#         token_messages = Message.objects.filter(
+#             receiver_id=owner_id,
+#             sender__role='user',
+#             is_read=False,
+#             token_advance=True
+#         ).select_related('property', 'sender').order_by('-timestamp')
+#         owner_name = User.objects.get(id=owner_id).name
+#         return render(request, 'notification_owner.html', {
+#             'grouped_messages': grouped_messages,
+#             'token_messages': token_messages,
+#             'owner_name': owner_name
+#         })
+#     return redirect('login')
 
 def clear_owner_messages(request, property_id):
     if request.session.get('user_id'):
@@ -1144,6 +1272,7 @@ def owner_feedback_view(request):
     
     return render(request, 'owner_feedback_view.html', {
         'feedback_list': feedback_list,
+        'owner_name': owner.name,
     })
 
 def admin_feedback(request):
@@ -1157,3 +1286,125 @@ def admin_feedback(request):
 
     # Pass feedback to the template
     return render(request, 'admin_feedback.html', {'feedbacks': feedbacks})
+    
+def proceedtopayment(request):
+    if not request.session.get('user_id'): 
+        return redirect('login')
+    user_id = request.session['user_id']
+    message_id = request.GET.get('message_id')
+    if not message_id: 
+        return redirect('notification')
+    try:
+        user = User.objects.get(id=user_id)
+        message = Message.objects.get(
+            id=message_id, 
+            receiver_id=user_id, 
+            token_advance=True, 
+            token_status='accepted'
+        )
+        existing_payment = TokenPayment.objects.filter(
+            message=message, 
+            tenant=user
+        ).first()
+        user_data = {
+            'name': user.name,
+            'email': user.email,
+            'phone': user.phone,
+            'address': user.address
+        }
+        if existing_payment:
+            user_data.update({
+                'billing_address': existing_payment.billing_address,
+                'city': existing_payment.city,
+                'state': existing_payment.state,
+                'pin_code': existing_payment.pin_code
+            })
+        if request.method == 'POST':
+            token_payment, created = TokenPayment.objects.update_or_create(
+                message=message,
+                tenant=user,
+                defaults={
+                    'owner': message.sender,
+                    'property': message.property,
+                    'amount': message.token_price,
+                    'billing_address': request.POST.get('billing_address'),
+                    'city': request.POST.get('city'),
+                    'state': request.POST.get('state'),
+                    'pin_code': request.POST.get('pin_code')
+                }
+            )
+            request.session['token_payment_id'] = token_payment.id
+            return redirect('proceedtopaymentview')
+        return render(request, 'proceedtopayment.html', {
+            'user_data': user_data,
+            'token_price': message.token_price,
+            'property': message.property,
+            'message': message
+        })
+    except (User.DoesNotExist, Message.DoesNotExist):
+        return redirect('notification')
+
+def proceedtopaymentview(request):
+    if not request.session.get('token_payment_id'):
+        return redirect('notification')
+    try:
+        payment = TokenPayment.objects.select_related('property', 'tenant').get(
+            id=request.session['token_payment_id']
+        )
+        context = {
+            'payment_id': payment.id,
+            'property': {
+                'name': str(payment.property.property_name),
+                'price': float(payment.property.price)
+            },
+            'token_amount': float(payment.amount),
+            'tenant': {
+                'name': str(payment.tenant.name),
+                'email': str(payment.tenant.email),
+                'phone': str(payment.tenant.phone)
+            },
+            'billing_address': str(payment.billing_address),
+            'city': str(payment.city),
+            'state': str(payment.state),
+            'pin_code': str(payment.pin_code),
+            'razorpay_key_id': settings.RAZORPAY_KEY_ID
+        }
+        return render(request, 'proceedtopaymentview.html', context)
+    except TokenPayment.DoesNotExist:
+        return redirect('notification')
+
+from decimal import Decimal
+def create_ordersss(request, payment_id):
+    if not request.session.get('user_id'):
+        return JsonResponse({'error': 'User not authenticated'}, status=401)
+    try:
+        payment = get_object_or_404(TokenPayment, id=payment_id)
+        amount_in_paise = int(payment.amount * Decimal(100))
+        client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET_KEY))
+        order_data = {
+            'amount': amount_in_paise,
+            'currency': 'INR',
+            'receipt': f'tkn_{payment.id}_{int(time.time())}',
+            'payment_capture': '1'
+        }
+        order = client.order.create(data=order_data)
+        payment.transaction_id = order['id']
+        payment.save()
+        return JsonResponse(order)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+
+def token_advance_list(request):
+    if not request.session.get('admin_email'):
+        return redirect('login')
+        
+   # Fetch all token payment requests with related property and tenant information
+    token_requests = TokenPayment.objects.select_related('property', 'tenant').all()
+
+    # Extract distinct property names and associated details
+    context = {
+        'token_requests': token_requests,
+    }
+    return render(request, 'token_advance_list.html', context)

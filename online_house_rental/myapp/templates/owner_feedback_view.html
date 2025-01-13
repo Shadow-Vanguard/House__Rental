@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Property Feedback</title>
     <link rel="stylesheet" href="{% static 'css/feedback.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         .container {
             max-width: 800px;
@@ -91,13 +92,131 @@
         .back-button i {
             font-size: 20px;
         }
+        /* body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        } */
+        header {
+            background-color: #2c3e50;
+            font-family: Arial, sans-serif;
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 24px;
+        }
+
+        header .welcome h2 {
+            font-size: 24px;
+            margin: 0;
+            
+        }
+        /* Add some styling for the dropdown */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            background-color: #f9f9f9;
+            min-width: 250px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            left: 0; 
+        }
+
+        .dropdown-content a {
+            color: black;
+            padding: 12px 10px;
+            text-decoration: none;
+            display: block;
+            text-align: left; 
+        }
+
+        .dropdown-content a:hover {
+            background-color: #f1f1f1;
+        }
+
+        .dropdown:hover .dropdown-content {
+            display: block;
+        }
+
+        .dropdown:hover .dropbtn {
+            background-color: #3e8e41;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a i {
+            margin-right: 8px;
+        }
+
 
     </style>
 </head>
 <body>
-    <a href="javascript:history.back()" class="back-button">
+    
+    <!-- <a href="javascript:history.back()" class="back-button">
         <i class="fas fa-arrow-left"></i> Back
-    </a>
+    </a> -->
+    <header>
+        <div class="welcome">
+            <h2>Welcome, {{ owner_name }}!</h2>
+        </div> 
+        <nav>
+            <ul>
+                <li><a href="{% url 'propertyadd' %}"><i class="fas fa-plus-square"></i> Add Property</a></li>
+                <li><a href="{% url 'owner_feedback_view' %}"><i class="fas fa-comments"></i> Feedback</a></li>
+                <li><a href="{% url 'ownerview' %}"><i class="fas fa-file-signature"></i> Rental Agreements</a></li>
+                <li><a href="{% url 'ownerproperty' %}"><i class="fas fa-eye"></i> View Properties</a></li>
+                <li><a href="{% url 'notification_owner' %}"><i class="fas fa-bell"></i> Notifications</a></li>
+                <li>
+                    <div class="dropdown">
+                        <a href="#" class="dropbtn"><i class="fas fa-user-circle"></i> My Profile</a>
+                        <div class="dropdown-content">
+                            <a href="{% url 'ownerupdate' %}">Update Profile</a>
+                           
+                            <a href="#" id="logout-link">Logout</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
     <div class="container">
         <h1>Feedback for Your Properties</h1>
         {% if feedback_list %}

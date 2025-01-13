@@ -64,6 +64,12 @@ urlpatterns = [
   path('create-order/<int:payment_id>/', views.create_order, name='create-order'),
   path('payment-success/', views.payment_success, name='payment-success'),
   path('adminfeedback/', views.admin_feedback, name='admin_feedback'),
+  path('proceedtopayment/', views.proceedtopayment, name='proceedtopayment'),
+  path('proceedtopaymentview/', views.proceedtopaymentview, name='proceedtopaymentview'),
+  path('create-ordersss/<int:payment_id>/', views.create_ordersss, name='create_ordersss'),
+  path('token-advance_list/', views.token_advance_list, name='token_advance_list'),
+  # path('buy_details', views.buy_details, name='buy_details'),
+  # path('create-ordersss/<int:property_id>/', views.create_ordersss, name='create_ordersss'),
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

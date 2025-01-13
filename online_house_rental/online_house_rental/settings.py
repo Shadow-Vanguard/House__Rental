@@ -145,9 +145,9 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'haripriyaka2025@mca.ajce.in'
-EMAIL_HOST_PASSWORD = 'Zoom#2023'
-DEFAULT_FROM_EMAIL = 'haripriyaka2025@mca.ajce.in'
+EMAIL_HOST_USER = 'houserental934@gmail.com'
+EMAIL_HOST_PASSWORD = 'gkwl mvdi umvi josq'
+DEFAULT_FROM_EMAIL = 'houserental934@gmail.com'
 
 
 

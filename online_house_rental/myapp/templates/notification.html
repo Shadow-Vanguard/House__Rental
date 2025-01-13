@@ -243,7 +243,7 @@ h2 {
 <!-- Message Notification Section End -->
 
 <!-- Token Advance Notification Section Start -->
-<h2 class="text-center">Token Advance Notifications</h2>
+<!-- <h2 class="text-center">Token Advance Notifications</h2>
 
 {% if token_advance_messages %}
     {% for message in token_advance_messages %}
@@ -256,7 +256,7 @@ h2 {
             <p>Amount to pay: <strong>Rs. {{ message.token_price }}</strong></p>
         </div>
         <div class="notification-footer">
-            <!-- <a href="#" class="btn btn-pay">Pay</a> -->
+            <a href="#" class="btn btn-pay">Pay</a>
             <a href="#" class="btn btn-clear">Clear</a>
         </div>
         <div class="notification-date">
@@ -266,11 +266,38 @@ h2 {
     {% endfor %}
 {% else %}
 <p class="no-notifications">No token advance notifications available.</p>
-{% endif %}
+{% endif %} -->
 <!-- Token Advance Notification Section End -->
+<!-- Token Advance Notification Section -->
+<div class="container notification-container">
+    <h2 class="text-center">Token Advance Notifications</h2>
 
-
-
+    {% if token_advance_messages %}
+        {% for message in token_advance_messages %}
+        <div class="notification-card">
+            <div class="notification-header">
+                Token request for <span>{{ message.property.property_name }}</span> has been accepted
+            </div>
+            <div class="notification-content">
+                <p>{{ message.message }}</p>
+                <p>Amount to pay: <strong>Rs. {{ message.token_price }}</strong></p>
+                <p class="notification-date">{{ message.timestamp|date:"F d, Y H:i" }}</p>
+            </div>
+            <div class="notification-footer">
+                <a href="{% url 'proceedtopayment' %}?message_id={{ message.id }}" class="btn btn-primary">
+                    Proceed to Payment
+                </a>
+                <form method="POST" action="{% url 'clear_message' message.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-clear">Clear</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-notifications">No token advance notifications available.</p>
+    {% endif %}
+</div>
 
   <!-- JavaScript Libraries -->
   <script src="{% static 'template_landingpage/lib/jquery/jquery.min.js' %}"></script>
