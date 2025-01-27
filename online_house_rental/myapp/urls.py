@@ -70,6 +70,15 @@ urlpatterns = [
   path('token-advance_list/', views.token_advance_list, name='token_advance_list'),
   # path('buy_details', views.buy_details, name='buy_details'),
   # path('create-ordersss/<int:property_id>/', views.create_ordersss, name='create_ordersss'),
-
-
+  path('chat/', views.chat_with_bot, name='chat_with_bot'),
+  path('chat-interface/', views.chatbot_page, name='chatbot_page'),
+  path('owner/dashboard/', views.owner_dashboard, name='owner_dashboard'),
+  path('owner/property-data/', views.owner_property_data, name='owner_property_data'),
+  path('service-providers/', views.service_providers, name='service_providers'),
+  path('maintanence', views.maintanence, name='maintanence'),
+  path('maintenance/<int:property_id>/', views.maintenance_request, name='maintenance_request'),
+  path('owner/maintenance/', views.owner_maintenance_requests, name='owner_maintenance'),
+  path('maintenance/update/<int:request_id>/', views.update_maintenance_status, name='update_maintenance_status'),
+  path('maintenance/notes/<int:request_id>/', views.update_maintenance_notes, name='update_maintenance_notes'),
+  
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

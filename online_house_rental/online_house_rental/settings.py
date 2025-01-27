@@ -163,3 +163,7 @@ LOGOUT_REDIRECT_URL = '/index/'  # Where users go after logout
 RAZORPAY_KEY_ID = 'rzp_test_laVEiky2GFNsEC'
 RAZORPAY_SECRET_KEY = 'r5aXp83zCHvPnsOrccv2T2M2'
 
+
+# Set GOOGLE_APPLICATION_CREDENTIALS environment variable
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = r"E:\rentbot-yijh-865afcf2b8ed.json"
+

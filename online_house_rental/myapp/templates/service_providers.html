@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <!-- Add Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Add Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta charset="utf-8">
+  <title>EstateAgency Bootstrap Template</title>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="" name="keywords">
+  <meta content="" name="description">
+  <link href="{% static 'template_landingpage/img/favicon.png' %}" rel="icon">
+  <link href="{% static 'template_landingpage/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+  <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/animate/animate.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/ionicons/css/ionicons.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
+  <link href="{% static 'template_landingpage/css/style.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .service-providers-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem 2rem;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .service-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .service-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .service-icon {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .service-card h3 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .provider-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .provider {
+            background: #f8f9fa;
+            padding: 1.2rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .provider:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .provider h4 {
+            color: #2c3e50;
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .provider p {
+            color: #666;
+            margin: 0.5rem 0;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .provider i {
+            width: 20px;
+            margin-right: 0.8rem;
+        }
+
+        /* Custom colors for different service icons */
+        .service-card:nth-child(1) .service-icon i {
+            color: #3498db; /* Plumbing - Blue */
+        }
+
+        .service-card:nth-child(2) .service-icon i {
+            color: #f1c40f; /* Electrical - Yellow */
+        }
+
+        .service-card:nth-child(3) .service-icon i {
+            color: #e67e22; /* Carpentry - Orange */
+        }
+
+        .service-card:nth-child(4) .service-icon i {
+            color: #2ecc71; /* Painting - Green */
+        }
+
+        /* Emergency Services Badge */
+        .emergency-badge {
+            background-color: #e74c3c;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-left: 1rem;
+        }
+
+        /* Rating Stars */
+        .rating {
+            color: #f1c40f;
+            margin: 0.5rem 0;
+        }
+
+        /* Footer */
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .service-providers-container {
+                padding: 0 1rem 1rem;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .service-card {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .service-card:nth-child(1) { animation-delay: 0.1s; }
+        .service-card:nth-child(2) { animation-delay: 0.2s; }
+        .service-card:nth-child(3) { animation-delay: 0.3s; }
+        .service-card:nth-child(4) { animation-delay: 0.4s; }
+    </style>
+</head>
+<div class="click-closed"></div>
+
+  <!--/ Nav Start /-->
+  <nav class="navbar navbar-default navbar-trans navbar-expand-lg fixed-top">
+    <div class="container">
+      <a class="navbar-brand text-brand" href="#">Estate<span class="color-b">Agency</span></a>
+      <div class="navbar-collapse collapse justify-content-center" id="navbarDefault">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" href="{% url 'userpage' %}">Home</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'updateprofile' %}">Profile</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'wishlist' %}">Wishlist</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'userviewrental' %}">View Rental Agreement</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'notification' %}">Notification</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+          </li>
+        </ul>
+        {% if error %}
+        <div class="error-box">
+          {{ error }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+  <!--/ Nav End /-->
+<body>
+    <!-- <div class="header">
+        <h1>Home Maintenance Services</h1>
+        <p>Find reliable service providers in your area</p>
+    </div> -->
+
+    <div class="service-providers-container">
+        <div class="services-grid">
+            <!-- Plumbing Services -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-wrench"></i>
+                </div>
+                <h3>Plumbing Services</h3>
+                <div class="provider-list">
+                    <div class="provider">
+                        <h4>Quick Plumb Solutions <span class="emergency-badge">24/7</span></h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p><i class="fas fa-user"></i> John Smith</p>
+                        <p><i class="fas fa-phone"></i> +91 9876543210</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kochi, Kerala</p>
+                        <p><i class="fas fa-clock"></i> Available 24/7</p>
+                    </div>
+                    <div class="provider">
+                        <h4>Expert Plumbers</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <p><i class="fas fa-user"></i> Raj Kumar</p>
+                        <p><i class="fas fa-phone"></i> +91 9876543211</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kochi, Kerala</p>
+                        <p><i class="fas fa-clock"></i> 8:00 AM - 8:00 PM</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Electrical Services -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3>Electrical Services</h3>
+                <div class="provider-list">
+                    <div class="provider">
+                        <h4>PowerFix Electronics <span class="emergency-badge">24/7</span></h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p><i class="fas fa-user"></i> Alex Johnson</p>
+                        <p><i class="fas fa-phone"></i> +91 9876543212</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kochi, Kerala</p>
+                        <p><i class="fas fa-clock"></i> Available 24/7</p>
+                    </div>
+                    <div class="provider">
+                        <h4>Reliable Electricians</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p><i class="fas fa-user"></i> Mohammed Ali</p>
+                        <p><i class="fas fa-phone"></i> +91 9876543213</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kochi, Kerala</p>
+                        <p><i class="fas fa-clock"></i> 9:00 AM - 8:00 PM</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Carpentry Services -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-hammer"></i>
+                </div>
+                <h3>Carpentry Services</h3>
+                <div class="provider-list">
+                    <div class="provider">
+                        <h4>Woodcraft Masters</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <p><i class="fas fa-user"></i> Thomas George</p>
+                        <p><i class="fas fa-phone"></i> +91 9876543214</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kochi, Kerala</p>
+                        <p><i class="fas fa-clock"></i> 8:00 AM - 7:00 PM</p>
+                    </div>
+                    <div class="provider">
+                        <h4>Expert Carpenters</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                        <p><i class="fas fa-user"></i> Suresh Kumar</p>
+                        <p><i class="fas fa-phone"></i> +91 9876543215</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kochi, Kerala</p>
+                        <p><i class="fas fa-clock"></i> 9:00 AM - 6:00 PM</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painting Services -->
+            <div class="service-card">
+                <div class="service-icon">
+                    <i class="fas fa-paint-roller"></i>
+                </div>
+                <h3>Painting Services</h3>
+                <div class="provider-list">
+                    <div class="provider">
+                        <h4>ColorPro Painters</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <p><i class="fas fa-user"></i> David Wilson</p>
+                        <p><i class="fas fa-phone"></i> +91 9876543216</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kochi, Kerala</p>
+                        <p><i class="fas fa-clock"></i> 8:00 AM - 6:00 PM</p>
+                    </div>
+                    <div class="provider">
+                        <h4>Perfect Paint Solutions</h4>
+                        <div class="rating">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="far fa-star"></i>
+                        </div>
+                        <p><i class="fas fa-user"></i> Ravi Menon</p>
+                        <p><i class="fas fa-phone"></i> +91 9876543217</p>
+                        <p><i class="fas fa-map-marker-alt"></i> Kochi, Kerala</p>
+                        <p><i class="fas fa-clock"></i> 9:00 AM - 7:00 PM</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2024 Home Maintenance Services. All rights reserved.</p>
+    </div>
+</body>
+</html>

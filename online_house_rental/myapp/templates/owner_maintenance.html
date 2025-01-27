@@ -1,0 +1,434 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maintenance Requests Dashboard</title>
+    <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'template_landingpage/lib/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Poppins', sans-serif;
+            color: #555;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .section-title {
+            color: #2eca6a;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .requests-section {
+            margin-bottom: 40px;
+        }
+
+        .request-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .request-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .request-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .priority-badge {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .priority-low { background-color: #d4edda; color: #155724; }
+        .priority-medium { background-color: #fff3cd; color: #856404; }
+        .priority-high { background-color: #ffe5d0; color: #fd7e14; }
+        .priority-emergency { background-color: #f8d7da; color: #721c24; }
+
+        .request-details {
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            margin-bottom: 8px;
+            color: #666;
+        }
+
+        .detail-item i {
+            width: 20px;
+            color: #2eca6a;
+        }
+
+        .request-image {
+            max-width: 200px;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .status-select {
+            padding: 8px;
+            border: 2px solid #2eca6a;
+            border-radius: 5px;
+            color: #2eca6a;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .status-select:hover {
+            background: #2eca6a;
+            color: white;
+        }
+
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: none;
+            border-radius: 5px;
+            background: #e9ecef;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: #2eca6a;
+            color: white;
+        }
+
+        .tab-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .notes-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .request-card {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .request-card[data-priority="high"],
+        .request-card[data-priority="emergency"] {
+            border: 2px solid #dc3545;
+            position: relative;
+            overflow: hidden;
+            animation: pulse 2s infinite;
+        }
+
+        .urgent-badge {
+            position: absolute;
+            top: 10px;
+            right: -35px;
+            background: #dc3545;
+            color: white;
+            padding: 5px 40px;
+            transform: rotate(45deg);
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 1;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        .priority-emergency {
+            background-color: #dc3545 !important;
+            color: white !important;
+            font-weight: bold;
+        }
+
+        .priority-high {
+            background-color: #fd7e14 !important;
+            color: white !important;
+            font-weight: bold;
+        }
+
+        .priority-badge.priority-high,
+        .priority-badge.priority-emergency {
+            padding: 8px 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .priority-badge i {
+            margin-right: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1 class="section-title">Maintenance Requests Dashboard</h1>
+
+        <div class="tab-container">
+            <button class="tab-button active" data-tab="pending">Pending ({{ pending_requests.count }})</button>
+            <button class="tab-button" data-tab="in-progress">In Progress ({{ in_progress_requests.count }})</button>
+            <button class="tab-button" data-tab="completed">Completed ({{ completed_requests.count }})</button>
+        </div>
+
+        <!-- Pending Requests -->
+        <div class="requests-section" id="pending-section">
+            {% for request in pending_requests %}
+            <div class="request-card" data-priority="{{ request.priority }}">
+                {% if request.priority == 'high' or request.priority == 'emergency' %}
+                <div class="urgent-badge">
+                    <i class="fa fa-exclamation-circle"></i> 
+                    {% if request.priority == 'emergency' %}EMERGENCY{% else %}HIGH PRIORITY{% endif %}
+                </div>
+                {% endif %}
+                <div class="request-header">
+                    <h3 class="request-title">{{ request.title }}</h3>
+                    <span class="priority-badge priority-{{ request.priority }}">
+                        <i class="fa fa-exclamation-triangle"></i> {{ request.priority|title }} Priority
+                    </span>
+                </div>
+                <div class="request-details">
+                    <div class="detail-item">
+                        <i class="fa fa-home"></i> {{ request.property.property_name }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-user"></i> {{ request.tenant.name }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-calendar"></i> {{ request.reported_date|date:"F d, Y" }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-file-text"></i> {{ request.description }}
+                    </div>
+                    {% if request.image %}
+                    <img src="{{ request.image.url }}" alt="Maintenance Issue" class="request-image">
+                    {% endif %}
+                </div>
+                <div class="request-actions">
+                    <select class="status-select" onchange="updateStatus(this, {{ request.id }})">
+                        <option value="reported" {% if request.status == 'reported' %}selected{% endif %}>Reported</option>
+                        <option value="in_progress" {% if request.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if request.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    <textarea class="notes-input" placeholder="Add notes..." onchange="updateNotes(this, {{ request.id }})">{{ request.owner_notes }}</textarea>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center">No pending maintenance requests.</p>
+            {% endfor %}
+        </div>
+
+        <!-- In Progress Requests -->
+        <div class="requests-section" id="in-progress-section" style="display: none;">
+            {% for request in in_progress_requests %}
+            <div class="request-card" data-priority="{{ request.priority }}">
+                {% if request.priority == 'high' or request.priority == 'emergency' %}
+                <div class="urgent-badge">
+                    <i class="fa fa-exclamation-circle"></i> 
+                    {% if request.priority == 'emergency' %}EMERGENCY{% else %}HIGH PRIORITY{% endif %}
+                </div>
+                {% endif %}
+                <div class="request-header">
+                    <h3 class="request-title">{{ request.title }}</h3>
+                    <span class="priority-badge priority-{{ request.priority }}">
+                        <i class="fa fa-exclamation-triangle"></i> {{ request.priority|title }} Priority
+                    </span>
+                </div>
+                <div class="request-details">
+                    <div class="detail-item">
+                        <i class="fa fa-home"></i> {{ request.property.property_name }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-user"></i> {{ request.tenant.name }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-calendar"></i> {{ request.reported_date|date:"F d, Y" }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-file-text"></i> {{ request.description }}
+                    </div>
+                    {% if request.image %}
+                    <img src="{{ request.image.url }}" alt="Maintenance Issue" class="request-image">
+                    {% endif %}
+                </div>
+                <div class="request-actions">
+                    <select class="status-select" onchange="updateStatus(this, {{ request.id }})">
+                        <option value="reported" {% if request.status == 'reported' %}selected{% endif %}>Reported</option>
+                        <option value="in_progress" {% if request.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if request.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    <textarea class="notes-input" placeholder="Add notes..." onchange="updateNotes(this, {{ request.id }})">{{ request.owner_notes }}</textarea>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center">No maintenance requests in progress.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Completed Requests -->
+        <div class="requests-section" id="completed-section" style="display: none;">
+            {% for request in completed_requests %}
+            <div class="request-card" data-priority="{{ request.priority }}">
+                {% if request.priority == 'high' or request.priority == 'emergency' %}
+                <div class="urgent-badge">
+                    <i class="fa fa-exclamation-circle"></i> 
+                    {% if request.priority == 'emergency' %}EMERGENCY{% else %}HIGH PRIORITY{% endif %}
+                </div>
+                {% endif %}
+                <div class="request-header">
+                    <h3 class="request-title">{{ request.title }}</h3>
+                    <span class="priority-badge priority-{{ request.priority }}">
+                        <i class="fa fa-exclamation-triangle"></i> {{ request.priority|title }} Priority
+                    </span>
+                </div>
+                <div class="request-details">
+                    <div class="detail-item">
+                        <i class="fa fa-home"></i> {{ request.property.property_name }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-user"></i> {{ request.tenant.name }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-calendar"></i> {{ request.reported_date|date:"F d, Y" }}
+                    </div>
+                    <div class="detail-item">
+                        <i class="fa fa-file-text"></i> {{ request.description }}
+                    </div>
+                    {% if request.image %}
+                    <img src="{{ request.image.url }}" alt="Maintenance Issue" class="request-image">
+                    {% endif %}
+                </div>
+                <div class="request-actions">
+                    <select class="status-select" onchange="updateStatus(this, {{ request.id }})">
+                        <option value="reported" {% if request.status == 'reported' %}selected{% endif %}>Reported</option>
+                        <option value="in_progress" {% if request.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                        <option value="completed" {% if request.status == 'completed' %}selected{% endif %}>Completed</option>
+                    </select>
+                    <textarea class="notes-input" placeholder="Add notes..." onchange="updateNotes(this, {{ request.id }})">{{ request.owner_notes }}</textarea>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-center">No completed maintenance requests.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', function() {
+                // Update active tab
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+
+                // Show corresponding section
+                const tabId = this.dataset.tab;
+                document.querySelectorAll('.requests-section').forEach(section => {
+                    section.style.display = 'none';
+                });
+                document.getElementById(`${tabId}-section`).style.display = 'block';
+            });
+        });
+
+        // Update status function
+        function updateStatus(select, requestId) {
+            fetch(`/maintenance/update/${requestId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    status: select.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Instead of reloading, move the card to the appropriate section
+                    const requestCard = select.closest('.request-card');
+                    const newSection = select.value === 'reported' ? 'pending-section' :
+                                     select.value === 'in_progress' ? 'in-progress-section' :
+                                     'completed-section';
+                    
+                    document.getElementById(newSection).appendChild(requestCard);
+                    
+                    // Update the counts in the tab buttons
+                    updateTabCounts();
+                }
+            });
+        }
+
+        // Function to update tab counts
+        function updateTabCounts() {
+            const pendingCount = document.getElementById('pending-section').querySelectorAll('.request-card').length;
+            const inProgressCount = document.getElementById('in-progress-section').querySelectorAll('.request-card').length;
+            const completedCount = document.getElementById('completed-section').querySelectorAll('.request-card').length;
+
+            document.querySelector('[data-tab="pending"]').textContent = `Pending (${pendingCount})`;
+            document.querySelector('[data-tab="in-progress"]').textContent = `In Progress (${inProgressCount})`;
+            document.querySelector('[data-tab="completed"]').textContent = `Completed (${completedCount})`;
+        }
+
+        // Update notes function
+        function updateNotes(textarea, requestId) {
+            fetch(`/maintenance/notes/${requestId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    notes: textarea.value
+                })
+            });
+        }
+
+        // Highlight urgent requests periodically
+        setInterval(() => {
+            document.querySelectorAll('.request-card[data-priority="high"], .request-card[data-priority="emergency"]').forEach(card => {
+                card.style.borderColor = card.style.borderColor === 'rgb(220, 53, 69)' ? '#ff8c8c' : '#dc3545';
+            });
+        }, 1000);
+    </script>
+</body>
+</html>

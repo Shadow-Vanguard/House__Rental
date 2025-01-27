@@ -17,6 +17,72 @@
   <link href="{% static 'template_landingpage/lib/owlcarousel/assets/owl.carousel.min.css' %}" rel="stylesheet">
   <link href="{% static 'template_landingpage/css/style.css' %}" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'css/styleuser.css' %}">
+  <style>
+    /* Floating Chat Button */
+    .chat-bot-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background-color: #2eca6a;
+      color: white;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+      transition: all 0.3s ease;
+      z-index: 1000;
+    }
+
+    .chat-bot-button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      background-color: #28b35d;
+    }
+
+    .chat-bot-button i {
+      font-size: 24px;
+    }
+
+    /* Optional: Add a pulse animation */
+    @keyframes pulse {
+      0% {
+        box-shadow: 0 0 0 0 rgba(46, 202, 106, 0.4);
+      }
+      70% {
+        box-shadow: 0 0 0 10px rgba(46, 202, 106, 0);
+      }
+      100% {
+        box-shadow: 0 0 0 0 rgba(46, 202, 106, 0);
+      }
+    }
+
+    .chat-bot-button {
+      animation: pulse 2s infinite;
+    }
+
+    /* Optional: Add a tooltip */
+    .chat-bot-button::before {
+      content: 'Chat Assistant';
+      position: absolute;
+      right: 70px;
+      padding: 5px 10px;
+      background: rgba(0,0,0,0.8);
+      color: white;
+      border-radius: 4px;
+      font-size: 12px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .chat-bot-button:hover::before {
+      opacity: 1;
+    }
+  </style>
 </head>
 <style>
   /* Add these styles to your existing CSS */
@@ -47,6 +113,110 @@
     text-transform: uppercase;
     letter-spacing: 2px;
 }
+
+    .img-box-a {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .rented-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 2;
+    }
+
+    .rented-text {
+        color: white;
+        font-size: 2rem;
+        font-weight: bold;
+        background-color: #dc3545;
+        padding: 10px 20px;
+        transform: rotate(-45deg);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .rented-properties-section {
+        padding: 40px 0;
+        background-color: #f8f9fa;
+        display: block;
+    }
+
+    .section-title {
+        color: #2eca6a;
+        font-size: 2rem;
+        margin-bottom: 30px;
+        text-align: center;
+        font-weight: 600;
+    }
+
+    .maintenance-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background-color: #2eca6a;
+        color: white;
+        padding: 8px 15px;
+        border-radius: 5px;
+        text-decoration: none;
+        z-index: 3;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        cursor: pointer;
+        pointer-events: auto;
+    }
+
+    .maintenance-btn:hover {
+        background-color: #28b35d;
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+    }
+
+    .maintenance-btn i {
+        margin-right: 5px;
+    }
+
+    .no-properties-message {
+        text-align: center;
+        color: #666;
+        font-size: 1.1rem;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .img-box-a img {
+        transition: transform 0.3s ease;
+    }
+
+    .img-box-a:hover img {
+        transform: scale(1.1);
+    }
+
+    .card-box-a {
+        margin-bottom: 30px;
+    }
+
+    .card-overlay {
+        pointer-events: none;
+    }
+
+    .card-overlay a,
+    .card-overlay .card-body-a,
+    .card-overlay .card-footer-a {
+        pointer-events: auto;
+    }
+</style>
 </style>
 <body>
 
@@ -75,6 +245,16 @@
           <a class="nav-link" href="{% url 'notification' %}">Notification</a>
         </li>
 
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'service_providers' %}"></i> Services
+          </a>
+        </li>
+        
+        <li class="nav-item">
+          <a class="nav-link" href="{% url 'chatbot_page' %}">
+          </a>
+        </li>
+
           <li class="nav-item">
             <a href="#" class="nav-link" id="logout-btn">Logout</a>
           </li>  
@@ -100,6 +280,72 @@
           </div>
         </div>
       </div>
+
+      <!-- Add after the welcome section and before the filter section -->
+      {% if rented_properties %}
+      <section class="rented-properties-section">
+        <div class="container">
+          <div class="row">
+            <div class="col-md-12">
+              <h2 class="section-title">Your Rented Properties</h2>
+            </div>
+          </div>
+          <div class="row">
+            {% for rented_property in rented_properties %}
+            <div class="col-md-4">
+              <div class="card-box-a card-shadow">
+                <div class="img-box-a">
+                  <!-- Update this maintenance button -->
+                  <a href="{% url 'maintenance_request' rented_property.id %}" class="maintenance-btn">
+                    <i class="fa fa-wrench"></i> Maintenance
+                  </a>
+                  <!-- Property Image with Link -->
+                  <a href="{% url 'propertyview' rented_property.id %}">
+                    <img src="{% if rented_property.images.first %}{{ rented_property.images.first.image.url }}{% else %}{% static 'template_landingpage/img/default-property.jpg' %}{% endif %}" 
+                         alt="{{ rented_property.property_name }}" 
+                         class="img-a img-fluid">
+                  </a>
+                </div>
+                <div class="card-overlay">
+                  <div class="card-overlay-a-content">
+                    <div class="card-header-a">
+                      <h2 class="card-title-a">
+                        <a href="{% url 'propertyview' rented_property.id %}">{{ rented_property.property_name }}</a>
+                      </h2>
+                    </div>
+                    <div class="card-body-a">
+                      <div class="price-box d-flex">
+                        <span class="price-a">Rent | {{ rented_property.monthly_rent }} / month</span>
+                      </div>
+                      <a href="{% url 'propertyview' rented_property.id %}" class="link-a">View Details
+                        <span class="ion-ios-arrow-forward"></span>
+                      </a>
+                    </div>
+                    <div class="card-footer-a">
+                      <ul class="card-info d-flex justify-content-around">
+                        <li>
+                          <h4 class="card-info-title">Area</h4>
+                          <span>{{ rented_property.area }} m<sup>2</sup></span>
+                        </li>
+                        <li>
+                          <h4 class="card-info-title">Beds</h4>
+                          <span>{{ rented_property.beds }}</span>
+                        </li>
+                        <li>
+                          <h4 class="card-info-title">Baths</h4>
+                          <span>{{ rented_property.baths }}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </section>
+      {% endif %}
 
       <!-- Filter Section -->
       <div class="container">
@@ -138,6 +384,7 @@
   <!--/ Intro Single End /-->
 
   <!--/ Property Grid Start /-->
+  
   <section class="property-grid grid">
     <div class="container">
       <div class="row">
@@ -235,7 +482,39 @@
         }
       });
     });
+
+    // Smooth scroll to maintenance form when maintenance button is clicked
+    document.querySelectorAll('.maintenance-btn').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        // You can add additional functionality here if needed
+      });
+    });
+
+    // Check if there are rented properties and handle section visibility
+    document.addEventListener('DOMContentLoaded', function() {
+        const rentedSection = document.querySelector('.rented-properties-section');
+        if (rentedSection) {
+            const hasRentedProperties = rentedSection.querySelector('.card-box-a') !== null;
+            rentedSection.style.display = hasRentedProperties ? 'block' : 'none';
+        }
+    });
+
+    // Add click event listeners to maintenance buttons
+    const maintenanceButtons = document.querySelectorAll('.maintenance-btn');
+    maintenanceButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Prevent any potential event blocking
+            e.stopPropagation();
+            // Navigate to the maintenance page
+            window.location.href = this.href;
+        });
+    });
   </script>
+
+  <a href="{% url 'chatbot_page' %}" class="chat-bot-button">
+    <i class="fa fa-comments"></i>
+  </a>
 
 </body>
 </html>

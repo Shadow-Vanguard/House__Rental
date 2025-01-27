@@ -79,6 +79,33 @@
         document.getElementById('tokenRequestBtn').onclick = function() { document.getElementById('tokenModal').style.display = 'block'; }
         document.getElementById('closeModal').onclick = function() { document.getElementById('tokenModal').style.display = 'none'; }
         window.onclick = function(event) { if (event.target == document.getElementById('tokenModal')) { document.getElementById('tokenModal').style.display = 'none'; } }
+
+        document.querySelector('.modal-content form').addEventListener('submit', function(e) {
+            const tokenPrice = parseFloat(document.querySelector('input[name="token_price"]').value);
+            const errorDiv = document.createElement('div');
+            errorDiv.style.color = 'red';
+            errorDiv.style.marginBottom = '10px';
+            
+            const existingError = document.querySelector('.price-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            if (tokenPrice <= 0) {
+                e.preventDefault();
+                errorDiv.className = 'price-error';
+                errorDiv.textContent = tokenPrice === 0 ? 
+                    'Token price cannot be zero!' : 
+                    'Token price cannot be negative!';
+                document.querySelector('input[name="token_price"]').after(errorDiv);
+            }
+        });
+
+        document.querySelector('input[name="token_price"]').addEventListener('input', function(e) {
+            if (this.value < 0) {
+                this.value = '';
+            }
+        });
     </script>
 </body>
 </html>

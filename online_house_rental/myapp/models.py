@@ -46,6 +46,7 @@ class Property(models.Model):
     monthly_rent = models.IntegerField(null=True, blank=True)
     terms_and_conditions = models.CharField(max_length=3000, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
+    is_rented = models.BooleanField(default=False)
     
 
     def __str__(self):
@@ -145,6 +146,46 @@ class TokenPayment(models.Model):
     payment_date = models.DateTimeField(default=timezone.now)  # When the payment was made
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')  # Payment status
     transaction_id = models.CharField(max_length=100, unique=True, null=True, blank=True)  # Unique transaction ID
+
+
+class PropertyRental(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    property = models.ForeignKey('Property', on_delete=models.CASCADE)
+    is_active = models.BooleanField(default=True)
+    rental_start_date = models.DateField(auto_now_add=True)
+
+
+
+class MaintenanceRequest(models.Model):
+    STATUS_CHOICES = [
+        ('reported', 'Reported'),
+        ('in_progress', 'In Progress'),
+        ('completed', 'Completed'),
+        ('declined', 'Declined')
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('low', 'Low'),
+        ('medium', 'Medium'),
+        ('high', 'High'),
+        ('emergency', 'Emergency')
+    ]
+
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    tenant = models.ForeignKey(User, on_delete=models.CASCADE, related_name='maintenance_requests')
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    image = models.ImageField(upload_to='maintenance_images/', blank=True, null=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='low')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='reported')
+    reported_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+    owner_notes = models.TextField(blank=True, null=True)
+    completion_date = models.DateTimeField(null=True, blank=True)
+    notification_date = models.DateTimeField(blank=True, null=True)
+
+    
+    
 
 
         

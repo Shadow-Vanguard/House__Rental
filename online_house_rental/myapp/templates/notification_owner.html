@@ -234,6 +234,25 @@
                 </div>
                 {% endfor %}
             {% endif %}
+        {% if maintenance_notifications %}
+            {% for notification in maintenance_notifications %}
+                <div class="notification-card">
+                    <div class="notification-header">
+                        Maintenance Request from <span>{{ notification.tenant.name }}</span> for <span>{{ notification.property.property_name }}</span>
+                    </div>
+                    <div class="notification-content">
+                        <p><strong>Issue:</strong> {{ notification.title }}</p>
+                        <p><strong>Priority:</strong> {{ notification.priority }}</p>
+                        <p>{{ notification.description }}</p>
+                        <small>{{ notification.reported_date }}</small>
+                    </div>
+                    <div class="notification-footer">
+                        <a href="{% url 'owner_maintenance' %}" class="btn btn-view">View Request</a>
+                       
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
     </main>
 </body>
 </html>

@@ -205,20 +205,21 @@ small {
 <body>
     <a href="javascript:history.back()" class="back-btn">Back</a>
 <div class="container">
-    <form method="post" enctype="multipart/form-data">
+    <form method="post" enctype="multipart/form-data" onsubmit="return validateDates()">
         {% csrf_token %}
         <h3>Rental Agreement for {{ property.property_name }}</h3>
         <p><strong>Address:</strong> {{ property.address }}, {{ property.city }}, {{ property.state }}</p>
 
         <div>
             <label for="start_date">Start Date:</label>
-            <input type="date" id="start_date" name="start_date" required>
+            <input type="date" id="start_date" name="start_date" required onchange="updateMinEndDate()">
+            <span id="startDateError" class="error-message"></span>
         </div>
 
         <div>
             <label for="end_date">End Date:</label>
-            <input type="date" id="end_date" name="end_date" required>
-            <span id="endDateError" style="color: red;"></span>
+            <input type="date" id="end_date" name="end_date" required onchange="validateEndDate()">
+            <span id="endDateError" class="error-message"></span>
         </div>
 
         <div>
@@ -231,15 +232,15 @@ small {
             <p>
                 Please read and agree to the <span class="terms-link" id="openTermsModal">terms and conditions</span> before proceeding.
             </p>
-            <span id="termsError" style="color: red;"></span>
             <input type="checkbox" id="terms" name="terms" required> I agree to the terms and conditions
+            <span id="termsError" class="error-message"></span>
         </div>
                                                                                                                                                      
         <div>
             <label for="digital_signature">Digital Signature:</label>
             <input type="file" id="digital_signature" name="digital_signature" accept="image/*" required>
             <small>Please upload an image of your signature.</small>
-            <span id="signatureError" style="color: red;"></span>
+            <span id="signatureError" class="error-message"></span>
         </div>
 
         <button type="submit">Submit Agreement</button>
@@ -277,129 +278,100 @@ small {
             termsModal.style.display = "none";
         }
     }
-    // Validate form fields
-    function validateForm() {
-            let valid = true;
 
-            // Terms and Conditions validation
-            const termsCheckbox = document.getElementById("terms");
-            const termsError = document.getElementById("termsError");
-            if (!termsCheckbox.checked) {
-                termsError.textContent = "You must agree to the terms and conditions.";
-                valid = false;
-            } else {
-                termsError.textContent = "";
-            }
+    // Set today as minimum date for start date
+    window.onload = function() {
+        const today = new Date();
+        const todayString = today.toISOString().split('T')[0];
+        document.getElementById("start_date").min = todayString;
+    }
 
-            // End Date validation
-            const startDate = new Date(document.getElementById("start_date").value);
-            const endDate = new Date(document.getElementById("end_date").value);
-            const endDateError = document.getElementById("endDateError");
-            if (endDate <= startDate) {
-                endDateError.textContent = "End date must be after the start date.";
-                valid = false;
-            } else {
-                endDateError.textContent = "";
-            }
-
-            // Digital Signature validation
-            const signatureInput = document.getElementById("digital_signature");
-            const signatureError = document.getElementById("signatureError");
-            if (signatureInput.files.length === 0) {
-                signatureError.textContent = "Please upload a digital signature.";
-                valid = false;
-            } else {
-                const file = signatureInput.files[0];
-                const fileType = file.type;
-                if (fileType !== "image/jpeg" && fileType !== "image/png") {
-                    signatureError.textContent = "Only JPG or PNG format is allowed.";
-                    valid = false;
-                } else {
-                    signatureError.textContent = "";
-                }
-            }
-
-            return valid;
+    function updateMinEndDate() {
+        const startDate = new Date(document.getElementById("start_date").value);
+        const endDateInput = document.getElementById("end_date");
+        const endDateError = document.getElementById("endDateError");
+        
+        // Calculate minimum end date (6 months from start date)
+        const minEndDate = new Date(startDate);
+        minEndDate.setMonth(minEndDate.getMonth() + 6);
+        
+        // Format the date to YYYY-MM-DD
+        const minEndDateStr = minEndDate.toISOString().split('T')[0];
+        endDateInput.min = minEndDateStr;
+        
+        // Clear end date if it's less than the new minimum
+        const currentEndDate = new Date(endDateInput.value);
+        if (currentEndDate < minEndDate) {
+            endDateInput.value = '';
+            endDateError.textContent = "Please select an end date at least 6 months after the start date";
+        } else {
+            endDateError.textContent = "";
         }
+    }
 
-        // Live validation for terms and conditions
-        document.getElementById("terms").onchange = function() {
-            if (this.checked) {
-                document.getElementById("termsError").textContent = "";
-            }
-        };
+    function validateEndDate() {
+        const startDate = new Date(document.getElementById("start_date").value);
+        const endDate = new Date(document.getElementById("end_date").value);
+        const endDateError = document.getElementById("endDateError");
+        
+        // Calculate minimum end date (6 months from start date)
+        const minEndDate = new Date(startDate);
+        minEndDate.setMonth(minEndDate.getMonth() + 6);
+        
+        if (endDate < minEndDate) {
+            endDateError.textContent = "Rental period must be at least 6 months";
+            return false;
+        } else {
+            endDateError.textContent = "";
+            return true;
+        }
+    }
 
-        // Live validation for end date
-        document.getElementById("end_date").onchange = function() {
-            const startDate = new Date(document.getElementById("start_date").value);
-            const endDate = new Date(this.value);
-            const endDateError = document.getElementById("endDateError");
-            if (endDate <= startDate) {
-                endDateError.textContent = "End date must be after the start date.";
-            } else {
-                endDateError.textContent = "";
-            }
-        };
+    function validateDates() {
+        const startDate = new Date(document.getElementById("start_date").value);
+        const endDate = new Date(document.getElementById("end_date").value);
+        const startDateError = document.getElementById("startDateError");
+        const endDateError = document.getElementById("endDateError");
+        
+        let isValid = true;
+        
+        // Validate start date is not in the past
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (startDate < today) {
+            startDateError.textContent = "Start date cannot be in the past";
+            isValid = false;
+        } else {
+            startDateError.textContent = "";
+        }
+        
+        // Validate minimum 6-month period
+        const minEndDate = new Date(startDate);
+        minEndDate.setMonth(minEndDate.getMonth() + 6);
+        
+        if (endDate < minEndDate) {
+            endDateError.textContent = "Rental period must be at least 6 months";
+            isValid = false;
+        } else {
+            endDateError.textContent = "";
+        }
+        
+        return isValid;
+    }
 
-        // Live validation for signature file type
-        document.getElementById("digital_signature").onchange = function() {
-            const file = this.files[0];
-            const signatureError = document.getElementById("signatureError");
-            if (file) {
-                const fileType = file.type;
-                if (fileType !== "image/jpeg" && fileType !== "image/png") {
-                    signatureError.textContent = "Only JPG or PNG format is allowed.";
-                } else {
-                    signatureError.textContent = "";
-                }
-            }
-        };
+    // Add event listeners for date inputs
+    document.getElementById("start_date").addEventListener('change', updateMinEndDate);
+    document.getElementById("end_date").addEventListener('change', validateEndDate);
+
+    // Live validation for terms checkbox
+    document.getElementById("terms").addEventListener('change', function() {
+        validateDates();
+    });
+
+    // Live validation for signature file
+    document.getElementById("digital_signature").addEventListener('change', function() {
+        validateDates();
+    });
 </script>
-<!-- <script>
-document.getElementById('rentalForm').addEventListener('submit', function(event) {
-    let formValid = true;
-
-    // Clear previous error messages
-    document.getElementById('startDateError').textContent = '';
-    document.getElementById('endDateError').textContent = '';
-    document.getElementById('termsError').textContent = '';
-    document.getElementById('signatureError').textContent = '';
-    // Get date values
-    const startDate = new Date(document.getElementById('start_date').value);
-    const endDate = new Date(document.getElementById('end_date').value);
-
-    // Date validation: Check if end date is after start date
-    if (startDate >= endDate) {
-        document.getElementById('endDateError').textContent = 'End date must be after the start date.';
-        formValid = false;
-    }
-
-    // Terms Checkbox Validation
-    const terms = document.getElementById('terms');
-    if (!terms.checked) {
-        document.getElementById('termsError').textContent = 'You must agree to the terms and conditions.';
-        formValid = false;
-    }
-
-    // Digital Signature File Validation
-    const signature = document.getElementById('digital_signature');
-    const signatureFile = signature.files[0];
-    if (signatureFile) {
-        const fileExtension = signatureFile.name.split('.').pop().toLowerCase();
-        if (fileExtension !== 'png' && fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
-            document.getElementById('signatureError').textContent = 'Please upload a valid image file (PNG or JPG).';
-            formValid = false;
-        }
-    } else {
-        document.getElementById('signatureError').textContent = 'Please upload your digital signature.';
-        formValid = false;
-    }
-
-    // Prevent form submission if validation fails
-    if (!formValid) {
-        event.preventDefault();
-    }
-});
-</script> -->
 </body>
-</html>
+</html

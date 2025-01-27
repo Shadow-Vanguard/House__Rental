@@ -297,30 +297,46 @@
                 {% else %}
                     <p><strong>Price Information:</strong> <span id="propertyPriceInfo">Not Available</span></p>
                 {% endif %}
-                    <div class="action-buttons">
+
+                <div class="action-buttons">
+                    {% if user_id %}  <!-- Only show buttons if user is logged in -->
                         {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
-                        <a href="{% url 'rental_agreement' property.id %}" class="btn btn-primary">
-                            <i class="fas fa-key"></i> Rent Now
-                        </a>
+                            {% if property.is_rented %}
+                                {% if has_rented %}
+                                    <!-- Show feedback button if the current user has rented this property -->
+                                    <a href="{% url 'feedback_page' property.id %}" class="btn btn-secondary">
+                                        <i class="fas fa-star"></i> Leave Feedback
+                                    </a>
+                                {% else %}
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="fas fa-ban"></i> Already Rented
+                                    </button>
+                                {% endif %}
+                            {% else %}
+                                <a href="{% url 'rental_agreement' property.id %}" class="btn btn-primary">
+                                    <i class="fas fa-key"></i> Rent Now
+                                </a>
+                            {% endif %}
                         {% endif %}
+                        
                         <a href="{% url 'conversation' property.id %}" class="btn btn-secondary">
                             <i class="fas fa-comments"></i> Contact Owner
                         </a>
-                        <form method="post">
+                        
+                        <form method="post" style="display: inline;">
                             {% csrf_token %}
                             <button type="submit" name="add_to_wishlist" class="btn btn-secondary">
                                 <i class="fas fa-heart"></i> Add to Wishlist
                             </button>
                         </form>
-                        <a href="{% url 'feedback_page' property.id %}" class="btn btn-secondary">
-                            <i class="fas fa-star"></i> Leave Feedback
-                        </a>
-                        <a href="{% url 'userpage' %}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Back to Properties
-                        </a>
-                    </div>
+                    {% endif %}
+                    
+                    
+                    <a href="{% url 'userpage' %}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Properties
+                    </a>
                 </div>
-
+            
                 <div class="owner-card">
                     <div class="owner-info">
                         <div class="owner-avatar">
@@ -340,5 +356,12 @@
             </div>
         </div>
     </div>
+    {% if debug %}
+    <div style="display: none;">
+        Debug Info:
+        <p>Listing Type: {{ property.listing_type }}</p>
+        <p>Lowercase: {{ property.listing_type|lower }}</p>
+    </div>
+    {% endif %}
 </body>
 </html>

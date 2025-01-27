@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment
+from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment, PropertyRental, MaintenanceRequest
 from django.contrib import messages
 import logging
 from django.utils.crypto import get_random_string
@@ -18,6 +18,9 @@ import time
 from django.utils import timezone
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
+from django.views.decorators.http import require_POST
+import json
+from datetime import datetime
 
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
@@ -166,10 +169,12 @@ def userpage(request):
             return redirect('login')  # Redirect to login if user not found
         properties = Property.objects.filter(is_verified=True)  # Only show verified properties
 
-        # # Retrieve all properties (or filter them later based on the owner)
-        # properties = Property.objects.all()
-         # Only show active (status=True) and verified (is_verified=True) properties
-        properties = Property.objects.filter(is_verified=True, status=True)
+        # Fetch rented properties through PropertyRental model
+        rented_properties = Property.objects.filter(
+            propertyrental__user=user,
+            propertyrental__is_active=True
+        ).distinct()
+
         # Get search parameters from the GET request
         location = request.GET.get('location', '')
         category = request.GET.get('category', '')
@@ -202,6 +207,7 @@ def userpage(request):
         context = {
             'user': user,
             'properties': properties,
+            'rented_properties': rented_properties,
             'request': request  # Pass the request to the template for showing the form values
         }
         
@@ -251,13 +257,34 @@ def reset_password(request, token):
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)        
 def propertyview(request, property_id):
     property_instance = get_object_or_404(Property, id=property_id)
+    user_id = request.session.get('user_id')
+    
+    # Check if user has rented this property
+    has_rented = False
+    if user_id:
+        # Check if there's an accepted rental agreement
+        has_active_agreement = RentalAgreement.objects.filter(
+            property=property_instance,
+            status=True  # Accepted agreement
+        ).exists()
+        
+        # Check if the current user has rented this property
+        has_rented = RentalAgreement.objects.filter(
+            property=property_instance,
+            renter_id=user_id,
+            status=True  # Accepted agreement
+        ).exists()
+        
+        # Update property's rented status based on active agreements
+        if property_instance.is_rented != has_active_agreement:
+            property_instance.is_rented = has_active_agreement
+            property_instance.save()
+    
     if request.method == 'POST':
         if 'add_to_wishlist' in request.POST:
-            user_id = request.session.get('user_id')
             if user_id:
                 user = User.objects.get(id=user_id)
                 wishlist_item, created = Wishlist.objects.get_or_create(user=user, property=property_instance)
-
                 if created:
                     messages.success(request, 'Property added to wishlist!')
                 else:
@@ -267,6 +294,9 @@ def propertyview(request, property_id):
 
     context = {
         'property': property_instance,
+        'has_rented': has_rented,
+        'debug': True,
+        'user_id': user_id
     }
     return render(request, 'propertyview.html', context)
 
@@ -595,6 +625,48 @@ def wishlist(request):
 
 
 
+# def rental_agreement(request, property_id):
+#     property = get_object_or_404(Property, id=property_id)
+#     user_id = request.session.get('user_id')
+#     print("User id:",user_id)
+#     if not user_id:
+#         return redirect('login')
+#     user = get_object_or_404(User, id=user_id)
+#     # Check if property is already rented
+#     if property.is_rented:
+#         messages.error(request, 'This property is no longer available for rent.')
+#         return redirect('propertyview', property_id=property_id)
+
+#      # Check if an agreement already exists for this user and property
+#     existing_agreement = RentalAgreement.objects.filter(property=property, renter=user).exists()
+#     if existing_agreement:
+#         # Show a message if the agreement has already been submitted
+#         return HttpResponse('You have already submitted a rental agreement for this property.')
+#     if request.method == 'POST':
+#         start_date = request.POST.get('start_date')
+#         end_date = request.POST.get('end_date')
+#         terms = request.POST.get('terms') == 'on'
+#         digital_signature = request.FILES.get('digital_signature')
+#         if not terms:
+#             return HttpResponse('You must agree to the terms and conditions.')
+#         rental_agreement = RentalAgreement(
+#             property=property,
+#             renter=user,
+#             start_date=start_date,
+#             end_date=end_date,
+#             terms=terms,
+#             digital_signature=digital_signature 
+#         )
+#         rental_agreement.save()
+#         return redirect('thank')
+#         # return HttpResponse('submitted succesfully')
+#     return render(request, 'rental_agreement.html', {
+#         'property': property
+#         })
+
+import base64
+from django.core.files.base import ContentFile
+
 def rental_agreement(request, property_id):
     property = get_object_or_404(Property, id=property_id)
     user_id = request.session.get('user_id')
@@ -602,10 +674,6 @@ def rental_agreement(request, property_id):
     if not user_id:
         return redirect('login')
     user = get_object_or_404(User, id=user_id)
-    # Check if property is already rented
-    if property.is_rented:
-        messages.error(request, 'This property is no longer available for rent.')
-        return redirect('propertyview', property_id=property_id)
 
      # Check if an agreement already exists for this user and property
     existing_agreement = RentalAgreement.objects.filter(property=property, renter=user).exists()
@@ -633,7 +701,7 @@ def rental_agreement(request, property_id):
     return render(request, 'rental_agreement.html', {
         'property': property
         })
-    
+
 def adminproview(request):
     properties = Property.objects.all()  # Fetch all properties
     return render(request, 'adminproview.html', {'properties': properties})
@@ -653,6 +721,7 @@ def termsandconditions(request, property_id):
             property_instance.save()
             return redirect('termsandconditions', property_id=property_id)
     return render(request, 'termsandconditions.html', {'property': property_instance})
+
 def ownerview(request):
     if request.session.get('user_id'):
         owner_name = request.session.get('name')
@@ -674,23 +743,44 @@ def accept_decline_agreement(request, agreement_id):
         rental_agreement = get_object_or_404(RentalAgreement, id=agreement_id)
         if request.method == "POST":
             action = request.POST.get('action')
+            
             if action == "accept":
-                rental_agreement.status = 1
-                # Set the property as rented
-                property = rental_agreement.property
-                property.is_rented = True
-                property.save()
-                if 'owner_digital_signature' in request.FILES:
-                    rental_agreement.owner_digital_signature = request.FILES['owner_digital_signature']
-                rental_agreement.notification_date = timezone.now()
-                rental_agreement.save()
-                messages.success(request, 'Agreement accepted successfully!')
-            elif action == "decline" and rental_agreement.status is None:
-                rental_agreement.status = False
+                try:
+                    # Create PropertyRental entry
+                    PropertyRental.objects.create(
+                        user=rental_agreement.renter,
+                        property=rental_agreement.property,
+                        is_active=True,
+                        rental_start_date=timezone.now()
+                    )
+                    
+                    # Update property status
+                    property = rental_agreement.property
+                    property.is_rented = True
+                    property.save()
+                    
+                    # Update rental agreement
+                    rental_agreement.status = 1
+                    if 'owner_digital_signature' in request.FILES:
+                        rental_agreement.owner_digital_signature = request.FILES['owner_digital_signature']
+                    rental_agreement.save()
+                    
+                    messages.success(request, 'Rental agreement accepted and property marked as rented successfully!')
+                    
+                except Exception as e:
+                    messages.error(request, f'Error occurred while processing: {str(e)}')
+                
+            elif action == "decline":
+                rental_agreement.status = 0
                 rental_agreement.save()
                 messages.success(request, 'Agreement declined successfully!')
+            
             return redirect('ownerview')
     return redirect('login')
+
+def rented_properties_view(request):
+    rented_properties = RentalAgreement.objects.select_related('property', 'renter').all()
+    return render(request, 'rented_properties.html', {'rented_properties': rented_properties})
 
 def rented_properties_view(request):
     rented_properties = RentalAgreement.objects.select_related('property', 'renter').all()
@@ -765,6 +855,7 @@ def userviewrental(request):
 def notification(request):
     if request.session.get('user_id'):
         user_id = request.session['user_id']
+        user = User.objects.get(id=user_id)
         
         # Debug prints
         print(f"\nChecking notifications for user ID: {user_id}")
@@ -806,11 +897,19 @@ def notification(request):
             - Status: {msg.token_status}
             - Price: {msg.token_price}
             """)
+
+        # Get maintenance request notifications
+        maintenance_notifications = MaintenanceRequest.objects.filter(
+            tenant=user,
+            notification_date__isnull=True  # Only show unread notifications
+        ).order_by('-updated_date')
         
         context = {
             'rental_agreements': rental_agreements,
             'unread_messages': unread_messages,
             'token_advance_messages': token_advance_messages,
+            'maintenance_notifications': maintenance_notifications,
+            'user': user
         }
         
         return render(request, 'notification.html', context)
@@ -1050,51 +1149,31 @@ def notification_owner(request):
                 grouped_messages[key] = []
             grouped_messages[key].append(message)
 
+        # Add maintenance request notifications
+        maintenance_notifications = MaintenanceRequest.objects.filter(
+            property__owner_id=owner_id,
+            status='reported',
+            notification_date__isnull=True  # Only show unread notifications
+        ).select_related('property', 'tenant').order_by('-reported_date')
+
         owner_name = User.objects.get(id=owner_id).name
         
         return render(request, 'notification_owner.html', {
             'grouped_messages': grouped_messages,
             'token_messages': token_messages,
+            'maintenance_notifications': maintenance_notifications,
             'owner_name': owner_name
         })
     return redirect('login')
 
-# def notification_owner(request):
-#     owner_id = request.session.get('user_id')
-#     if owner_id:
-#         if request.method == "POST":
-#             message_id = request.POST.get('message_id')
-#             status = request.POST.get('status')
-#             if message_id and status:
-#                 Message.objects.filter(id=message_id).update(token_status=status, is_read=True)
-#                 return redirect('notification_owner')
-
-#         unread_messages = Message.objects.filter(
-#             receiver_id=owner_id,
-#             sender__role='user',
-#             is_read=False,
-#             token_advance=False
-#         ).select_related('property', 'sender').order_by('-timestamp')
-#         grouped_messages = {}
-#         for message in unread_messages:
-#             key = (message.sender, message.property)
-#             if key not in grouped_messages:
-#                 grouped_messages[key] = []
-#             grouped_messages[key].append(message)
-
-#         token_messages = Message.objects.filter(
-#             receiver_id=owner_id,
-#             sender__role='user',
-#             is_read=False,
-#             token_advance=True
-#         ).select_related('property', 'sender').order_by('-timestamp')
-#         owner_name = User.objects.get(id=owner_id).name
-#         return render(request, 'notification_owner.html', {
-#             'grouped_messages': grouped_messages,
-#             'token_messages': token_messages,
-#             'owner_name': owner_name
-#         })
-#     return redirect('login')
+# Add new view for clearing maintenance notifications
+def clear_maintenance_notification(request, request_id):
+    if request.session.get('user_id'):
+        maintenance_request = get_object_or_404(MaintenanceRequest, id=request_id)
+        maintenance_request.notification_date = timezone.now()
+        maintenance_request.save()
+        return redirect('notification_owner')
+    return redirect('login')
 
 def clear_owner_messages(request, property_id):
     if request.session.get('user_id'):
@@ -1408,3 +1487,245 @@ def token_advance_list(request):
         'token_requests': token_requests,
     }
     return render(request, 'token_advance_list.html', context)
+
+
+
+
+from django.http import JsonResponse
+from google.cloud import dialogflow_v2 as dialogflow
+
+PROJECT_ID = 'rentbot-yijh'  # Replace with your Dialogflow project ID
+
+def chat_with_bot(request):
+    # Get the user message from the request
+    user_message = request.GET.get('message', '')
+
+    # Set up Dialogflow session
+    session_id = "12345"  # You can use a unique ID for each user
+    session_client = dialogflow.SessionsClient()
+    session = session_client.session_path(PROJECT_ID, session_id)
+
+    # Prepare the text input
+    text_input = dialogflow.TextInput(text=user_message, language_code="en")
+    query_input = dialogflow.QueryInput(text=text_input)
+
+    # Send the request to Dialogflow
+    response = session_client.detect_intent(request={"session": session, "query_input": query_input})
+    bot_reply = response.query_result.fulfillment_text
+
+    # Send the bot's reply back to the user
+    return JsonResponse({"response": bot_reply})
+
+def chatbot_page(request):
+    return render(request, 'chatbot.html')
+
+
+# views.py
+from django.shortcuts import render
+from django.http import JsonResponse
+from .models import Property
+from django.db.models import Q
+
+from django.http import JsonResponse
+from django.db.models import Q
+
+def owner_property_data(request):
+    if request.session.get('user_id'):
+        user_id = request.session['user_id']
+        # Fetch properties for the logged-in owner
+        properties = Property.objects.filter(owner_id=user_id)
+        
+        # Get properties that have rental agreements
+        properties_with_agreements = RentalAgreement.objects.filter(
+            property__owner_id=user_id,
+            status=True  # Only count approved rental agreements
+        ).values_list('property_id', flat=True)
+        
+        # Count total properties (without excluding any)
+        total_properties = properties.count()
+        
+        # Count rented properties (either marked as rented or has an active rental agreement)
+        rented_count = properties.filter(
+            Q(is_rented=True) | Q(id__in=properties_with_agreements)
+        ).distinct().count()
+        
+        # Count properties for sale
+        for_sale_count = properties.filter(listing_type__in=['Sale', 'Both']).count()
+         # Summing all relevant counts
+        total_count = rented_count + for_sale_count
+        
+        # Get property type distribution
+        property_types = {
+            'Apartment': properties.filter(property_type='Apartment').count(),
+            'House': properties.filter(property_type='House').count()
+        }
+        
+        # Get listing type distribution
+        listing_types = {
+            'Rent': properties.filter(listing_type='Rent').count(),
+            'Sale': properties.filter(listing_type='Sale').count(),
+            'Both': properties.filter(listing_type='Both').count()
+        }
+
+        data = {
+            'total': total_count,  # Ensure this includes all properties
+            'rented': rented_count,
+            'for_sale': for_sale_count,
+            'property_types': property_types,
+            'listing_types': listing_types
+        }
+        return JsonResponse(data)
+
+    return JsonResponse({'error': 'Unauthorized'}, status=403)
+
+
+
+def owner_dashboard(request):
+    return render(request, 'owner_dashboard.html')
+
+def service_providers(request):
+    return render(request, 'service_providers.html')
+
+
+
+def maintanence(request):
+    return render(request, 'maintanence')
+
+def maintenance_request(request, property_id):
+    # First check if user is logged in via session
+    user_id = request.session.get('user_id')
+    if not user_id:
+        messages.error(request, 'Please login to submit maintenance requests')
+        return redirect('login')  # Redirect to your login page
+    
+    try:
+        # Get the logged-in user
+        user = User.objects.get(id=user_id)
+        
+        # Get the property and verify the user has an active rental
+        property = get_object_or_404(Property, id=property_id)
+        rental = get_object_or_404(PropertyRental, 
+                                property=property, 
+                                user=user, 
+                                is_active=True)
+
+        if request.method == 'POST':
+            try:
+                # Create maintenance request
+                maintenance = MaintenanceRequest.objects.create(
+                    property=property,
+                    tenant=user,  # Use the user from session
+                    title=request.POST.get('title'),
+                    description=request.POST.get('description'),
+                    priority=request.POST.get('priority'),
+                    status='reported',
+                    reported_date=timezone.now()
+                )
+
+                # Handle image upload
+                if 'image' in request.FILES:
+                    maintenance.image = request.FILES['image']
+                    maintenance.save()
+
+                # Send email notification to property owner
+                send_mail(
+                    subject=f'New Maintenance Request - {property.property_name}',
+                    message=f"""
+                    A new maintenance request has been submitted:
+                    
+                    Property: {property.property_name}
+                    Issue: {maintenance.title}
+                    Priority: {maintenance.priority}
+                    Description: {maintenance.description}
+                    
+                    Please log in to view the details and take action.
+                    """,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[property.owner.email],
+                    fail_silently=False,
+                )
+
+                messages.success(request, 'Maintenance request submitted successfully!')
+                return redirect('userpage')  # or wherever you want to redirect after success
+
+            except Exception as e:
+                messages.error(request, f'Error submitting maintenance request: {str(e)}')
+                return render(request, 'maintenance.html', {
+                    'property': property,
+                    'error': str(e),
+                    'user': user  # Pass user to template
+                })
+
+        return render(request, 'maintenance.html', {
+            'property': property,
+            'user': user  # Pass user to template
+        })
+        
+    except User.DoesNotExist:
+        messages.error(request, 'User session expired. Please login again.')
+        return redirect('login')
+    except PropertyRental.DoesNotExist:
+        messages.error(request, 'You are not authorized to submit maintenance requests for this property.')
+        return redirect('userpage')
+    except Exception as e:
+        messages.error(request, f'An error occurred: {str(e)}')
+        return redirect('userpage')
+
+@require_POST
+def update_maintenance_status(request, request_id):
+    try:
+        data = json.loads(request.body)
+        maintenance_request = MaintenanceRequest.objects.get(id=request_id)
+        maintenance_request.status = data['status']
+        if data['status'] == 'completed':
+            maintenance_request.completion_date = timezone.now()
+        maintenance_request.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@require_POST
+def update_maintenance_notes(request, request_id):
+    try:
+        data = json.loads(request.body)
+        maintenance_request = MaintenanceRequest.objects.get(id=request_id)
+        maintenance_request.owner_notes = data['notes']
+        maintenance_request.save()
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+def owner_maintenance_requests(request):
+    # Check if owner is logged in
+    user_id = request.session.get('user_id')
+    if not user_id:
+        messages.error(request, 'Please login to view maintenance requests')
+        return redirect('login')
+    
+    try:
+        user = User.objects.get(id=user_id)
+        # Get all maintenance requests for properties owned by this user
+        maintenance_requests = MaintenanceRequest.objects.filter(
+            property__owner_id=user_id  # Changed from property__owner=user
+        ).select_related('property', 'tenant').order_by('-reported_date')
+        
+        # Group requests by status
+        pending_requests = maintenance_requests.filter(status='reported')
+        in_progress_requests = maintenance_requests.filter(status='in_progress')
+        completed_requests = maintenance_requests.filter(status='completed')
+        
+        context = {
+            'pending_requests': pending_requests,
+            'in_progress_requests': in_progress_requests,
+            'completed_requests': completed_requests,
+            'user': user
+        }
+        
+        return render(request, 'owner_maintenance.html', context)
+        
+    except User.DoesNotExist:
+        messages.error(request, 'User session expired. Please login again.')
+        return redirect('login')
+
+

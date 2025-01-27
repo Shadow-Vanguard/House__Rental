@@ -1,0 +1,230 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .chart-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            color: #7f8c8d;
+            font-size: 1.1em;
+        }
+
+        .stat-card p {
+            margin: 10px 0 0;
+            font-size: 2em;
+            color: #2c3e50;
+            font-weight: bold;
+        }
+
+        .stat-card i {
+            font-size: 2em;
+            color: #3498db;
+            margin-bottom: 10px;
+        }
+
+        canvas {
+            max-width: 100%;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>Property Management Dashboard</h1>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-home"></i>
+                <h3>Total Properties</h3>
+                <p id="totalProperties">0</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-key"></i>
+                <h3>Rented Properties</h3>
+                <p id="rentedProperties">0</p>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-tag"></i>
+                <h3>Properties for Sale</h3>
+                <p id="forSaleProperties">0</p>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-container">
+                <canvas id="propertyStatusChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="propertyTypeChart"></canvas>
+            </div>
+            <div class="chart-container">
+                <canvas id="listingTypeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch property data from the server
+        fetch('/owner/property-data/')
+            .then(response => response.json())
+            .then(data => {
+                // Update statistics
+                document.getElementById('totalProperties').textContent = data.total;
+                document.getElementById('rentedProperties').textContent = data.rented;
+                document.getElementById('forSaleProperties').textContent = data.for_sale;
+
+                // Property Status Chart
+                new Chart(document.getElementById('propertyStatusChart'), {
+                    type: 'pie',
+                    data: {
+                        labels: ['Rented', 'For Sale', 'Available'],
+                        datasets: [{
+                            data: [
+                                data.rented,
+                                data.for_sale,
+                                data.total - (data.rented + data.for_sale)
+                            ],
+                            backgroundColor: [
+                                'rgba(54, 162, 235, 0.8)',
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(75, 192, 192, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Property Status Distribution'
+                            }
+                        }
+                    }
+                });
+
+                // Property Type Chart
+                new Chart(document.getElementById('propertyTypeChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['Apartments', 'Houses'],
+                        datasets: [{
+                            label: 'Number of Properties',
+                            data: [
+                                data.property_types.Apartment,
+                                data.property_types.House
+                            ],
+                            backgroundColor: [
+                                'rgba(75, 192, 192, 0.8)',
+                                'rgba(153, 102, 255, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Property Types'
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Listing Type Chart
+                new Chart(document.getElementById('listingTypeChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['For Rent', 'For Sale', 'Both'],
+                        datasets: [{
+                            data: [
+                                data.listing_types.Rent,
+                                data.listing_types.Sale,
+                                data.listing_types.Both
+                            ],
+                            backgroundColor: [
+                                'rgba(255, 159, 64, 0.8)',
+                                'rgba(255, 99, 132, 0.8)',
+                                'rgba(54, 162, 235, 0.8)'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Listing Type Distribution'
+                            }
+                        }
+                    }
+                });
+            })
+            .catch(error => console.error('Error fetching property data:', error));
+    </script>
+</body>
+</html>

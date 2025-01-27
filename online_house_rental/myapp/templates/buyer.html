@@ -38,7 +38,60 @@
 }
     </style>
     <script>
-        // Live validation functions
+        async function handlePincode(event) {
+            const pincode = event.target.value;
+            const cityInput = document.getElementById("city");
+            const stateInput = document.getElementById("state");
+            const pincodeError = document.getElementById("pin_code_error");
+
+            // Reset fields
+            cityInput.value = '';
+            stateInput.value = '';
+            pincodeError.textContent = '';
+
+            // Validate pincode format
+            if (!/^[0-9]{6}$/.test(pincode)) {
+                pincodeError.textContent = "Please enter a valid 6-digit pincode";
+                return;
+            }
+
+            try {
+                const response = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+                const data = await response.json();
+
+                if (data[0].Status === "Success") {
+                    const postOffice = data[0].PostOffice[0];
+                    
+                    // Check if the pincode is from Kerala
+                    if (postOffice.State === "Kerala") {
+                        cityInput.value = postOffice.District;
+                        stateInput.value = postOffice.State;
+                        pincodeError.textContent = '';
+                    } else {
+                        pincodeError.textContent = "Please enter a Kerala pincode only";
+                        cityInput.value = '';
+                        stateInput.value = '';
+                    }
+                } else {
+                    pincodeError.textContent = "Invalid pincode. Please try again.";
+                }
+            } catch (error) {
+                pincodeError.textContent = "Error fetching pincode data. Please try again.";
+                console.error("Error:", error);
+            }
+        }
+
+        // Attach event listener when document is loaded
+        document.addEventListener("DOMContentLoaded", function() {
+            const pincodeInput = document.getElementById("pin_code");
+            pincodeInput.addEventListener("input", handlePincode);
+
+            // Make city and state readonly since they're auto-filled
+            document.getElementById("city").readOnly = true;
+            document.getElementById("state").readOnly = true;
+        });
+
+        // Validation function
         function validateForm() {
             let isValid = true;
 
@@ -51,55 +104,16 @@
                 document.getElementById("billing_address_error").textContent = "";
             }
 
-            // Validate city (no special characters)
-            const city = document.getElementById("city").value;
-            const cityPattern = /^[A-Za-z\s]+$/; // Only letters and spaces allowed
-            if (!city.trim()) {
-                document.getElementById("city_error").textContent = "City is required.";
-                isValid = false;
-            } else if (!cityPattern.test(city)) {
-                document.getElementById("city_error").textContent = "City should contain only letters and spaces.";
-                isValid = false;
-            } else {
-                document.getElementById("city_error").textContent = "";
-            }
-
-            // Validate state (no special characters)
-            const state = document.getElementById("state").value;
-            const statePattern = /^[A-Za-z\s]+$/; // Only letters and spaces allowed
-            if (!state.trim()) {
-                document.getElementById("state_error").textContent = "State is required.";
-                isValid = false;
-            } else if (!statePattern.test(state)) {
-                document.getElementById("state_error").textContent = "State should contain only letters and spaces.";
-                isValid = false;
-            } else {
-                document.getElementById("state_error").textContent = "";
-            }
-
             // Validate pin code
             const pinCode = document.getElementById("pin_code").value;
-            const pinCodePattern = /^[0-9]{6}$/;
-            if (!pinCode.trim() || !pinCodePattern.test(pinCode)) {
-                document.getElementById("pin_code_error").textContent = "Pin code must be 6 digits.";
+            const cityInput = document.getElementById("city");
+            if (!pinCode || !cityInput.value) {
+                document.getElementById("pin_code_error").textContent = "Please enter a valid Kerala pincode.";
                 isValid = false;
-            } else {
-                document.getElementById("pin_code_error").textContent = "";
             }
 
-            // Return the validation result
             return isValid;
         }
-
-        // Attach validation function to form submit
-        document.addEventListener("DOMContentLoaded", function() {
-            const form = document.querySelector("form");
-            form.addEventListener("submit", function(event) {
-                if (!validateForm()) {
-                    event.preventDefault(); // Prevent form submission if validation fails
-                }
-            });
-        });
     </script>
 </head>
 <body>
@@ -126,17 +140,17 @@
             <textarea id="billing_address" name="billing_address" rows="4" required>{{ user.address }}</textarea><br>
             <span id="billing_address_error" style="color: red;"></span><br>
 
-            <label for="city">City:</label>
+            <label for="pin_code">Pin Code:</label>
+            <input type="text" id="pin_code" name="pin_code" required><br>
+            <span id="pin_code_error" style="color: red;"></span><br>
+
+            <label for="city">District:</label>
             <input type="text" id="city" name="city" required><br>
             <span id="city_error" style="color: red;"></span><br>
 
             <label for="state">State:</label>
             <input type="text" id="state" name="state" required><br>
             <span id="state_error" style="color: red;"></span><br>
-
-            <label for="pin_code">Pin Code:</label>
-            <input type="text" id="pin_code" name="pin_code" required><br>
-            <span id="pin_code_error" style="color: red;"></span><br>
 
             <button type="submit">Save and Continue</button>
         </form>
