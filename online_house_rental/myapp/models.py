@@ -184,6 +184,54 @@ class MaintenanceRequest(models.Model):
     completion_date = models.DateTimeField(null=True, blank=True)
     notification_date = models.DateTimeField(blank=True, null=True)
 
+
+
+class HouseholdItem(models.Model):
+    CONDITION_CHOICES = [
+        ('new', 'New'),
+        ('like_new', 'Like New'),
+        ('good', 'Good'),
+        ('fair', 'Fair'),
+        ('used', 'Used')
+    ]
+    
+    CATEGORY_CHOICES = [
+        ('furniture', 'Furniture'),
+        ('appliances', 'Appliances'),
+        ('electronics', 'Electronics'),
+        ('kitchenware', 'Kitchenware'),
+        ('decor', 'Home Decor'),
+        ('other', 'Other')
+    ]
+
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    condition = models.CharField(max_length=20, choices=CONDITION_CHOICES)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='household_items')
+    property = models.ForeignKey(Property, on_delete=models.CASCADE, null=True, blank=True)
+    is_available = models.BooleanField(default=True)
+    posted_date = models.DateTimeField(default=timezone.now)
+    status = models.BooleanField(default=True)  # For soft delete
+
+    # Optional fields
+    brand = models.CharField(max_length=100, blank=True, null=True)
+    age = models.PositiveIntegerField(blank=True, null=True)  # Age in months
+    warranty_info = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+class HouseholdItemImage(models.Model):
+    item = models.ForeignKey(HouseholdItem, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='household_items/')
+
+    def __str__(self):
+        return f"Image for {self.item.name}"
+
+
+
     
     
 

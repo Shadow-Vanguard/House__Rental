@@ -51,6 +51,35 @@
     padding-bottom: 10px;
     display: inline-block;
 }
+    .compliance-check-btn {
+        background-color: #2eca6a;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 5px;
+        text-decoration: none;
+        display: inline-block;
+        margin: 10px 0;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .compliance-check-btn:hover {
+        background-color: #28b35d;
+        transform: translateY(-2px);
+        color: white;
+        text-decoration: none;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .compliance-check-btn i {
+        margin-right: 8px;
+    }
+
+    .button-container {
+        text-align: right;
+        margin: 20px 0;
+    }
   </style>
 </head>
 <body>
@@ -93,7 +122,6 @@
       <h2 class="text-center">Your Rental Agreements</h2>
       {% for agreement in rental_agreements %}
       <div class="rental-agreement">
-          <div class="agreement-header">Your Rental Agreements</div>
           <div class="agreement-content">
               <p><strong>Property:</strong> {{ agreement.property.property_name }}</p>
               <p><strong>Start Date:</strong> {{ agreement.start_date }}</p>
@@ -115,11 +143,16 @@
                 {% endif %}
               </p>
               
-            </div>
+          </div>
       </div>
       {% empty %}
       <p>No rental agreements found.</p>
       {% endfor %}
+      <div class="button-container">
+          <a href="{% url 'rental_compliance' %}" class="compliance-check-btn">
+              <i class="fa fa-check-circle"></i> Check Rental Compliance
+          </a>
+      </div>
   </div>
   <!-- End Rental Agreement Display Section -->
 

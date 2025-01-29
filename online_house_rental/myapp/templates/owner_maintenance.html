@@ -7,17 +7,71 @@
     <title>Maintenance Requests Dashboard</title>
     <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
     <link href="{% static 'template_landingpage/lib/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body {
             background-color: #f8f9fa;
             font-family: 'Poppins', sans-serif;
             color: #555;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        header .welcome h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a i {
+            margin-right: 8px;
         }
 
         .dashboard-container {
             max-width: 1200px;
             margin: 40px auto;
             padding: 20px;
+            margin-top: 0;
         }
 
         .section-title {
@@ -201,9 +255,22 @@
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <h1 class="section-title">Maintenance Requests Dashboard</h1>
+    <header>
+        <div class="welcome">
+            <h1>Maintenance Requests Dashboard</h1>
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'owner' %}">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </header>
 
+    <div class="dashboard-container">
         <div class="tab-container">
             <button class="tab-button active" data-tab="pending">Pending ({{ pending_requests.count }})</button>
             <button class="tab-button" data-tab="in-progress">In Progress ({{ in_progress_requests.count }})</button>
@@ -371,6 +438,19 @@
 
         // Update status function
         function updateStatus(select, requestId) {
+            // Get the current status before making the update
+            const currentStatus = select.value;
+
+            // Check if the request was previously completed
+            const wasCompleted = select.querySelector('option[value="completed"]').selected;
+
+            // If it was completed, don't allow changing back to other statuses
+            if (wasCompleted && currentStatus !== 'completed') {
+                select.value = 'completed';
+                alert('Completed maintenance requests cannot be changed back to pending or in progress.');
+                return;
+            }
+
             fetch(`/maintenance/update/${requestId}/`, {
                 method: 'POST',
                 headers: {
@@ -378,16 +458,44 @@
                     'X-CSRFToken': '{{ csrf_token }}'
                 },
                 body: JSON.stringify({
-                    status: select.value
+                    status: currentStatus
                 })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Instead of reloading, move the card to the appropriate section
+                    // Get the request card
                     const requestCard = select.closest('.request-card');
-                    const newSection = select.value === 'reported' ? 'pending-section' :
-                                     select.value === 'in_progress' ? 'in-progress-section' :
+                    
+                    // If status is completed
+                    if (currentStatus === 'completed') {
+                        // Remove urgent badge
+                        const urgentBadge = requestCard.querySelector('.urgent-badge');
+                        if (urgentBadge) {
+                            urgentBadge.remove();
+                        }
+
+                        // Remove priority badge
+                        const priorityBadge = requestCard.querySelector('.priority-badge');
+                        if (priorityBadge) {
+                            priorityBadge.remove();
+                        }
+
+                        // Remove the pulse animation
+                        requestCard.style.animation = 'none';
+                        requestCard.style.border = '1px solid #ddd';
+
+                        // Disable other options in the select
+                        Array.from(select.options).forEach(option => {
+                            if (option.value !== 'completed') {
+                                option.disabled = true;
+                            }
+                        });
+                    }
+
+                    // Move the card to the appropriate section
+                    const newSection = currentStatus === 'reported' ? 'pending-section' :
+                                     currentStatus === 'in_progress' ? 'in-progress-section' :
                                      'completed-section';
                     
                     document.getElementById(newSection).appendChild(requestCard);
@@ -397,6 +505,19 @@
                 }
             });
         }
+
+        // When page loads, disable options for completed requests
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.status-select').forEach(select => {
+                if (select.value === 'completed') {
+                    Array.from(select.options).forEach(option => {
+                        if (option.value !== 'completed') {
+                            option.disabled = true;
+                        }
+                    });
+                }
+            });
+        });
 
         // Function to update tab counts
         function updateTabCounts() {

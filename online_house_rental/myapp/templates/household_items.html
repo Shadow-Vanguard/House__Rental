@@ -1,0 +1,225 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Household Items Marketplace</title>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <!-- Include your existing template CSS -->
+    <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'template_landingpage/lib/font-awesome/css/font-awesome.min.css' %}" rel="stylesheet">
+    <link href="{% static 'template_landingpage/css/style.css' %}" rel="stylesheet">
+    <style>
+        .add-item-section { padding: 30px 0; background: #f8f9fa; }
+        .item-form { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .search-section { padding: 20px 0; position: sticky; top: 0; background: white; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .search-input { width: 100%; padding: 10px; border: 2px solid #2eca6a; border-radius: 25px; }
+        .item-card { transition: transform 0.3s ease; margin-bottom: 20px; border: none; box-shadow: 0 2px 15px rgba(0,0,0,0.1); }
+        .item-card:hover { transform: translateY(-5px); }
+        .item-image { height: 200px; object-fit: cover; border-radius: 8px 8px 0 0; }
+        .category-badge { position: absolute; top: 10px; right: 10px; background: #2eca6a; color: white; padding: 5px 10px; border-radius: 15px; }
+        .price-tag { color: #2eca6a; font-size: 1.2rem; font-weight: bold; }
+        .condition-badge { background: #007bff; color: white; padding: 3px 8px; border-radius: 12px; font-size: 0.8rem; }
+        .form-group { margin-bottom: 15px; }
+        .btn-submit { background: #2eca6a; color: white; border: none; padding: 10px 20px; border-radius: 25px; }
+        .btn-submit:hover { background: #25a955; }
+        .items-grid { padding: 20px 0; }
+        @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+    </style>
+</head>
+<body>
+    <!-- Navigation (same as userpage.html) -->
+    <nav class="navbar navbar-default navbar-trans navbar-expand-lg fixed-top">
+        <div class="container">
+          <a class="navbar-brand text-brand" href="#">Estate<span class="color-b">Agency</span></a>
+          <div class="navbar-collapse collapse justify-content-center" id="navbarDefault">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="nav-link active" href="{% url 'userpage' %}">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'updateprofile' %}">Profile</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'wishlist' %}">Wishlist</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'userviewrental' %}">View Rental Agreement</a>
+              </li>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'notification' %}">Notification</a>
+            </li>  
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'service_providers' %}"></i> Services</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'household_items' %}">Items</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'chatbot_page' %}">
+              </a>
+            </li>   
+              <li class="nav-item">
+                <a href="#" class="nav-link" id="logout-btn">Logout</a>
+              </li>  
+            </ul>
+            {% if error %}
+            <div class="error-box">
+              {{ error }}
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </nav>
+      <!--/ Nav End /-->
+    <!-- Add Item Section -->
+    <section class="add-item-section mt-5 pt-5">
+        <div class="container">
+            <h2 class="text-center mb-4">Add Household Item</h2>
+            <form class="item-form" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="name" placeholder="Item Name" required>
+                        </div>
+                        <div class="form-group">
+                            <select class="form-control" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="furniture">Furniture</option>
+                                <option value="appliances">Appliances</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="kitchenware">Kitchenware</option>
+                                <option value="decor">Home Decor</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select class="form-control" name="condition" required>
+                                <option value="">Select Condition</option>
+                                <option value="new">New</option>
+                                <option value="like_new">Like New</option>
+                                <option value="good">Good</option>
+                                <option value="fair">Fair</option>
+                                <option value="used">Used</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <input type="number" class="form-control" name="price" placeholder="Price" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" name="brand" placeholder="Brand (Optional)">
+                        </div>
+                        <div class="form-group">
+                            <input type="file" class="form-control" name="images" multiple accept="image/*" required>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="form-group">
+                            <textarea class="form-control" name="description" rows="3" placeholder="Description" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-submit">Add Item</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Search Section -->
+    <section class="search-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search by name...">
+                </div>
+                <div class="col-md-6">
+                    <select id="categoryFilter" class="form-control">
+                        <option value="">All Categories</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="appliances">Appliances</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="kitchenware">Kitchenware</option>
+                        <option value="decor">Home Decor</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Items Grid -->
+    <section class="items-grid">
+        <div class="container">
+            <div class="row" id="itemsContainer">
+                {% for item in items %}
+                <div class="col-md-4 item-card" 
+                     data-name="{{ item.name|lower }}" 
+                     data-category="{{ item.category|lower }}"
+                     data-price="{{ item.price }}">
+                    <div class="card">
+                        {% if item.images.first %}
+                        <img src="{{ item.images.first.image.url }}" class="card-img-top item-image" alt="{{ item.name }}">
+                        {% endif %}
+                        <span class="category-badge">{{ item.category }}</span>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ item.name }}</h5>
+                            <span class="condition-badge">{{ item.condition }}</span>
+                            <p class="card-text mt-2">{{ item.description|truncatechars:100 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="price-tag"> ₹{{ item.price }}</span>
+                                <button class="btn btn-sm btn-outline-success contact-seller" data-seller="{{ item.seller.id }}">Contact Seller</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('searchInput');
+        const categoryFilter = document.getElementById('categoryFilter');
+        const items = document.querySelectorAll('.item-card');
+
+        function filterItems() {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCategory = categoryFilter.value.toLowerCase();
+
+            items.forEach(item => {
+                const name = item.dataset.name;
+                const category = item.dataset.category;
+                const matchesSearch = name.includes(searchTerm);
+                const matchesCategory = !selectedCategory || category === selectedCategory;
+                const isVisible = matchesSearch && matchesCategory;
+                
+                item.style.display = isVisible ? '' : 'none';
+                if(isVisible) {
+                    item.classList.add('fade-in');
+                } else {
+                    item.classList.remove('fade-in');
+                }
+            });
+        }
+
+        searchInput.addEventListener('input', filterItems);
+        categoryFilter.addEventListener('change', filterItems);
+
+        // Form submission handling
+        const form = document.querySelector('.item-form');
+        if(form) {
+            form.addEventListener('submit', function(e) {
+                const btn = this.querySelector('.btn-submit');
+                btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Adding...';
+                btn.disabled = true;
+            });
+        }
+    });
+    </script>
+</body>
+</html>

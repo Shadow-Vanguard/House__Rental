@@ -7,8 +7,64 @@
     <title>Properties</title>
     <link rel="stylesheet" href="{% static 'css/ownerproperty.css' %}">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script> <!-- Include jQuery -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header .welcome h1 {
+            font-size: 24px;
+            margin: 0;
+        }
+
+        nav {
+            display: flex;
+            align-items: center;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+
+        nav ul li {
+            margin: 0 10px;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        nav ul li a i {
+            margin-right: 8px;
+        }
+
         .terms-btn {
             background-color: darkred; /* Dark red background */
             color: white; /* White text color */
@@ -19,7 +75,7 @@
         }
 
         .terms-btn:hover {
-            background-color: blue; /* Change to blue on hover */
+            background-color: rgb(91, 91, 224); /* Change to blue on hover */
         }
 
     </style>
@@ -100,78 +156,6 @@
             return true;
         }
     }
-
-    // function validateForm(event) {
-    //     event.preventDefault(); // Prevent form submission
-
-    //     let isValid = true;
-    //     const newImages = $('#new_images')[0].files;
-
-//         // Validations
-//         $('#property_name').on('input focusout', function() {
-//     validateField(this, /^[A-Za-z\s]{5,}$/, [
-//         'Property name must contain only letters and spaces.',
-//         'Property name must be at least 5 characters long.'
-//     ]);
-// });
-
-
-
-//         isValid &= validateField('#description', /^.{5,}$/, [
-//             'Description must be at least 5 characters long.'
-//         ]);
-//         isValid &= validateField('#address', /^.*$/, [
-//             'Address cannot be empty.',
-//             'Address must not contain special characters.',
-//             'Address must be at least 5 characters long.'
-//         ]);
-//         isValid &= validateField('#city', /^[a-zA-Z\s]{4,}$/, [
-//             'City must not contain special characters.',
-//             'City must be at least 5 characters long.',
-//             'City must not contain spaces at the beginning or end.'
-//         ]);
-//         isValid &= validateField('#state', /^[a-zA-Z\s]{4,}$/, [
-//             'State must not contain special characters.',
-//             'State must be at least 5 characters long.',
-//             'State must not contain spaces at the beginning or end.'
-//         ]);
-
-//         // Price validation
-//         const price = parseFloat($('#price').val().trim());
-//         let priceErrorDiv = $('#price').siblings('.error');
-//         if (isNaN(price) || price < 0) {
-//             if (priceErrorDiv.length === 0) {
-//                 priceErrorDiv = $('<p class="error"></p>');
-//                 $('#price').after(priceErrorDiv);
-//             }
-//             priceErrorDiv.text('Price must be a non-negative number.');
-//             isValid = false;
-//         } else {
-//             priceErrorDiv.remove(); // Remove error if valid
-//         }
-
-//         // Image validation
-//         if (newImages.length > 0) {
-//             for (let i = 0; i < newImages.length; i++) {
-//                 const fileExtension = newImages[i].name.split('.').pop().toLowerCase();
-//                 if (fileExtension !== 'jpg' && fileExtension !== 'jpeg') {
-//                     if ($('#new_images').siblings('.error').length === 0) {
-//                         $('<p class="error"></p>').insertAfter('#new_images').text('Only JPG and JPEG image files are allowed.');
-//                     }
-//                     isValid = false;
-//                     break;
-//                 } else {
-//                     $('#new_images').siblings('.error').remove(); // Remove error if valid
-//                 }
-//             }
-//         }
-
-//         if (isValid) {
-//             // If valid, submit the form
-//             event.target.submit();
-//         }
-//     }
-
     $(document).ready(function() {
         // Add event listeners for live validation
         $('#property_name').on('input focusout', function() {
@@ -264,12 +248,20 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Properties Added</h1>
-        <a href="{% url 'owner' %}" class="back-button">
-            <img src="{% static 'image/back_icon.png' %}" alt="Back">
-        </a>
-    </div>
+    <header>
+        <div class="welcome">
+            <h1>Properties Added</h1>
+        </div>
+        <nav>
+            <ul>
+                <li>
+                    <a href="{% url 'owner' %}">
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </header>
     <div class="properties-list">
         {% for property in properties %}
         <div class="property-item">

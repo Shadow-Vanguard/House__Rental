@@ -80,5 +80,7 @@ urlpatterns = [
   path('owner/maintenance/', views.owner_maintenance_requests, name='owner_maintenance'),
   path('maintenance/update/<int:request_id>/', views.update_maintenance_status, name='update_maintenance_status'),
   path('maintenance/notes/<int:request_id>/', views.update_maintenance_notes, name='update_maintenance_notes'),
+  path('household-items/', views.household_items, name='household_items'),
+  path('rental_compliance/', views.rental_compliance, name='rental_compliance'),
   
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

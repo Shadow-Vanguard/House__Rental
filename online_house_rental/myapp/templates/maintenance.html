@@ -340,6 +340,7 @@
             const title = this.querySelector('input[name="title"]').value;
             const description = this.querySelector('textarea[name="description"]').value;
             const priority = this.querySelector('input[name="priority"]:checked');
+            const fileInput = this.querySelector('input[type="file"]');
 
             // Title validation
             if (title.trim().length < 5) {
@@ -355,6 +356,10 @@
                 document.getElementById('descriptionError').textContent = 'Description must be at least 20 characters long';
                 document.getElementById('descriptionError').style.display = 'block';
                 isValid = false;
+            } else if (/\d+/.test(description) && description.match(/\d+/).some(num => parseInt(num) < 0)) {
+                document.getElementById('descriptionError').textContent = 'Negative numbers are not allowed in the description';
+                document.getElementById('descriptionError').style.display = 'block';
+                isValid = false;
             } else {
                 document.getElementById('descriptionError').style.display = 'none';
             }
@@ -366,6 +371,35 @@
                 isValid = false;
             } else {
                 document.getElementById('priorityError').style.display = 'none';
+            }
+
+            // Image validation
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const fileType = file.type.toLowerCase();
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+                
+                if (!allowedTypes.includes(fileType)) {
+                    const imageError = document.createElement('div');
+                    imageError.className = 'error-message';
+                    imageError.id = 'imageError';
+                    imageError.textContent = 'Only JPEG, JPG, and PNG images are allowed';
+                    imageError.style.display = 'block';
+                    
+                    // Remove existing error message if any
+                    const existingError = document.getElementById('imageError');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                    
+                    fileInput.parentElement.appendChild(imageError);
+                    isValid = false;
+                } else {
+                    const existingError = document.getElementById('imageError');
+                    if (existingError) {
+                        existingError.remove();
+                    }
+                }
             }
 
             if (!isValid) {

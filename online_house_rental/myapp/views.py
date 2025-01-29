@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment, PropertyRental, MaintenanceRequest
+from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment, PropertyRental, MaintenanceRequest, HouseholdItem, HouseholdItemImage
 from django.contrib import messages
 import logging
 from django.utils.crypto import get_random_string
@@ -1728,4 +1728,42 @@ def owner_maintenance_requests(request):
         messages.error(request, 'User session expired. Please login again.')
         return redirect('login')
 
+@cache_control(no_cache=True, must_revalidate=True, no_store=True)
+def household_items(request):
+    if not request.session.get('user_id'):
+        return redirect('login')
+    
+    user = User.objects.get(id=request.session['user_id'])
+    
+    if request.method == 'POST':
+        try:
+            item = HouseholdItem.objects.create(
+                name=request.POST['name'],
+                description=request.POST['description'],
+                category=request.POST['category'],
+                condition=request.POST['condition'],
+                price=request.POST['price'],
+                brand=request.POST.get('brand'),
+                seller=user,
+                is_available=True,
+                status=True
+            )
+            
+            images = request.FILES.getlist('images')
+            for image in images:
+                HouseholdItemImage.objects.create(item=item, image=image)
+            
+            messages.success(request, 'Item added successfully!')
+            return redirect('household_items')
+            
+        except Exception as e:
+            messages.error(request, str(e))
+            return redirect('household_items')
+    
+    items = HouseholdItem.objects.filter(status=True, is_available=True).order_by('-posted_date')
+    return render(request, 'household_items.html', {'items': items, 'user': user})
+
+def rental_compliance(request):
+  
+    return render(request, 'rental_compliance.html')
 
