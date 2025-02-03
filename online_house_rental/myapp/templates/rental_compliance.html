@@ -1,0 +1,115 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Rental Agreement</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #34495e;
+        }
+        .form-group input[type="file"] {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .btn-submit {
+            background-color: #2eca6a;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        .btn-submit:hover {
+            background-color: #25a955;
+        }
+        .report {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f1f1f1;
+            border-radius: 5px;
+            display: none; /* Hidden by default */
+        }
+        .error {
+            color: #e74c3c;
+        }
+        .success {
+            color: #2ecc71;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload Rental Agreement</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="rentalAgreement">Select Rental Agreement Document:</label>
+                <input type="file" id="rentalAgreement" name="rentalAgreement" accept=".pdf,.doc,.docx" required>
+            </div>
+            <button type="submit" class="btn-submit">Check Document</button>
+        </form>
+
+        <div id="report" class="report">
+            <h2>Document Check Report</h2>
+            <div id="reportContent"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the form from submitting normally
+
+            const formData = new FormData(this);
+            const reportContent = document.getElementById('reportContent');
+            const reportDiv = document.getElementById('report');
+
+            // Simulate document checking process
+            reportContent.innerHTML = 'Checking document...';
+            reportDiv.style.display = 'block';
+
+            // Simulate an AJAX request to check the document
+            setTimeout(() => {
+                // Here you would typically send the formData to your server for processing
+                // For demonstration, we'll simulate a response
+                const hasErrors = Math.random() < 0.5; // Randomly simulate errors
+
+                if (hasErrors) {
+                    reportContent.innerHTML = '<p class="error">Errors found in the document:</p><ul><li>Missing signature</li><li>Incorrect date format</li></ul>';
+                } else {
+                    reportContent.innerHTML = '<p class="success">No issues found. The document is valid.</p>';
+                }
+            }, 2000); // Simulate a delay for checking
+        });
+    </script>
+</body>
+</html>

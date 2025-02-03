@@ -1,0 +1,362 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Household Items</title>
+    <link rel="stylesheet" href="{% static 'css/adminstyle.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .items-container {
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .item-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 15px;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .item-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .item-status {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+        }
+
+        .status-active {
+            background: #2ecc71;
+            color: white;
+        }
+
+        .status-inactive {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .item-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .detail-label {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .item-images {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding: 10px 0;
+        }
+
+        .item-image {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .seller-info {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .search-filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .filter-select {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            min-width: 150px;
+        }
+        
+         /* Add these styles to your CSS */
+         .dashboard-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background-color: #2c3e50;
+            color: white;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+        }
+
+        .sidebar h1 {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 30px;
+            font-size: 24px;
+            border-bottom: 1px solid #34495e;
+        }
+
+        .sidebar nav ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar nav ul li {
+            padding: 0;
+        }
+
+        .sidebar nav ul li a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar nav ul li a:hover {
+            background-color: #34495e;
+        }
+
+        .sidebar nav ul li a i {
+            margin-right: 10px;
+            width: 20px;
+        }
+
+        .content {
+            margin-left: 250px;
+            padding: 20px;
+            flex: 1;
+        }
+        .top-nav {
+        position: fixed;
+        top: 0;
+        right: 0;
+        left: 250px;
+        height: 60px;
+        background-color: #fff;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0 20px;
+        z-index: 1000;
+    }
+
+    .top-nav h1 {
+        color: #2c3e50;
+        font-size: 24px;
+        margin: 0;
+    }
+
+    .top-nav-icons {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .icon-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        color: #2c3e50;
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 5px;
+    }
+    .icon-wrapper i {
+        font-size: 20px;
+        margin-bottom: 4px;
+    }
+
+    .icon-wrapper span {
+        font-size: 12px;
+    }
+
+    .icon-wrapper:hover {
+        background-color: #f0f0f0;
+    }
+    .content {
+        margin-left: 250px;
+        margin-top: 60px;
+        padding: 20px;
+        flex: 1;
+    }    
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <nav>
+                <ul>
+                    <li><a href="{% url 'propertywelcom' %}"><i class="fas fa-building"></i> Manage Properties</a></li>
+                    <li><a href="{% url 'manage_users' 'user' %}"><i class="fas fa-users"></i> Manage Users</a></li>
+                    <li><a href="{% url 'request' %}"><i class="fas fa-bell"></i> Requests</a></li>
+                    <li><a href="{% url 'manage_users' 'owner' %}"><i class="fas fa-user-tie"></i> Manage Property Owners</a></li>
+                    <li><a href="{% url 'admin_feedback' %}"><i class="fas fa-comments"></i> Feedback Analysis</a></li>
+                    <li><a href="{% url 'token_advance_list' %}"><i class="fas fa-money-bill-wave"></i> Token Advances</a></li>
+                    <li><a href="{% url 'admin_household_items' %}"><i class="fas fa-box"></i> Household Items</a></li>
+                    <li><a href="{% url 'login' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="content">
+            <div class="top-nav">
+                <h1>Household Items Management</h1>
+            </div>
+
+            <div class="items-container">
+                <!-- Search and Filters -->
+                <div class="search-filters">
+                    <input type="text" id="searchInput" class="search-input" placeholder="Search items...">
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">All Categories</option>
+                        <option value="furniture">Furniture</option>
+                        <option value="appliances">Appliances</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="kitchenware">Kitchenware</option>
+                        <option value="decor">Home Decor</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="available">Available</option>
+                        <option value="unavailable">Unavailable</option>
+                    </select>
+                </div>
+
+                <!-- Items List -->
+                {% for item in items %}
+                <div class="item-card" data-category="{{ item.category }}" data-available="{{ item.is_available }}">
+                    <div class="item-header">
+                        <span class="item-title">{{ item.name }}</span>
+                        <span class="item-status {% if item.is_available %}status-active{% else %}status-inactive{% endif %}">
+                            {% if item.is_available %}Available{% else %}Unavailable{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="item-details">
+                        <div class="detail-group">
+                            <span class="detail-label">Category</span>
+                            <span class="detail-value">{{ item.get_category_display }}</span>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">Condition</span>
+                            <span class="detail-value">{{ item.get_condition_display }}</span>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">Price</span>
+                            <span class="detail-value">₹{{ item.price }}</span>
+                        </div>
+                        <div class="detail-group">
+                            <span class="detail-label">Posted Date</span>
+                            <span class="detail-value">{{ item.posted_date|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+
+                    <div class="item-description">
+                        <span class="detail-label">Description</span>
+                        <p class="detail-value">{{ item.description }}</p>
+                    </div>
+
+                    {% if item.images.all %}
+                    <div class="item-images">
+                        {% for image in item.images.all %}
+                        <img src="{{ image.image.url }}" alt="{{ item.name }}" class="item-image">
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="seller-info">
+                        <span class="detail-label">Seller Information</span>
+                        <div class="detail-value">
+                            <p>Name: {{ item.seller.name }}</p>
+                            <p>Email: {{ item.seller.email }}</p>
+                            <p>Phone: {{ item.seller.phone }}</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('searchInput');
+            const categoryFilter = document.getElementById('categoryFilter');
+            const statusFilter = document.getElementById('statusFilter');
+            const items = document.querySelectorAll('.item-card');
+
+            function filterItems() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const selectedCategory = categoryFilter.value.toLowerCase();
+                const selectedStatus = statusFilter.value.toLowerCase();
+
+                items.forEach(item => {
+                    const itemTitle = item.querySelector('.item-title').textContent.toLowerCase();
+                    const itemCategory = item.dataset.category.toLowerCase();
+                    const itemAvailable = item.dataset.available === 'True';
+                    
+                    const matchesSearch = itemTitle.includes(searchTerm);
+                    const matchesCategory = !selectedCategory || itemCategory === selectedCategory;
+                    const matchesStatus = !selectedStatus || 
+                        (selectedStatus === 'available' && itemAvailable) ||
+                        (selectedStatus === 'unavailable' && !itemAvailable);
+
+                    item.style.display = (matchesSearch && matchesCategory && matchesStatus) ? '' : 'none';
+                });
+            }
+
+            searchInput.addEventListener('input', filterItems);
+            categoryFilter.addEventListener('change', filterItems);
+            statusFilter.addEventListener('change', filterItems);
+        });
+    </script>
+</body>
+</html>

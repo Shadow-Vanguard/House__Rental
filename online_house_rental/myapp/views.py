@@ -1696,6 +1696,7 @@ def update_maintenance_notes(request, request_id):
         return JsonResponse({'success': False, 'error': str(e)})
 
 
+
 def owner_maintenance_requests(request):
     # Check if owner is logged in
     user_id = request.session.get('user_id')
@@ -1766,4 +1767,61 @@ def household_items(request):
 def rental_compliance(request):
   
     return render(request, 'rental_compliance.html')
+
+
+
+import pickle
+import os
+import numpy as np
+from django.shortcuts import render
+from django.http import JsonResponse
+
+# Get the base directory dynamically
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+# Build the full path to the model file
+MODEL_PATH = os.path.join(BASE_DIR, 'ml_model', 'ml_models', 'rental_price_model.pkl')
+
+# Load the trained model
+try:
+    with open(MODEL_PATH, 'rb') as file:
+        model = pickle.load(file)
+except FileNotFoundError:
+    model = None
+    print(f"Model file not found at: {MODEL_PATH}")
+
+def predict_price(request):
+    if request.method == 'POST':
+        # Check if the model was loaded successfully
+        if not model:
+            return JsonResponse({'error': 'Model file not found or failed to load.'})
+
+        try:
+            # Get input values from the request
+            area = float(request.POST.get('area'))
+            bedrooms = int(request.POST.get('bedrooms'))
+            bathrooms = int(request.POST.get('bathrooms'))
+
+            # Prepare data for prediction
+            input_data = np.array([[area, bedrooms, bathrooms]])
+            predicted_price = model.predict(input_data)[0]
+
+            # Return the predicted price
+            return JsonResponse({'predicted_price': f"${predicted_price:.2f}"})
+
+        except Exception as e:
+            # Handle any errors during prediction
+            return JsonResponse({'error': str(e)})
+
+    return render(request, 'predict_price.html')
+
+def admin_household_items(request):
+    # Get all household items with their related data
+    items = HouseholdItem.objects.select_related('seller').prefetch_related('images').all().order_by('-posted_date')
+    
+    context = {
+        'items': items
+    }
+    return render(request, 'admin_household_items.html', context)
+
 
