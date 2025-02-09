@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Summary</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2eca6a;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .btn-back {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #2eca6a;
+            color: white;
+            text-align: center;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .btn-back:hover {
+            background-color: #25a955;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Order Summary</h1>
+        <p><strong>Buyer Name:</strong> {{ buyer_name }}</p>
+        <p><strong>Buyer Phone:</strong> {{ buyer_phone }}</p>
+        <p><strong>Seller Name:</strong> {{ seller_name }}</p>
+        <p><strong>Seller Phone:</strong> {{ seller_phone }}</p>
+        <p><strong>Item Name:</strong> {{ item_name }}</p>
+        <p><strong>Price:</strong> ₹{{ item_price }}</p>
+        <p><strong>Condition:</strong> {{ item_condition }}</p>
+        <a href="{% url 'household_items' %}" class="btn-back">Go Back</a>
+    </div>
+</body>
+</html>

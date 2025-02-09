@@ -368,10 +368,134 @@ small {
         validateDates();
     });
 
-    // Live validation for signature file
-    document.getElementById("digital_signature").addEventListener('change', function() {
-        validateDates();
+    async function validateSignature(file) {
+        return new Promise((resolve, reject) => {
+            // Basic file validation
+            if (!file.type.startsWith('image/')) {
+                reject('Please upload an image file');
+                return;
+            }
+
+            // Increased max file size to 10MB to accommodate scanned images
+            if (file.size > 10 * 1024 * 1024) {
+                reject('Image size should be less than 10MB');
+                return;
+            }
+
+            const img = new Image();
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                img.src = e.target.result;
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    
+                    // Analysis variables
+                    let darkPixels = 0;
+                    let totalPixels = data.length / 4;
+                    let hasContent = false;
+                    
+                    // More lenient brightness threshold (adjusted for paper backgrounds)
+                    const brightnessThreshold = 200; // Increased threshold for paper
+                    
+                    // Analyze image characteristics
+                    for (let i = 0; i < data.length; i += 4) {
+                        const r = data[i];
+                        const g = data[i + 1];
+                        const b = data[i + 2];
+                        
+                        // Average brightness
+                        const brightness = (r + g + b) / 3;
+                        
+                        // More lenient dark pixel detection
+                        if (brightness < brightnessThreshold) {
+                            darkPixels++;
+                            hasContent = true;
+                        }
+                    }
+                    
+                    // Calculate content percentage with more lenient thresholds
+                    const contentPercentage = (darkPixels / totalPixels) * 100;
+                    
+                    // Validation with adjusted thresholds
+                    if (!hasContent) {
+                        reject("No signature content detected");
+                        return;
+                    }
+                    
+                    // Much more lenient content percentage thresholds
+                    if (contentPercentage < 0.1) {
+                        reject("Signature too light or unclear");
+                        return;
+                    }
+                    
+                    // Increased upper threshold for darker signatures
+                    if (contentPercentage > 40) {
+                        reject("Image appears too dark or contains too much content");
+                        return;
+                    }
+                    
+                    // Basic dimension checks
+                    if (img.width < 50 || img.height < 20) {
+                        reject("Image dimensions too small for a signature");
+                        return;
+                    }
+                    
+                    resolve("Signature validated successfully");
+                };
+                
+                img.onerror = function() {
+                    reject("Error loading image");
+                };
+            };
+            
+            reader.onerror = function() {
+                reject("Error reading file");
+            };
+            
+            reader.readAsDataURL(file);
+        });
+    }
+
+    // Update the file input event listener
+    document.getElementById('digital_signature').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        const signatureError = document.getElementById('signatureError');
+        const submitButton = document.querySelector('button[type="submit"]');
+        
+        if (!file) {
+            signatureError.textContent = 'Please select a file';
+            signatureError.style.color = 'red';
+            submitButton.disabled = true;
+            return;
+        }
+
+        // Show loading message
+        signatureError.textContent = 'Validating signature...';
+        signatureError.style.color = '#666';
+        submitButton.disabled = true;
+
+        validateSignature(file)
+            .then(message => {
+                signatureError.textContent = '✓ ' + message;
+                signatureError.style.color = 'green';
+                submitButton.disabled = false;
+            })
+            .catch(error => {
+                signatureError.textContent = '✗ ' + error;
+                signatureError.style.color = 'red';
+                submitButton.disabled = true;
+                e.target.value = '';
+            });
     });
 </script>
 </body>
-</html
+</html>

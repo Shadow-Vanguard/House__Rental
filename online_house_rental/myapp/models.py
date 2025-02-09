@@ -230,6 +230,12 @@ class HouseholdItemImage(models.Model):
     def __str__(self):
         return f"Image for {self.item.name}"
 
+class HouseholdItemWishlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='household_wishlists')
+    item = models.ForeignKey(HouseholdItem, on_delete=models.CASCADE, related_name='wishlist_entries')
+    added_date = models.DateTimeField(auto_now_add=True)
+    
+
 
 
     

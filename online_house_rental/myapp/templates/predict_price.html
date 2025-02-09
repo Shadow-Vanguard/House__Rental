@@ -466,20 +466,22 @@
             <div class="form-group">
                 <label for="area"><i class="fas fa-ruler-combined"></i> Area (sq. ft.)</label>
                 <input type="number" name="area" step="0.01" required placeholder="Enter area in square feet">
-                <span class="input-icon"><i class="fas fa-home"></i></span>
+                
             </div>
 
             <div class="form-group">
                 <label for="bedrooms"><i class="fas fa-bed"></i> Bedrooms</label>
                 <input type="number" name="bedrooms" required placeholder="Number of bedrooms">
-                <span class="input-icon"><i class="fas fa-door-open"></i></span>
+                
             </div>
 
             <div class="form-group">
                 <label for="bathrooms"><i class="fas fa-bath"></i> Bathrooms</label>
                 <input type="number" name="bathrooms" required placeholder="Number of bathrooms">
-                <span class="input-icon"><i class="fas fa-shower"></i></span>
+              
             </div>
+
+            
 
             <button type="submit" id="predictButton">
                 <i class="fas fa-search-dollar"></i> Predict Price
@@ -499,6 +501,77 @@
     </div>
 
     <script>
+        // Add validation functions before the form submission code
+        function setupValidations() {
+            const areaInput = document.querySelector('input[name="area"]');
+            const bedroomsInput = document.querySelector('input[name="bedrooms"]');
+            const bathroomsInput = document.querySelector('input[name="bathrooms"]');
+
+            // Create validation message elements
+            const inputs = [areaInput, bedroomsInput, bathroomsInput];
+            inputs.forEach(input => {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'validation-message';
+                messageDiv.style.color = '#e74c3c';
+                messageDiv.style.fontSize = '0.85em';
+                messageDiv.style.marginTop = '5px';
+                messageDiv.style.display = 'none';
+                input.parentNode.appendChild(messageDiv);
+            });
+
+            // Validation functions
+            function validateArea(value) {
+                if (!/^\d*\.?\d+$/.test(value)) {
+                    return "Please enter a valid number";
+                }
+                const numValue = parseFloat(value);
+                if (numValue <= 0) {
+                    return "Area must be a positive number";
+                }
+                if (numValue < 500) {
+                    return "Area must be at least 500 sq. ft.";
+                }
+                return "";
+            }
+
+            function validateRooms(value, fieldName) {
+                if (!/^\d+$/.test(value)) {
+                    return `Please enter a valid number for ${fieldName}`;
+                }
+                const numValue = parseInt(value);
+                if (numValue <= 0) {
+                    return `Number of ${fieldName} must be positive`;
+                }
+                return "";
+            }
+
+            // Add input event listeners
+            function validateInput(input, validationFn, fieldName) {
+                input.addEventListener('input', function() {
+                    const messageDiv = this.parentNode.querySelector('.validation-message');
+                    const error = validationFn(this.value, fieldName);
+                    
+                    if (error) {
+                        messageDiv.textContent = error;
+                        messageDiv.style.display = 'block';
+                        this.style.borderColor = '#e74c3c';
+                        this.setCustomValidity(error);
+                    } else {
+                        messageDiv.style.display = 'none';
+                        this.style.borderColor = '#2ecc71';
+                        this.setCustomValidity('');
+                    }
+                });
+            }
+
+            validateInput(areaInput, validateArea);
+            validateInput(bedroomsInput, validateRooms, 'bedrooms');
+            validateInput(bathroomsInput, validateRooms, 'bathrooms');
+        }
+
+        // Call setup function when document is loaded
+        document.addEventListener('DOMContentLoaded', setupValidations);
+
         document.getElementById('predictionForm').addEventListener('submit', function(e) {
             e.preventDefault();
             

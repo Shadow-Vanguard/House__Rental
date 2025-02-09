@@ -109,7 +109,47 @@
       }
 
       function validateEmail(email) {
-        return /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(email);
+        // Check if email contains exactly one @ symbol
+        const atSymbolCount = (email.match(/@/g) || []).length;
+        if (atSymbolCount !== 1) {
+          return false;
+        }
+
+        // Check overall email format
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          return false;
+        }
+
+        // Split email into local and domain parts
+        const [localPart, domain] = email.split('@');
+
+        // Validate local part
+        if (localPart.length > 64 ||
+            /^[._-]/.test(localPart) ||  // Can't start with special chars
+            /[._-]$/.test(localPart) ||  // Can't end with special chars
+            /[._-]{2,}/.test(localPart) || // No consecutive special chars
+            !/^[a-zA-Z0-9._+-]+$/.test(localPart)) { // Only allow valid characters
+          return false;
+        }
+
+        // Validate domain part
+        if (domain.length > 253 ||
+            !/^[a-zA-Z0-9]/.test(domain) ||  // Must start with alphanumeric
+            !/[a-zA-Z0-9]$/.test(domain) ||  // Must end with alphanumeric
+            !/\./.test(domain) ||            // Must contain at least one dot
+            /[-.]/.test(domain[0]) ||        // Can't start with hyphen or dot
+            /[-.]/.test(domain[domain.length - 1]) || // Can't end with hyphen or dot
+            !/^[a-zA-Z0-9.-]+$/.test(domain)) { // Only allow valid characters
+          return false;
+        }
+
+        // Validate TLD (must be at least 2 characters)
+        const tld = domain.split('.').pop();
+        if (tld.length < 2) {
+          return false;
+        }
+
+        return true;
       }
 
       function validatePhoneNumber(phoneNumber) {

@@ -26,6 +26,34 @@
         .items-grid { padding: 20px 0; }
         @keyframes fadeIn { from {opacity: 0;} to {opacity: 1;} }
         .fade-in { animation: fadeIn 0.5s ease-in; }
+        .error-message {
+            color: red;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: none;
+        }
+        .form-control.error {
+            border-color: red;
+        }
+        .wishlist-btn {
+            margin-left: 10px;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .wishlist-btn:hover {
+            transform: scale(1.1);
+        }
+        .wishlist-btn .fa-heart {
+            transition: all 0.3s ease;
+        }
+        .wishlist-btn:hover .fa-heart:not(.text-danger) {
+            color: #dc3545;
+        }
+        .form-check {
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -78,15 +106,16 @@
     <section class="add-item-section mt-5 pt-5">
         <div class="container">
             <h2 class="text-center mb-4">Add Household Item</h2>
-            <form class="item-form" method="POST" enctype="multipart/form-data">
+            <form class="item-form" method="POST" enctype="multipart/form-data" id="itemForm" novalidate>
                 {% csrf_token %}
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <input type="text" class="form-control" name="name" placeholder="Item Name" required>
+                            <input type="text" class="form-control" name="name" id="name" placeholder="Item Name" required>
+                            <div class="error-message" id="nameError"></div>
                         </div>
                         <div class="form-group">
-                            <select class="form-control" name="category" required>
+                            <select class="form-control" name="category" id="category" required>
                                 <option value="">Select Category</option>
                                 <option value="furniture">Furniture</option>
                                 <option value="appliances">Appliances</option>
@@ -95,9 +124,10 @@
                                 <option value="decor">Home Decor</option>
                                 <option value="other">Other</option>
                             </select>
+                            <div class="error-message" id="categoryError"></div>
                         </div>
                         <div class="form-group">
-                            <select class="form-control" name="condition" required>
+                            <select class="form-control" name="condition" id="condition" required>
                                 <option value="">Select Condition</option>
                                 <option value="new">New</option>
                                 <option value="like_new">Like New</option>
@@ -105,22 +135,26 @@
                                 <option value="fair">Fair</option>
                                 <option value="used">Used</option>
                             </select>
+                            <div class="error-message" id="conditionError"></div>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <input type="number" class="form-control" name="price" placeholder="Price" required>
+                            <input type="number" class="form-control" name="price" id="price" placeholder="Price" required>
+                            <div class="error-message" id="priceError"></div>
                         </div>
                         <div class="form-group">
-                            <input type="text" class="form-control" name="brand" placeholder="Brand (Optional)">
+                            <input type="text" class="form-control" name="brand" id="brand" placeholder="Brand (Optional)">
                         </div>
                         <div class="form-group">
-                            <input type="file" class="form-control" name="images" multiple accept="image/*" required>
+                            <input type="file" class="form-control" name="images" id="images" multiple accept="image/*" required>
+                            <div class="error-message" id="imagesError"></div>
                         </div>
                     </div>
                     <div class="col-12">
                         <div class="form-group">
-                            <textarea class="form-control" name="description" rows="3" placeholder="Description" required></textarea>
+                            <textarea class="form-control" name="description" id="description" rows="3" placeholder="Description" required></textarea>
+                            <div class="error-message" id="descriptionError"></div>
                         </div>
                         <button type="submit" class="btn btn-submit">Add Item</button>
                     </div>
@@ -147,6 +181,14 @@
                         <option value="other">Other</option>
                     </select>
                 </div>
+                <div class="col-md-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="wishlistFilter">
+                        <label class="form-check-label" for="wishlistFilter">
+                            Show Wishlist Items Only
+                        </label>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -159,7 +201,8 @@
                 <div class="col-md-4 item-card" 
                      data-name="{{ item.name|lower }}" 
                      data-category="{{ item.category|lower }}"
-                     data-price="{{ item.price }}">
+                     data-price="{{ item.price }}"
+                     data-seller-id="{{ item.seller.id }}">
                     <div class="card">
                         {% if item.images.first %}
                         <img src="{{ item.images.first.image.url }}" class="card-img-top item-image" alt="{{ item.name }}">
@@ -170,8 +213,16 @@
                             <span class="condition-badge">{{ item.condition }}</span>
                             <p class="card-text mt-2">{{ item.description|truncatechars:100 }}</p>
                             <div class="d-flex justify-content-between align-items-center">
-                                <span class="price-tag"> ₹{{ item.price }}</span>
-                                <button class="btn btn-sm btn-outline-success contact-seller" data-seller="{{ item.seller.id }}">Contact Seller</button>
+                                <span class="price-tag">₹{{ item.price }}</span>
+                                <div>
+                                    {% if item.seller.id != user.id %}
+                                        <button class="btn btn-outline-danger btn-sm wishlist-btn" onclick="toggleWishlist({{ item.id }}, this)" 
+                                            data-item-id="{{ item.id }}">
+                                            <i class="fa fa-heart{% if item.id in wishlist_items %} text-danger{% endif %}"></i>
+                                        </button>
+                                    {% endif %}
+                                    <a href="{% url 'payment_page' %}?item_id={{ item.id }}" class="btn btn-primary btn-sm">Pay</a>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -180,6 +231,9 @@
             </div>
         </div>
     </section>
+
+    <!-- Add SweetAlert CDN before your closing </body> tag -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -219,6 +273,288 @@
                 btn.disabled = true;
             });
         }
+    });
+
+    // Add form validation
+    document.getElementById('itemForm').addEventListener('submit', function(e) {
+        let isValid = true;
+        
+        // Reset all error states
+        document.querySelectorAll('.error-message').forEach(error => error.style.display = 'none');
+        document.querySelectorAll('.form-control').forEach(input => input.classList.remove('error'));
+
+        // Name validation (only alphabets and spaces)
+        const name = document.getElementById('name');
+        if (!name.value.trim() || !/^[a-zA-Z\s]+$/.test(name.value.trim())) {
+            showError(name, 'nameError', 'Name should contain only alphabets and spaces');
+            isValid = false;
+        }
+
+        // Price validation
+        const price = document.getElementById('price');
+        if (!price.value || parseFloat(price.value) <= 0) {
+            showError(price, 'priceError', 'Price must be greater than 0');
+            isValid = false;
+        }
+
+        // Category validation
+        const category = document.getElementById('category');
+        if (!category.value) {
+            showError(category, 'categoryError', 'Please select a category');
+            isValid = false;
+        }
+
+        // Condition validation
+        const condition = document.getElementById('condition');
+        if (!condition.value) {
+            showError(condition, 'conditionError', 'Please select a condition');
+            isValid = false;
+        }
+
+        // Description validation
+        const description = document.getElementById('description');
+        if (!description.value.trim()) {
+            showError(description, 'descriptionError', 'Description is required');
+            isValid = false;
+        }
+
+        // Image validation
+        const images = document.getElementById('images');
+        if (images.files.length > 0) {
+            const allowedTypes = ['image/jpeg', 'image/png'];
+            const invalidFiles = Array.from(images.files).filter(file => !allowedTypes.includes(file.type));
+            
+            if (invalidFiles.length > 0) {
+                showError(images, 'imagesError', 'Only JPEG and PNG images are allowed');
+                isValid = false;
+            }
+        } else {
+            showError(images, 'imagesError', 'Please select at least one image');
+            isValid = false;
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+        } else {
+            const btn = this.querySelector('.btn-submit');
+            btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Adding...';
+            btn.disabled = true;
+        }
+    });
+
+    function showError(element, errorId, message) {
+        element.classList.add('error');
+        const errorElement = document.getElementById(errorId);
+        errorElement.textContent = message;
+        errorElement.style.display = 'block';
+    }
+
+    // Real-time validation
+    document.querySelectorAll('.form-control').forEach(input => {
+        input.addEventListener('input', function() {
+            // Remove error state when user starts typing
+            this.classList.remove('error');
+            const errorElement = this.parentElement.querySelector('.error-message');
+            if (errorElement) {
+                errorElement.style.display = 'none';
+            }
+        });
+    });
+
+    // Update the contact seller click handler
+    document.querySelectorAll('.contact-seller').forEach(button => {
+        button.addEventListener('click', function() {
+            const sellerId = this.getAttribute('data-seller');
+            fetch(`/get_seller_details/${sellerId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Unable to fetch seller details'
+                        });
+                        return;
+                    }
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Seller Details',
+                        html: `
+                            <div style="text-align: left; padding: 10px;">
+                                <p><strong>Name:</strong> ${data.name}</p>
+                                <p><strong>Phone:</strong> ${data.phone}</p>
+                            </div>
+                        `,
+                        confirmButtonColor: '#2eca6a',
+                        showCloseButton: true
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Unable to fetch seller details'
+                    });
+                });
+        });
+    });
+
+    // Add live validation for images and description
+    document.addEventListener('DOMContentLoaded', function() {
+        const imageInput = document.getElementById('images');
+        const descriptionInput = document.getElementById('description');
+        
+        // Image validation
+        imageInput.addEventListener('change', function() {
+            const files = this.files;
+            const errorElement = document.getElementById('imagesError');
+            let isValid = true;
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+            
+            if (files.length > 0) {
+                for (let file of files) {
+                    if (!allowedTypes.includes(file.type)) {
+                        isValid = false;
+                        break;
+                    }
+                }
+                
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid File Format',
+                        text: 'Please upload only JPEG, JPG, or PNG images',
+                        confirmButtonColor: '#2eca6a'
+                    });
+                    this.value = ''; // Clear the input
+                    errorElement.textContent = 'Only JPEG, JPG, and PNG images are allowed';
+                    errorElement.style.display = 'block';
+                    this.classList.add('error');
+                } else {
+                    errorElement.style.display = 'none';
+                    this.classList.remove('error');
+                }
+            }
+        });
+        
+        // Description validation
+        descriptionInput.addEventListener('input', function() {
+            const words = this.value.trim().split(/\s+/);
+            const errorElement = document.getElementById('descriptionError');
+            
+            if (words.length < 10 && this.value.trim() !== '') {
+                errorElement.textContent = `Description must be at least 10 words (currently ${words.length} words)`;
+                errorElement.style.display = 'block';
+                this.classList.add('error');
+                
+                // Show warning with SweetAlert
+                if (words.length === 1) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Description Too Short',
+                        text: 'Please provide a detailed description (at least 10 words)',
+                        confirmButtonColor: '#2eca6a',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                }
+            } else {
+                errorElement.style.display = 'none';
+                this.classList.remove('error');
+            }
+        });
+        
+        // Form submission validation
+        document.getElementById('itemForm').addEventListener('submit', function(e) {
+            const description = descriptionInput.value.trim();
+            const words = description.split(/\s+/);
+            const files = imageInput.files;
+            let isValid = true;
+            
+            // Check description length
+            if (words.length < 10) {
+                isValid = false;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Description Too Short',
+                    text: 'Please provide a description with at least 10 words',
+                    confirmButtonColor: '#2eca6a'
+                });
+            }
+            
+            // Check if images are selected and valid
+            if (files.length === 0) {
+                isValid = false;
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Images Required',
+                    text: 'Please select at least one image',
+                    confirmButtonColor: '#2eca6a'
+                });
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+            }
+        });
+    });
+
+    function toggleWishlist(itemId, button) {
+        fetch(`/toggle-household-wishlist/${itemId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                const heartIcon = button.querySelector('i');
+                heartIcon.classList.toggle('text-danger');
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: data.message,
+                    showConfirmButton: false,
+                    timer: 1500,
+                    position: 'top-end',
+                    toast: true
+                });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Something went wrong!',
+                position: 'top-end',
+                toast: true,
+                timer: 1500
+            });
+        });
+    }
+
+    document.getElementById('wishlistFilter').addEventListener('change', function() {
+        const showWishlistOnly = this.checked;
+        const items = document.querySelectorAll('.item-card');
+        const currentUserId = '{{ user.id }}';  // Get current user's ID
+        
+        items.forEach(item => {
+            const wishlistBtn = item.querySelector('.wishlist-btn i');
+            const sellerId = item.getAttribute('data-seller-id');  // Add this data attribute to your item cards
+            const isWishlisted = wishlistBtn?.classList.contains('text-danger');
+            const isOwnItem = sellerId === currentUserId;
+            
+            if (showWishlistOnly) {
+                item.style.display = (isWishlisted && !isOwnItem) ? '' : 'none';
+            } else {
+                item.style.display = '';
+            }
+        });
     });
     </script>
 </body>

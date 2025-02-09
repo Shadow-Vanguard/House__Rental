@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment, PropertyRental, MaintenanceRequest, HouseholdItem, HouseholdItemImage
+from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment, PropertyRental, MaintenanceRequest, HouseholdItem, HouseholdItemImage, HouseholdItemWishlist
 from django.contrib import messages
 import logging
 from django.utils.crypto import get_random_string
@@ -162,29 +162,33 @@ def userpage(request):
     if request.session.get('user_id'):
         user_id = request.session.get('user_id')
         
-        # Retrieve the logged-in user
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            return redirect('login')  # Redirect to login if user not found
-        properties = Property.objects.filter(is_verified=True)  # Only show verified properties
+            return redirect('login')
 
-        # Fetch rented properties through PropertyRental model
+        # Get rented properties for this user
         rented_properties = Property.objects.filter(
             propertyrental__user=user,
             propertyrental__is_active=True
         ).distinct()
 
-        # Get search parameters from the GET request
+        # Get all verified properties that are NOT rented by anyone
+        properties = Property.objects.filter(
+            is_verified=True,
+            is_rented=False  # Only show properties that aren't rented
+        ).exclude(
+            id__in=rented_properties.values_list('id', flat=True)  # Exclude user's rented properties
+        )
+
+        # Apply search filters
         location = request.GET.get('location', '')
         category = request.GET.get('category', '')
         price = request.GET.get('price', '')
         bhk = request.GET.get('bhk', '')
 
-        # Filter properties based on the search criteria
         if location:
             properties = properties.filter(city__icontains=location) | properties.filter(state__icontains=location)
-        
         
         if category:
             properties = properties.filter(property_type__iexact=category)
@@ -194,21 +198,20 @@ def userpage(request):
                 max_price = float(price)
                 properties = properties.filter(price__lte=max_price)
             except ValueError:
-                pass  # If price is not a valid number, skip this filter
+                pass
         
         if bhk:
             try:
                 bhk_value = int(bhk)
                 properties = properties.filter(beds=bhk_value)
             except ValueError:
-                pass  # If bhk is not a valid number, skip this filter
+                pass
 
-        # Pass the filtered properties to the template
         context = {
             'user': user,
             'properties': properties,
             'rented_properties': rented_properties,
-            'request': request  # Pass the request to the template for showing the form values
+            'request': request
         }
         
         return render(request, 'userpage.html', context)
@@ -1762,7 +1765,14 @@ def household_items(request):
             return redirect('household_items')
     
     items = HouseholdItem.objects.filter(status=True, is_available=True).order_by('-posted_date')
-    return render(request, 'household_items.html', {'items': items, 'user': user})
+    # Get user's wishlist items
+    wishlist_items = HouseholdItemWishlist.objects.filter(user=user).values_list('item_id', flat=True)
+    
+    return render(request, 'household_items.html', {
+        'items': items, 
+        'user': user,
+        'wishlist_items': list(wishlist_items)  # Convert to list for template use
+    })
 
 def rental_compliance(request):
   
@@ -1807,7 +1817,7 @@ def predict_price(request):
             predicted_price = model.predict(input_data)[0]
 
             # Return the predicted price
-            return JsonResponse({'predicted_price': f"${predicted_price:.2f}"})
+            return JsonResponse({'predicted_price': f"{predicted_price:.2f}"})
 
         except Exception as e:
             # Handle any errors during prediction
@@ -1823,5 +1833,108 @@ def admin_household_items(request):
         'items': items
     }
     return render(request, 'admin_household_items.html', context)
+
+def get_seller_details(request, seller_id):
+    try:
+        seller = User.objects.get(id=seller_id)
+        return JsonResponse({
+            'name': seller.name,
+            'phone': seller.phone if seller.phone else 'Not provided'
+        })
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Seller not found'}, status=404)
+
+@require_POST
+def toggle_household_wishlist(request, item_id):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({'status': 'error', 'message': 'Please login first'})
+    
+    try:
+        user = User.objects.get(id=user_id)
+        item = HouseholdItem.objects.get(id=item_id)
+        
+        wishlist_item, created = HouseholdItemWishlist.objects.get_or_create(
+            user=user,
+            item=item
+        )
+        
+        if not created:
+            # Item was already in wishlist, so remove it
+            wishlist_item.delete()
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Item removed from wishlist',
+                'in_wishlist': False
+            })
+        
+        return JsonResponse({
+            'status': 'success',
+            'message': 'Item added to wishlist',
+            'in_wishlist': True
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'status': 'error',
+            'message': str(e)
+        })
+
+def payment_page(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+    
+    # Get the item_id from the URL parameters
+    item_id = request.GET.get('item_id')
+    if not item_id:
+        return redirect('household_items')
+    
+    user = get_object_or_404(User, id=user_id)
+    item = get_object_or_404(HouseholdItem, id=item_id)
+    
+    return render(request, 'payment_page.html', {
+        'user': user,
+        'item': item  # Pass the item to the template
+    })
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import User, HouseholdItem
+
+def order_summary(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('login')
+    
+    # Get and validate item_id
+    item_id = request.GET.get('item_id')
+    if not item_id:
+        messages.error(request, 'No item selected')
+        return redirect('household_items')
+    
+    try:
+        user = get_object_or_404(User, id=user_id)
+        item = get_object_or_404(HouseholdItem, id=item_id)
+        seller = item.seller
+        
+        context = {
+            'buyer_name': user.name,
+            'buyer_phone': user.phone,
+            'seller_name': seller.name,
+            'seller_phone': seller.phone,
+            'item_name': item.name,
+            'item_price': item.price,
+            'item_condition': item.condition,
+        }
+        
+        return render(request, 'order_summary.html', context)
+    
+    except (ValueError, HouseholdItem.DoesNotExist):
+        messages.error(request, 'Invalid item selected')
+        return redirect('household_items')
+
+
+
 
 

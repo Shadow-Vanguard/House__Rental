@@ -84,4 +84,9 @@ urlpatterns = [
   path('rental_compliance/', views.rental_compliance, name='rental_compliance'),
   path('predict/', views.predict_price, name='predict_price'),
   path('adminhousehold-items/', views.admin_household_items, name='admin_household_items'),
+  path('get_seller_details/<int:seller_id>/', views.get_seller_details, name='get_seller_details'),
+  path('toggle-household-wishlist/<int:item_id>/', views.toggle_household_wishlist, name='toggle_household_wishlist'),
+  path('payment/', views.payment_page, name='payment_page'),
+  path('order-summary/', views.order_summary, name='order_summary'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
