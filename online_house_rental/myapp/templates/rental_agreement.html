@@ -200,6 +200,19 @@ small {
         .error {
             color: red;
         }
+
+        .signature-options {
+            margin-bottom: 20px;
+        }
+
+        .signature-option {
+            margin-bottom: 15px;
+        }
+
+        #signatureCanvas {
+            background-color: white;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -238,9 +251,23 @@ small {
                                                                                                                                                      
         <div>
             <label for="digital_signature">Digital Signature:</label>
-            <input type="file" id="digital_signature" name="digital_signature" accept="image/*" required>
-            <small>Please upload an image of your signature.</small>
-            <span id="signatureError" class="error-message"></span>
+            <div class="signature-options">
+                <div class="signature-option">
+                    <input type="radio" name="signature_type" id="upload_signature" value="upload" checked>
+                    <label for="upload_signature">Upload Signature</label>
+                    <input type="file" id="digital_signature" name="digital_signature" accept="image/*">
+                    <small>Please upload an image of your signature.</small>
+                    <span id="signatureError" class="error-message"></span>
+                </div>
+                
+                <div class="signature-option">
+                    <input type="radio" name="signature_type" id="generate_signature" value="generate">
+                    <label for="generate_signature">Generate Signature</label>
+                    <input type="text" id="signature_name" name="signature_name" placeholder="Enter your full name" style="display: none;">
+                    <canvas id="signatureCanvas" style="display: none; border: 1px solid #ccc; margin-top: 10px;" width="400" height="100"></canvas>
+                    <input type="hidden" id="generated_signature" name="generated_signature">
+                </div>
+            </div>
         </div>
 
         <button type="submit">Submit Agreement</button>
@@ -496,6 +523,57 @@ small {
                 e.target.value = '';
             });
     });
+
+    document.querySelectorAll('input[name="signature_type"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const fileInput = document.getElementById('digital_signature');
+            const nameInput = document.getElementById('signature_name');
+            const canvas = document.getElementById('signatureCanvas');
+            
+            if (this.value === 'upload') {
+                fileInput.style.display = 'block';
+                fileInput.nextElementSibling.style.display = 'block';
+                nameInput.style.display = 'none';
+                canvas.style.display = 'none';
+            } else {
+                fileInput.style.display = 'none';
+                fileInput.nextElementSibling.style.display = 'none';
+                nameInput.style.display = 'block';
+                canvas.style.display = 'block';
+            }
+        });
+    });
+
+    document.getElementById('signature_name').addEventListener('input', function() {
+        const canvas = document.getElementById('signatureCanvas');
+        const ctx = canvas.getContext('2d');
+        const name = this.value;
+        
+        // Clear canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        if (name.trim() === '') return;
+        
+        // Set font style for signature
+        ctx.font = 'italic bold 40px "Dancing Script", cursive';
+        ctx.fillStyle = '#000';
+        
+        // Center the signature
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        
+        // Draw the signature
+        ctx.fillText(name, canvas.width/2, canvas.height/2);
+        
+        // Store the signature data in hidden input
+        document.getElementById('generated_signature').value = canvas.toDataURL();
+    });
+
+    // Add this in the head section of your HTML
+    const fontLink = document.createElement('link');
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap';
+    fontLink.rel = 'stylesheet';
+    document.head.appendChild(fontLink);
 </script>
 </body>
 </html>

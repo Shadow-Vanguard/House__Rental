@@ -306,6 +306,15 @@
                 width: 100%;
             }
         }
+
+        nav ul li a.compliance-btn {
+            background-color: #28a745;
+            margin-left: 10px;
+        }
+
+        nav ul li a.compliance-btn:hover {
+            background-color: #218838;
+        }
     </style>
 </head>
 <body>
@@ -314,15 +323,16 @@
         <div class="welcome">
             <h1>Rental Agreements</h1>
         </div>
-        <!-- <nav>
+        <nav>
             <ul>
                 <li>
-                    <a href="{% url 'owner' %}">
-                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    <a href="{% url 'zzz' %}" class="compliance-btn">
+                        <i class="fas fa-clipboard-check"></i> Rental Compliance
                     </a>
                 </li>
+               
             </ul>
-        </nav> -->
+        </nav>
     </header>
 
     <div class="container">

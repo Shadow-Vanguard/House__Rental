@@ -221,7 +221,7 @@
                                             <i class="fa fa-heart{% if item.id in wishlist_items %} text-danger{% endif %}"></i>
                                         </button>
                                     {% endif %}
-                                    <a href="{% url 'payment_page' %}?item_id={{ item.id }}" class="btn btn-primary btn-sm">Pay</a>
+                                    <a href="{% url 'order_summary' %}?item_id={{ item.id }}" class="btn btn-primary btn-sm">Pay</a>
                                 </div>
                             </div>
                         </div>

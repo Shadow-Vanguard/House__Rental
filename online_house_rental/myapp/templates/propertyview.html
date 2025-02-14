@@ -226,6 +226,55 @@
                 font-size: 2rem;
             }
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 0.5rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .meeting-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .meeting-form label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .meeting-form input {
+            padding: 0.8rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
     </style>
 </head>
 <body>
@@ -270,18 +319,7 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="video-section">
-                    <h3></h3>
-                    {% for video in property.video.all %}
-                    <video controls>
-                        <source src="{{ video.video.url }}" type="video">
-                        Your browser does not support the video tag.
-                    </video>
-                    {% endfor %}
-                </div>
             </div>
-
             <div class="sidebar">
                 <div class="price-card">
                     <!-- <p><strong>Price:</strong> <span id="propertyPrice">Rs.{{ property.price }}</span></p> -->
@@ -303,7 +341,6 @@
                         {% if property.listing_type == 'Rent' or property.listing_type == 'Both' %}
                             {% if property.is_rented %}
                                 {% if has_rented %}
-                                    <!-- Show feedback button if the current user has rented this property -->
                                     <a href="{% url 'feedback_page' property.id %}" class="btn btn-secondary">
                                         <i class="fas fa-star"></i> Leave Feedback
                                     </a>
@@ -330,7 +367,10 @@
                             </button>
                         </form>
                     {% endif %}
-                    
+
+                    <button class="btn btn-secondary" onclick="openMeetingModal()">
+                        <i class="fas fa-video"></i> Request Virtual Meeting
+                    </button>
                     
                     <a href="{% url 'userpage' %}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Back to Properties
@@ -356,6 +396,8 @@
             </div>
         </div>
     </div>
+
+    
     {% if debug %}
     <div style="display: none;">
         Debug Info:
@@ -363,5 +405,41 @@
         <p>Lowercase: {{ property.listing_type|lower }}</p>
     </div>
     {% endif %}
+
+    <!-- Add this before closing body tag -->
+    <div id="meetingModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMeetingModal()">&times;</span>
+            <h3>Schedule Virtual Meeting</h3>
+            <form class="meeting-form" action="{% url 'request_meeting' property.id %}" method="POST">
+                {% csrf_token %}
+                <div>
+                    <label for="meeting_date">Preferred Date and Time:</label>
+                    <input type="datetime-local" id="meeting_date" name="scheduled_time" required>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-calendar-check"></i> Submit Meeting Request
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openMeetingModal() {
+            document.getElementById('meetingModal').style.display = 'block';
+        }
+
+        function closeMeetingModal() {
+            document.getElementById('meetingModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            var modal = document.getElementById('meetingModal');
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
 </body>
 </html>

@@ -75,27 +75,27 @@ WSGI_APPLICATION = 'online_house_rental.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/  #databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rentalsystem',
-        'USER': 'root',
-        'PASSWORD':'',
-        'HOST': 'localhost',  # Set to your database host
-        'PORT': '3306'
-    }
-}
-
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
-#         'NAME': 'rentalsystem_funridedug',
-#         'USER': 'rentalsystem_funridedug',
-#         'PASSWORD':'94b249c4c6aaf8fcd910c698ad7b77fd3015b710',
-#         'HOST': 'f-irn.h.filess.io',  # Set to your database host
-#         'PORT': '3307'
+#         'NAME': 'rentalsystem',
+#         'USER': 'root',
+#         'PASSWORD':'',
+#         'HOST': 'localhost',  # Set to your database host
+#         'PORT': '3306'
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'rentalsystem_funridedug',
+        'USER': 'rentalsystem_funridedug',
+        'PASSWORD':'94b249c4c6aaf8fcd910c698ad7b77fd3015b710',
+        'HOST': 'f-irn.h.filess.io',  # Set to your database host
+        'PORT': '3307'
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -134,6 +134,10 @@ STATICFILES_DIRS = [
 ]
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
+
+# Create these directories with proper permissions
+os.makedirs(MEDIA_ROOT, exist_ok=True)
+os.makedirs(os.path.join(MEDIA_ROOT, 'temp_pdfs'), exist_ok=True)
 
 # For development, ensure the following is set
 # Default primary key field type

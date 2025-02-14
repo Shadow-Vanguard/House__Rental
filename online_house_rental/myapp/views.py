@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,get_object_or_404
-from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment, PropertyRental, MaintenanceRequest, HouseholdItem, HouseholdItemImage, HouseholdItemWishlist
+from .models import User,Property,PropertyImage,Adminm,Wishlist,RentalAgreement,Message,Feedback,Payment,TokenPayment, PropertyRental, MaintenanceRequest, HouseholdItem, HouseholdItemImage, HouseholdItemWishlist, HouseholdItemPayment
 from django.contrib import messages
 import logging
 from django.utils.crypto import get_random_string
@@ -21,7 +21,10 @@ from django.shortcuts import render, get_object_or_404
 from django.views.decorators.http import require_POST
 import json
 from datetime import datetime
-
+import os
+from django.http import JsonResponse, FileResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.conf import settings
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout(request):
@@ -1764,7 +1767,20 @@ def household_items(request):
             messages.error(request, str(e))
             return redirect('household_items')
     
-    items = HouseholdItem.objects.filter(status=True, is_available=True).order_by('-posted_date')
+    # Get all successful payments for this user
+    purchased_items = HouseholdItemPayment.objects.filter(
+        buyer=user, 
+        payment_status='completed'
+    ).values_list('item_id', flat=True)
+    
+    # Get all items excluding the purchased ones
+    items = HouseholdItem.objects.filter(
+        status=True, 
+        is_available=True
+    ).exclude(
+        id__in=purchased_items
+    ).order_by('-posted_date')
+    
     # Get user's wishlist items
     wishlist_items = HouseholdItemWishlist.objects.filter(user=user).values_list('item_id', flat=True)
     
@@ -1774,10 +1790,62 @@ def household_items(request):
         'wishlist_items': list(wishlist_items)  # Convert to list for template use
     })
 
-def rental_compliance(request):
-  
-    return render(request, 'rental_compliance.html')
 
+    
+import pdfplumber
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+import spacy
+import re
+def rental_compliance(request):
+    if request.method == 'POST' and request.FILES.get('rentalAgreement'):
+        try:
+            pdf_file = request.FILES['rentalAgreement']
+            text = ""
+            with pdfplumber.open(pdf_file) as pdf:
+                for page in pdf.pages: text += page.extract_text()
+            tokenizer = AutoTokenizer.from_pretrained("nlpaueb/legal-bert-base-uncased")
+            model = AutoModelForSequenceClassification.from_pretrained("nlpaueb/legal-bert-base-uncased")
+            nlp = spacy.load("en_core_web_sm")
+            doc = nlp(text.lower())
+            legal_components = {
+                'property_description': {'required': ['property address','property details','description of premises'],'found': False,'details': []},
+                'parties': {'required': ['landlord','tenant','lessor','lessee'],'found': False,'details': []},
+                'term_and_renewal': {'required': ['lease term','lease period','renewal','extension'],'found': False,'details': []},
+                'rent_and_deposits': {'required': ['rent amount','security deposit','advance payment','monthly rent'],'found': False,'details': []},
+                'maintenance': {'required': ['repairs','maintenance','upkeep','condition'],'found': False,'details': []},
+                'utilities': {'required': ['electricity','water','utilities','bills'],'found': False,'details': []},
+                'termination': {'required': ['termination','notice period','eviction'],'found': False,'details': []},
+                'dispute_resolution': {'required': ['dispute','arbitration','mediation','jurisdiction'],'found': False,'details': []}
+            }
+            missing_components, found_components = [], []
+            for component, data in legal_components.items():
+                found_terms = []
+                for term in data['required']:
+                    if term in text.lower(): found_terms.append(term)
+                if found_terms:
+                    data['found'], data['details'] = True, found_terms
+                    found_components.append(component)
+                else: missing_components.append(component)
+            warnings = []
+            dates = re.findall(r'\d{1,2}[/-]\d{1,2}[/-]\d{2,4}', text)
+            if not dates: warnings.append("No dates found in the agreement")
+            signature_terms = ['signature','signed','executed']
+            if not any(term in text.lower() for term in signature_terms): warnings.append("No signature section found")
+            compliance_score = (len(found_components) / len(legal_components)) * 100
+            component_details = {component: {'found': data['found'],'terms_found': data['details']} for component, data in legal_components.items()}
+            return JsonResponse({
+                'success': True,
+                'compliance_score': compliance_score,
+                'missing_components': missing_components,
+                'found_components': found_components,
+                'component_details': component_details,
+                'warnings': warnings,
+                'message': 'Document analyzed successfully'
+            })
+        except Exception as e:
+            return JsonResponse({'success': False,'message': f'Error processing document: {str(e)}'})
+    return render(request, 'rental_compliance.html')
 
 
 import pickle
@@ -1902,12 +1970,29 @@ def payment_page(request):
 from django.shortcuts import render, get_object_or_404
 from .models import User, HouseholdItem
 
+import razorpay
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import User, HouseholdItem
+
+# Razorpay client initialization
+import razorpay
+from django.conf import settings
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+from .models import User, HouseholdItem
+
+# Razorpay client initialization
+razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_SECRET_KEY))
+
 def order_summary(request):
     user_id = request.session.get('user_id')
     if not user_id:
         return redirect('login')
     
-    # Get and validate item_id
     item_id = request.GET.get('item_id')
     if not item_id:
         messages.error(request, 'No item selected')
@@ -1917,7 +2002,23 @@ def order_summary(request):
         user = get_object_or_404(User, id=user_id)
         item = get_object_or_404(HouseholdItem, id=item_id)
         seller = item.seller
+
+        # Create or get payment record
+        payment, created = HouseholdItemPayment.objects.get_or_create(
+            buyer=user,
+            item=item,
+            amount=item.price,
+            payment_status='pending'
+        )
+
+        amount = int(item.price) * 100  # Convert to paise
+        razorpay_order = razorpay_client.order.create(dict(amount=amount, currency='INR', payment_capture='1'))
+        razorpay_order_id = razorpay_order['id']
         
+        # Update payment record with order ID
+        payment.razorpay_order_id = razorpay_order_id
+        payment.save()
+
         context = {
             'buyer_name': user.name,
             'buyer_phone': user.phone,
@@ -1926,15 +2027,254 @@ def order_summary(request):
             'item_name': item.name,
             'item_price': item.price,
             'item_condition': item.condition,
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_merchant_key': settings.RAZORPAY_KEY_ID,
+            'amount': amount,
+            'currency': 'INR',
         }
         
         return render(request, 'order_summary.html', context)
-    
+
     except (ValueError, HouseholdItem.DoesNotExist):
         messages.error(request, 'Invalid item selected')
         return redirect('household_items')
 
 
+@csrf_exempt
+def payment_success(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        try:
+            # Verify payment signature
+            params_dict = {
+                'razorpay_order_id': data['razorpay_order_id'],
+                'razorpay_payment_id': data['razorpay_payment_id'],
+                'razorpay_signature': data['razorpay_signature']
+            }
+            razorpay_client.utility.verify_payment_signature(params_dict)
+            
+            # Payment verification successful
+            return JsonResponse({'status': 'success'})
+        except razorpay.errors.SignatureVerificationError:
+            return JsonResponse({'status': 'failure'})
+    return JsonResponse({'status': 'invalid_request'})
+
+def view_payments(request):
+    # Check if admin is logged in
+    if not request.session.get('admin_email'):
+        return redirect('login')
+    
+    # Get all payments with related buyer and item information
+    payments = HouseholdItemPayment.objects.select_related(
+        'buyer', 
+        'item'
+    ).order_by('-payment_date')
+    
+    context = {
+        'payments': payments
+    }
+    
+    return render(request, 'view_payments.html', context)
 
 
 
+
+
+import pdfplumber
+import pytesseract
+import logging
+import torch
+import os
+
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Adjust path if different
+
+def zzz(request):
+    if request.method == 'POST':
+        pdf_file = request.FILES.get('pdf_file')
+        if not pdf_file:
+            return render(request, 'zzz.html', {'error': 'No PDF file provided'})
+
+        try:
+            text = ""
+            with pdfplumber.open(pdf_file) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        text += page_text
+                    else:
+                        page_image = page.to_image().original
+                        page_text = pytesseract.image_to_string(page_image)
+                        text += page_text
+
+            if not text:
+                return render(request, 'zzz.html', {'error': 'Failed to extract text from PDF'})
+
+            text_upper = text.upper()
+            components = {
+                'property_description': any(word in text_upper for word in ['PROPERTY', 'PREMISES', 'LOCATED AT', 'ADDRESS']),
+                'landlord_details': any(word in text_upper for word in ['LANDLORD', 'LESSOR', 'OWNER']),
+                'tenant_details': any(word in text_upper for word in ['TENANT', 'LESSEE', 'RENTER']),
+                'rent_amount': any(word in text_upper for word in ['RENT', 'PAYMENT', 'MONTHLY', '$']),
+                'lease_term': any(word in text_upper for word in ['TERM', 'PERIOD', 'DURATION', 'LEASE PERIOD']),
+                'security_deposit': any(word in text_upper for word in ['DEPOSIT', 'SECURITY']),
+                'signatures': any(word in text_upper for word in ['SIGNATURE', 'SIGNED', 'EXECUTED']),
+                'dates': any(month in text_upper for month in [
+                    "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+                    "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+                ]) or any(str(year) in text for year in range(2020, 2025))
+            }
+
+            compliance_score = (sum(components.values()) / len(components)) * 100
+            missing_components = [k for k, v in components.items() if not v]
+            warnings = []
+            if not components['signatures']:
+                warnings.append("No signatures detected")
+            if not components['dates']:
+                warnings.append("No dates detected")
+
+            context = {
+                'success': True,
+                'compliance_score': compliance_score,
+                'missing_components': missing_components,
+                'warnings': warnings,
+                'found_components': {k: v for k, v in components.items() if v}
+            }
+
+            return render(request, 'zzz.html', context)
+
+        except Exception as e:
+            # Log the error and pass it to the template
+            return render(request, 'zzz.html', {'error': str(e)})
+
+    return render(request, 'zzz.html')
+
+
+
+
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.core.mail import send_mail
+from .models import VirtualMeeting, Property
+import random
+import string
+
+def request_meeting(request, property_id):
+    if request.method == 'POST':
+        # Get the property and users
+        property = get_object_or_404(Property, id=property_id)
+        renter_id = request.session.get('user_id')
+        
+        if not renter_id:
+            messages.error(request, 'Please login to request a meeting')
+            return redirect('login')
+            
+        renter = get_object_or_404(User, id=renter_id)
+        owner = property.owner
+
+        # Create the virtual meeting
+        meeting = VirtualMeeting.objects.create(
+            renter=renter,
+            owner=owner,
+            property_name=property.property_name,
+            scheduled_time=request.POST.get('scheduled_time'),
+            status='pending'
+        )
+
+        messages.success(request, 'Meeting request submitted successfully! Waiting for owner approval.')
+        return redirect('propertyview', property_id=property_id)
+
+    return redirect('propertyview', property_id=property_id)
+
+
+
+
+@login_required
+def manage_meeting_requests(request):
+    meetings = VirtualMeeting.objects.filter(owner=request.user, status="pending")
+    return render(request, "manage_meetings.html", {"meetings": meetings})
+
+from django.views.decorators.http import require_POST
+
+@require_POST
+def approve_meeting(request, meeting_id):
+    # Get the owner's user ID from session
+    owner_id = request.session.get('user_id')
+    if not owner_id:
+        messages.error(request, 'Please login first')
+        return redirect('login')
+        
+    try:
+        owner = get_object_or_404(User, id=owner_id)
+        meeting = get_object_or_404(VirtualMeeting, id=meeting_id, owner=owner)
+
+        # Generate a unique meeting link
+        meeting_code = ''.join(random.choices(string.ascii_letters + string.digits, k=10))
+        meeting_link = f"https://meet.jit.si/{meeting_code}"
+
+        # Update meeting status and add the link
+        meeting.status = "approved"
+        meeting.meeting_link = meeting_link
+        meeting.save()
+
+        # Notify renter via email
+        subject = "Virtual Meeting Approved"
+        message = f"""
+        Hello {meeting.renter.name},
+        Your meeting request for {meeting.property_name} has been approved.
+        Join the meeting at: {meeting_link}
+        Scheduled Time: {meeting.scheduled_time}
+        """
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [meeting.renter.email])
+
+        messages.success(request, "Meeting approved. Meeting link has been sent to the renter.")
+    except Exception as e:
+        messages.error(request, f"Error approving meeting: {str(e)}")
+    
+    return redirect('manage_meetings')
+
+@require_POST
+def reject_meeting(request, meeting_id):
+    # Get the owner's user ID from session
+    owner_id = request.session.get('user_id')
+    if not owner_id:
+        messages.error(request, 'Please login first')
+        return redirect('login')
+        
+    try:
+        owner = get_object_or_404(User, id=owner_id)
+        meeting = get_object_or_404(VirtualMeeting, id=meeting_id, owner=owner)
+
+        # Update meeting status to rejected
+        meeting.status = "rejected"
+        meeting.save()
+
+        # Notify renter via email
+        subject = "Virtual Meeting Rejected"
+        message = f"""
+        Hello {meeting.renter.name},
+        Your meeting request for {meeting.property_name} has been rejected by the owner.
+        """
+        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [meeting.renter.email])
+
+        messages.warning(request, "Meeting request has been rejected.")
+    except Exception as e:
+        messages.error(request, f"Error rejecting meeting: {str(e)}")
+    
+    return redirect('manage_meetings')
+
+def manage_meetings(request):
+    # Check if user is logged in
+    if not request.session.get('user_id'):
+        return redirect('login')
+        
+    # Get the owner's meetings
+    owner = get_object_or_404(User, id=request.session['user_id'])
+    meetings = VirtualMeeting.objects.filter(owner=owner).order_by('-created_at')
+    
+    return render(request, "manage_meetings.html", {
+        "meetings": meetings,
+        "user": owner
+    })

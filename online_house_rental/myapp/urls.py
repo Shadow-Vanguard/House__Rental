@@ -88,5 +88,13 @@ urlpatterns = [
   path('toggle-household-wishlist/<int:item_id>/', views.toggle_household_wishlist, name='toggle_household_wishlist'),
   path('payment/', views.payment_page, name='payment_page'),
   path('order-summary/', views.order_summary, name='order_summary'),
+  path('payment_success/', views.payment_success, name='payment_success'),
+  path('view-payments/', views.view_payments, name='view_payments'),
+  path('zzz/', views.zzz, name='zzz'),
+
+  path("request-meeting/<int:property_id>/", views.request_meeting, name="request_meeting"),
+  path("manage-meetings/", views.manage_meetings, name="manage_meetings"),
+  path("approve-meeting/<int:meeting_id>/", views.approve_meeting, name="approve_meeting"),
+  path("reject-meeting/<int:meeting_id>/", views.reject_meeting, name="reject_meeting"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

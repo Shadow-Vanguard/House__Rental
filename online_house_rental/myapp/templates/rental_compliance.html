@@ -66,15 +66,53 @@
         .success {
             color: #2ecc71;
         }
+        .report h3 {
+            color: #2c3e50;
+            margin-top: 15px;
+        }
+        .report ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .report ul li {
+            margin: 5px 0;
+        }
+        .compliance-report {
+            margin-top: 20px;
+        }
+        .section {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f8f9fa;
+        }
+        .section h4 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
+        .warning-list li {
+            color: #f39c12;
+        }
+        .error-list li {
+            color: #e74c3c;
+        }
+        .success-list li {
+            color: #27ae60;
+        }
+        .success-list ul {
+            margin: 5px 0 15px 20px;
+            color: #666;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Upload Rental Agreement</h1>
         <form id="uploadForm" enctype="multipart/form-data">
+            {% csrf_token %}
             <div class="form-group">
                 <label for="rentalAgreement">Select Rental Agreement Document:</label>
-                <input type="file" id="rentalAgreement" name="rentalAgreement" accept=".pdf,.doc,.docx" required>
+                <input type="file" id="rentalAgreement" name="rentalAgreement" accept=".pdf" required>
             </div>
             <button type="submit" class="btn-submit">Check Document</button>
         </form>
@@ -82,33 +120,91 @@
         <div id="report" class="report">
             <h2>Document Check Report</h2>
             <div id="reportContent"></div>
+            <div id="complianceScore"></div>
+            <div id="missingComponents"></div>
         </div>
     </div>
 
     <script>
         document.getElementById('uploadForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent the form from submitting normally
+            event.preventDefault();
 
             const formData = new FormData(this);
             const reportContent = document.getElementById('reportContent');
             const reportDiv = document.getElementById('report');
+            const complianceScore = document.getElementById('complianceScore');
+            const missingComponents = document.getElementById('missingComponents');
 
-            // Simulate document checking process
-            reportContent.innerHTML = 'Checking document...';
+            reportContent.innerHTML = 'Analyzing document...';
             reportDiv.style.display = 'block';
 
-            // Simulate an AJAX request to check the document
-            setTimeout(() => {
-                // Here you would typically send the formData to your server for processing
-                // For demonstration, we'll simulate a response
-                const hasErrors = Math.random() < 0.5; // Randomly simulate errors
-
-                if (hasErrors) {
-                    reportContent.innerHTML = '<p class="error">Errors found in the document:</p><ul><li>Missing signature</li><li>Incorrect date format</li></ul>';
-                } else {
-                    reportContent.innerHTML = '<p class="success">No issues found. The document is valid.</p>';
+            fetch('{% url "rental_compliance" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                 }
-            }, 2000); // Simulate a delay for checking
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Response data:', data);
+                if (data.success) {
+                    // Create detailed report HTML
+                    let reportHtml = `
+                        <div class="compliance-report">
+                            <h3>Compliance Score: ${data.compliance_score.toFixed(1)}%</h3>
+                            
+                            <div class="section warnings">
+                                <h4>Warnings</h4>
+                                ${data.warnings.length > 0 ? 
+                                    `<ul class="warning-list">
+                                        ${data.warnings.map(warning => `<li>${warning}</li>`).join('')}
+                                    </ul>` : 
+                                    '<p class="success">No warnings found</p>'
+                                }
+                            </div>
+
+                            <div class="section missing">
+                                <h4>Missing Components</h4>
+                                ${data.missing_components.length > 0 ? 
+                                    `<ul class="error-list">
+                                        ${data.missing_components.map(component => 
+                                            `<li>${component.replace('_', ' ').toUpperCase()}</li>`
+                                        ).join('')}
+                                    </ul>` :
+                                    '<p class="success">All required components are present</p>'
+                                }
+                            </div>
+
+                            <div class="section found">
+                                <h4>Found Components</h4>
+                                <ul class="success-list">
+                                    ${Object.entries(data.component_details)
+                                        .filter(([_, details]) => details.found)
+                                        .map(([component, details]) => `
+                                            <li>
+                                                ${component.replace('_', ' ').toUpperCase()}
+                                                <ul>
+                                                    ${details.terms_found.map(term => 
+                                                        `<li>${term}</li>`
+                                                    ).join('')}
+                                                </ul>
+                                            </li>
+                                        `).join('')
+                                    }
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+
+                    reportContent.innerHTML = reportHtml;
+                } else {
+                    reportContent.innerHTML = `<p class="error">${data.message}</p>`;
+                }
+            })
+            .catch(error => {
+                reportContent.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+            });
         });
     </script>
 </body>

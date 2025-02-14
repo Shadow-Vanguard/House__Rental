@@ -234,6 +234,38 @@ class HouseholdItemWishlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='household_wishlists')
     item = models.ForeignKey(HouseholdItem, on_delete=models.CASCADE, related_name='wishlist_entries')
     added_date = models.DateTimeField(auto_now_add=True)
+
+
+class HouseholdItemPayment(models.Model):
+    PAYMENT_STATUS = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed')
+    ]
+    
+    buyer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='household_payments')
+    item = models.ForeignKey(HouseholdItem, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_date = models.DateTimeField(auto_now_add=True)
+    payment_status = models.CharField(max_length=20, choices=PAYMENT_STATUS, default='pending')
+    transaction_id = models.CharField(max_length=100, unique=True, null=True)
+    razorpay_order_id = models.CharField(max_length=100, unique=True, null=True)
+    razorpay_payment_id = models.CharField(max_length=100, null=True)
+
+class VirtualMeeting(models.Model):
+    STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("approved", "Approved"),
+        ("rejected", "Rejected"),
+    ]
+
+    renter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="meetings_requested")
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="meetings_received")
+    property_name = models.CharField(max_length=255)
+    scheduled_time = models.DateTimeField()
+    meeting_link = models.URLField(max_length=500, blank=True, null=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="pending")
+    created_at = models.DateTimeField(auto_now_add=True)
     
 
 
