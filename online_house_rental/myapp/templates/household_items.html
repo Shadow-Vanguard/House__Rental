@@ -156,7 +156,7 @@
                             <textarea class="form-control" name="description" id="description" rows="3" placeholder="Description" required></textarea>
                             <div class="error-message" id="descriptionError"></div>
                         </div>
-                        <button type="submit" class="btn btn-submit">Add Item</button>
+                        <button type="submit" id="addItemButton" class="btn btn-submit">Add Item</button>
                     </div>
                 </div>
             </form>
@@ -403,7 +403,6 @@
     // Add live validation for images and description
     document.addEventListener('DOMContentLoaded', function() {
         const imageInput = document.getElementById('images');
-        const descriptionInput = document.getElementById('description');
         
         // Image validation
         imageInput.addEventListener('change', function() {
@@ -438,50 +437,10 @@
             }
         });
         
-        // Description validation
-        descriptionInput.addEventListener('input', function() {
-            const words = this.value.trim().split(/\s+/);
-            const errorElement = document.getElementById('descriptionError');
-            
-            if (words.length < 10 && this.value.trim() !== '') {
-                errorElement.textContent = `Description must be at least 10 words (currently ${words.length} words)`;
-                errorElement.style.display = 'block';
-                this.classList.add('error');
-                
-                // Show warning with SweetAlert
-                if (words.length === 1) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Description Too Short',
-                        text: 'Please provide a detailed description (at least 10 words)',
-                        confirmButtonColor: '#2eca6a',
-                        timer: 3000,
-                        timerProgressBar: true
-                    });
-                }
-            } else {
-                errorElement.style.display = 'none';
-                this.classList.remove('error');
-            }
-        });
-        
-        // Form submission validation
+        // Update form submission validation
         document.getElementById('itemForm').addEventListener('submit', function(e) {
-            const description = descriptionInput.value.trim();
-            const words = description.split(/\s+/);
             const files = imageInput.files;
             let isValid = true;
-            
-            // Check description length
-            if (words.length < 10) {
-                isValid = false;
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Description Too Short',
-                    text: 'Please provide a description with at least 10 words',
-                    confirmButtonColor: '#2eca6a'
-                });
-            }
             
             // Check if images are selected and valid
             if (files.length === 0) {
