@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 class User(models.Model):
@@ -269,10 +270,61 @@ class VirtualMeeting(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
 
+class ForumPost(models.Model):
+    """Forum post model for community discussions"""
+    CATEGORY_CHOICES = [
+        ('general', 'General Discussion'),
+        ('renting', 'Renting Tips'),
+        ('maintenance', 'Maintenance'),
+        ('neighborhood', 'Neighborhood Info'),
+        ('other', 'Other')
+    ]
+    
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='forum_posts')
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='general')
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_pinned = models.BooleanField(default=False)
+    attachment = models.FileField(upload_to='forum_attachments/', null=True, blank=True)
+    
+    def __str__(self):
+        return self.title
+    
+    class Meta:
+        ordering = ['-created_at']
+
+class ForumInteraction(models.Model):
+    """Combined model for comments and likes"""
+    INTERACTION_TYPES = [
+        ('comment', 'Comment'),
+        ('like', 'Like')
+    ]
+    
+    post = models.ForeignKey(ForumPost, on_delete=models.CASCADE, related_name='interactions')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='forum_interactions')
+    interaction_type = models.CharField(max_length=10, choices=INTERACTION_TYPES)
+    comment_content = models.TextField(null=True, blank=True)  # Only used for comments
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        # Ensure a user can only like a post once
+        constraints = [
+            models.UniqueConstraint(
+                fields=['post', 'user'],
+                condition=models.Q(interaction_type='like'),
+                name='unique_post_like'
+            )
+        ]
+    
+    def __str__(self):
+        if self.interaction_type == 'comment':
+            return f"Comment by {self.user.name} on {self.post.title}"
+        return f"Like by {self.user.name} on {self.post.title}"
 
 
-    
-    
 
 
         

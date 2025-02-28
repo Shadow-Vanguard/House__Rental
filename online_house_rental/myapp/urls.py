@@ -96,5 +96,9 @@ urlpatterns = [
   path("manage-meetings/", views.manage_meetings, name="manage_meetings"),
   path("approve-meeting/<int:meeting_id>/", views.approve_meeting, name="approve_meeting"),
   path("reject-meeting/<int:meeting_id>/", views.reject_meeting, name="reject_meeting"),
+  path("communityforum/", views.communityforum, name="communityforum"),
+
+  path('toggle_like/', views.toggle_like, name='toggle_like'),
+  path('communityforum/delete/<int:post_id>/', views.delete_post, name='delete_post'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

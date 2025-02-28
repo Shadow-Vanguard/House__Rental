@@ -6,6 +6,7 @@
     <title>{{ property.property_name }}</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     <style>
         * {
             margin: 0;
@@ -275,13 +276,42 @@
             border-radius: 8px;
             font-size: 1rem;
         }
+
+        .language-selector {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .goog-te-banner-frame {
+            display: none;
+        }
+
+        .goog-te-combo {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .translated-content {
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
+    <div class="language-selector">
+        <div id="google_translate_element"></div>
+    </div>
     <div class="property-container">
         <div class="property-header">
-            <h1 class="property-title">{{ property.property_name }}</h1>
-            <div class="property-location">
+            <h1 class="property-title" translate="yes">{{ property.property_name }}</h1>
+            <div class="property-location" translate="yes">
                 <i class="fas fa-map-marker-alt"></i>
                 <span>{{ property.address }}, {{ property.city }}, {{ property.state }}</span>
             </div>
@@ -299,7 +329,7 @@
             <div class="main-info">
                 <div class="info-section">
                     <h3>Property Description</h3>
-                    <p>{{ property.description }}</p>
+                    <p translate="yes">{{ property.description }}</p>
                 </div>
 
                 <div class="info-section">
@@ -307,7 +337,7 @@
                     <div class="feature-grid">
                         <div class="feature-item">
                             <i class="fas fa-home"></i>
-                            <span>{{ property.listing_type }}</span>
+                            <span translate="yes">{{ property.listing_type }}</span>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-calendar"></i>
@@ -440,6 +470,123 @@
                 modal.style.display = 'none';
             }
         }
+
+        // Initialize Google Translate
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                includedLanguages: 'en,hi,mr,gu,bn,ta,te,kn,ml,pa,ar,es,fr,de,it,ja,ko,ru,zh-CN', // Add more language codes as needed
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+
+        // Handle translation events
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add class to translatable content
+            const translatableElements = [
+                '.property-title',
+                '.property-location',
+                '.info-section p',
+                '.feature-item span',
+                '.price-card p'
+            ];
+
+            translatableElements.forEach(selector => {
+                document.querySelectorAll(selector).forEach(element => {
+                    element.classList.add('translated-content');
+                });
+            });
+
+            // Track translation changes
+            let observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.target.classList.contains('translated-content')) {
+                        // Add any post-translation adjustments here if needed
+                        mutation.target.style.minHeight = 'auto';
+                    }
+                });
+            });
+
+            // Observe translatable content
+            document.querySelectorAll('.translated-content').forEach(element => {
+                observer.observe(element, {
+                    childList: true,
+                    characterData: true,
+                    subtree: true
+                });
+            });
+        });
+
+        // Handle translation completion
+        function handleTranslationComplete() {
+            console.log('Translation completed');
+            // Add any post-translation actions here
+        }
+
+        // Monitor for translation changes
+        let lastLanguage = '';
+        setInterval(function() {
+            const currentLanguage = document.querySelector('.goog-te-combo').value;
+            if (currentLanguage !== lastLanguage) {
+                lastLanguage = currentLanguage;
+                setTimeout(handleTranslationComplete, 1000);
+            }
+        }, 500);
+
+        // Add translation error handling
+        window.addEventListener('error', function(e) {
+            if (e.filename.indexOf('translate') !== -1) {
+                console.error('Translation error:', e);
+                // Handle translation errors gracefully
+            }
+        });
+
+        // Optimize translation performance
+        let translationTimeout;
+        function debounceTranslation(func, wait) {
+            clearTimeout(translationTimeout);
+            translationTimeout = setTimeout(func, wait);
+        }
+
+        // Add custom translation controls
+        function translatePage(language) {
+            const combo = document.querySelector('.goog-te-combo');
+            if (combo) {
+                combo.value = language;
+                combo.dispatchEvent(new Event('change'));
+            }
+        }
+
+        // Add translation progress indicator
+        function showTranslationProgress() {
+            const progressDiv = document.createElement('div');
+            progressDiv.id = 'translationProgress';
+            progressDiv.style.cssText = `
+                position: fixed;
+                top: 70px;
+                right: 20px;
+                background: #3498db;
+                color: white;
+                padding: 10px;
+                border-radius: 4px;
+                display: none;
+                z-index: 1000;
+            `;
+            progressDiv.textContent = 'Translating...';
+            document.body.appendChild(progressDiv);
+        }
+
+        // Show/hide translation progress
+        function toggleTranslationProgress(show) {
+            const progress = document.getElementById('translationProgress');
+            if (progress) {
+                progress.style.display = show ? 'block' : 'none';
+            }
+        }
+
+        // Initialize translation progress indicator
+        document.addEventListener('DOMContentLoaded', showTranslationProgress);
     </script>
 </body>
 </html>

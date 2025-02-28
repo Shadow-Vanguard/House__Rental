@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Property</title>
     <link rel="stylesheet" href="{% static 'css/propertyreg.css' %}">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
 </head>
 <body>
     <style>
@@ -124,7 +126,10 @@
                 <label for="propertyPhotos">Property Photos (JPEG only)</label>
                 <input type="file" id="propertyPhotos" name="image" accept="image/jpeg" required multiple>
                 <div class="error" id="photoError"></div>
-            </div>      
+                <div id="validationStatus"></div>
+            </div>
+            <!-- Add a preview section -->
+<div id="imagePreview" style="margin-top: 10px;"></div>
             <button type="submit" class="btn" id="submit">Submit Property</button>
         </form>
 
@@ -274,6 +279,152 @@
             }
         });
     });
+// Add this to your existing script section
+document.addEventListener('DOMContentLoaded', function() {
+    // ... your existing code ...
+
+    // Allowed categories for house-related images
+    const allowedCategories = [
+        'house', 'home', 'building', 'apartment', 'kitchen', 
+        'bathroom', 'bedroom', 'living_room', 'dining_room', 
+        'window', 'door', 'furniture', 'room', 'interior', 
+        'floor', 'ceiling', 'wall', 'cabinet', 'chair', 
+        'table', 'bed', 'sofa', 'parking', 'garage'
+    ];
+
+    let model = null;
+
+    // Load the MobileNet model
+    async function loadModel() {
+        model = await mobilenet.load();
+        console.log('MobileNet model loaded');
+    }
+
+    // Load the model when the page loads
+    loadModel();
+
+    // Function to validate a single image
+    async function validateImage(file) {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            img.onload = async () => {
+                try {
+                    const predictions = await model.classify(img);
+                    console.log('Predictions:', predictions);
+
+                    // Check if any of the top predictions match our allowed categories
+                    const isValid = predictions.some(prediction => 
+                        allowedCategories.some(category => 
+                            prediction.className.toLowerCase().includes(category)
+                        )
+                    );
+
+                    resolve({
+                        isValid,
+                        filename: file.name,
+                        predictions: predictions
+                    });
+                } catch (error) {
+                    reject(error);
+                }
+            };
+            img.onerror = () => reject(new Error('Failed to load image'));
+            img.src = URL.createObjectURL(file);
+        });
+    }
+
+    // Update the file input handler
+    const photosInput = document.getElementById('propertyPhotos');
+    const photoError = document.getElementById('photoError');
+    const validationStatus = document.getElementById('validationStatus');
+    const imagePreview = document.getElementById('imagePreview');
+    const validFiles = new Set();
+
+    photosInput.addEventListener('change', async function() {
+        const files = Array.from(this.files);
+        photoError.textContent = '';
+        validationStatus.innerHTML = 'Validating images...';
+        imagePreview.innerHTML = '';
+        validFiles.clear();
+
+        try {
+            for (const file of files) {
+                // First check file type
+                if (!file.type.startsWith('image/')) {
+                    photoError.textContent = 'Please upload only image files.';
+                    continue;
+                }
+
+                // Then check if it's JPEG
+                if (!file.type.includes('jpeg') && !file.type.includes('jpg')) {
+                    photoError.textContent = 'Only JPEG files are allowed.';
+                    continue;
+                }
+
+                // Validate image content
+                try {
+                    const result = await validateImage(file);
+                    
+                    // Create preview element
+                    const previewContainer = document.createElement('div');
+                    previewContainer.style.display = 'inline-block';
+                    previewContainer.style.margin = '10px';
+                    previewContainer.style.textAlign = 'center';
+
+                    const img = document.createElement('img');
+                    img.src = URL.createObjectURL(file);
+                    img.style.maxWidth = '200px';
+                    img.style.maxHeight = '200px';
+                    
+                    const status = document.createElement('div');
+                    status.style.marginTop = '5px';
+
+                    if (result.isValid) {
+                        validFiles.add(file);
+                        status.textContent = '✅ Valid';
+                        status.style.color = 'green';
+                    } else {
+                        status.textContent = '❌ Invalid - Not a house-related image';
+                        status.style.color = 'red';
+                    }
+
+                    previewContainer.appendChild(img);
+                    previewContainer.appendChild(status);
+                    imagePreview.appendChild(previewContainer);
+
+                } catch (error) {
+                    console.error('Error validating image:', error);
+                }
+            }
+
+            if (validFiles.size === 0) {
+                photoError.textContent = 'Please upload valid  house-related image.';
+            }
+            validationStatus.innerHTML = 'Validation complete!';
+
+        } catch (error) {
+            console.error('Error processing files:', error);
+            photoError.textContent = 'Error processing images. Please try again.';
+        }
+    });
+
+    // Update form submission to only include valid files
+    const propertyForm = document.getElementById('propertyForm');
+    propertyForm.addEventListener('submit', function(event) {
+        if (validFiles.size === 0) {
+            event.preventDefault();
+            photoError.textContent = 'Please upload at least one valid house-related image.';
+            return;
+        }
+
+        // Create a new FormData with only valid files
+        const formData = new FormData(this);
+        formData.delete('image'); // Remove original files
+        validFiles.forEach(file => {
+            formData.append('image', file);
+        });
+    });
+});
 </script>
 
     </div>

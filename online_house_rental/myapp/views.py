@@ -25,6 +25,9 @@ import os
 from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.db.models import Count
+from .models import ForumPost, ForumInteraction
+
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout(request):
@@ -2281,6 +2284,153 @@ def manage_meetings(request):
 
 
 
+def communityforum(request):
+    # Get all posts with like counts
+    posts = ForumPost.objects.annotate(
+        like_count=Count('interactions', filter=Q(interactions__interaction_type='like')),
+        comment_count=Count('interactions', filter=Q(interactions__interaction_type='comment'))
+    ).order_by('-is_pinned', '-created_at')
+    
+    # Get comments for each post
+    for post in posts:
+        post.comments = post.interactions.filter(interaction_type='comment').order_by('created_at')
+    
+    # Handle new post creation
+    if request.method == 'POST' and 'post_submit' in request.POST:
+        title = request.POST.get('post_title')
+        content = request.POST.get('post_content')
+        category = request.POST.get('post_category')
+        attachment = request.FILES.get('post_attachment', None)
+        
+        if title and content:
+            # Get current user
+            user_id = request.session.get('user_id')
+            if user_id:
+                user = User.objects.get(id=user_id)
+                
+                # Create new post
+                new_post = ForumPost.objects.create(
+                    title=title,
+                    content=content,
+                    author=user,
+                    category=category,
+                    attachment=attachment
+                )
+                messages.success(request, "Post created successfully!")
+                return redirect('communityforum')
+            else:
+                messages.error(request, "You must be logged in to create a post.")
+        else:
+            messages.error(request, "Title and content are required.")
+    
+    # Handle new comment
+    if request.method == 'POST' and 'comment_submit' in request.POST:
+        post_id = request.POST.get('post_id')
+        comment_content = request.POST.get('comment_content')
+        parent_id = request.POST.get('parent_id', None)
+        
+        if post_id and comment_content:
+            user_id = request.session.get('user_id')
+            if user_id:
+                user = User.objects.get(id=user_id)
+                post = ForumPost.objects.get(id=post_id)
+                
+                # Create new comment
+                parent = None
+                if parent_id:
+                    parent = ForumInteraction.objects.get(id=parent_id)
+                
+                ForumInteraction.objects.create(
+                    post=post,
+                    user=user,
+                    interaction_type='comment',
+                    comment_content=comment_content,
+                    parent=parent
+                )
+                messages.success(request, "Comment added successfully!")
+                return redirect('communityforum')
+            else:
+                messages.error(request, "You must be logged in to comment.")
+    
+    # Get categories for filter
+    categories = [category[0] for category in ForumPost.CATEGORY_CHOICES]
+    
+    context = {
+        'posts': posts,
+        'categories': categories,
+        'ForumPost': ForumPost,  # Add ForumPost model to context
+    }
+    
+    return render(request, "communityforum.html", context)
 
+# AJAX endpoint for likes
+def toggle_like(request):
+    if request.method == 'POST' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        post_id = request.POST.get('post_id')
+        user_id = request.session.get('user_id')
+        
+        if not user_id:
+            return JsonResponse({'status': 'error', 'message': 'You must be logged in to like posts'})
+        
+        try:
+            post = ForumPost.objects.get(id=post_id)
+            user = User.objects.get(id=user_id)
+            
+            # Check if user already liked the post
+            existing_like = ForumInteraction.objects.filter(
+                post=post,
+                user=user,
+                interaction_type='like'
+            ).first()
+            
+            if existing_like:
+                # Unlike
+                existing_like.delete()
+                liked = False
+            else:
+                # Like
+                ForumInteraction.objects.create(
+                    post=post,
+                    user=user,
+                    interaction_type='like'
+                )
+                liked = True
+            
+            # Get updated like count
+            like_count = ForumInteraction.objects.filter(
+                post=post,
+                interaction_type='like'
+            ).count()
+            
+            return JsonResponse({
+                'status': 'success',
+                'liked': liked,
+                'likeCount': like_count
+            })
+            
+        except (ForumPost.DoesNotExist, User.DoesNotExist):
+            return JsonResponse({'status': 'error', 'message': 'Post or user not found'})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid request'})
 
+def delete_post(request, post_id):
+    try:
+        # Get the post
+        post = ForumPost.objects.get(id=post_id)
+        
+        # Check if the current user is the author
+        user_id = request.session.get('user_id')
+        if not user_id or post.author.id != user_id:
+            messages.error(request, "You don't have permission to delete this post.")
+            return redirect('communityforum')
+        
+        # Delete the post (this will cascade delete all interactions due to the foreign key)
+        post_title = post.title
+        post.delete()
+        
+        messages.success(request, f"Post '{post_title}' has been deleted successfully.")
+    except ForumPost.DoesNotExist:
+        messages.error(request, "Post not found.")
+    
+    return redirect('communityforum')
 
