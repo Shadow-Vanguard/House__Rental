@@ -27,7 +27,47 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.db.models import Count
 from .models import ForumPost, ForumInteraction
+import numpy as np
+import pickle
+import os
+from django.conf import settings
+import logging
+import sys
 
+# Set up logging
+logger = logging.getLogger(__name__)
+
+# Increase recursion limit
+sys.setrecursionlimit(10000)
+
+# Load the model and encoders
+def load_model():
+    try:
+        # Specify the absolute path to your model file
+        model_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            'ml_model',
+            'ml_models',
+            'rental_price_model.pkl'
+        )
+        
+        print(f"Attempting to load model from: {model_path}")
+        
+        if os.path.exists(model_path):
+            with open(model_path, 'rb') as file:
+                model_data = pickle.load(file)
+                print("Model loaded successfully")
+                return model_data
+        else:
+            print(f"Model file not found at: {model_path}")
+            return None
+            
+    except Exception as e:
+        print(f"Error loading model: {str(e)}")
+        return None
+
+# Load model at startup
+model_artifacts = load_model()
 
 @cache_control(no_cache=True, must_revalidate=True, no_store=True)
 def logout(request):
@@ -1796,7 +1836,6 @@ def household_items(request):
 
     
 import pdfplumber
-from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import torch
 import spacy
 import re
@@ -1873,26 +1912,86 @@ except FileNotFoundError:
 
 def predict_price(request):
     if request.method == 'POST':
-        # Check if the model was loaded successfully
-        if not model:
-            return JsonResponse({'error': 'Model file not found or failed to load.'})
+        if not model_artifacts:
+            return JsonResponse({
+                'error': 'Model file not found or failed to load.',
+                'success': False
+            })
 
         try:
             # Get input values from the request
-            area = float(request.POST.get('area'))
-            bedrooms = int(request.POST.get('bedrooms'))
-            bathrooms = int(request.POST.get('bathrooms'))
+            area = float(request.POST.get('area', 0))
+            bedrooms = int(request.POST.get('bedrooms', 0))
+            bathrooms = int(request.POST.get('bathrooms', 0))
+            district = request.POST.get('district', '')
+            city = request.POST.get('city', '').strip()  # Added strip() to remove whitespace
+            property_type = request.POST.get('property_type', '')
+
+            # Debug print
+            print(f"Received data: area={area}, bedrooms={bedrooms}, bathrooms={bathrooms}, "
+                  f"district={district}, city={city}, property_type={property_type}")
+
+            # Validate required input data
+            if not all([area, bedrooms, bathrooms, district, property_type]):
+                return JsonResponse({
+                    'error': 'Area, bedrooms, bathrooms, district, and property type are required',
+                    'success': False
+                })
+
+            try:
+                # Encode categorical variables
+                district_encoded = model_artifacts['district_encoder'].transform([district])[0]
+                
+                # Apply price adjustment based on whether it's district center or city
+                if not city:
+                    # If no city is specified, use district as city (district center)
+                    city = district
+                    city_encoded = model_artifacts['city_encoder'].transform([city])[0]
+                    is_district_center = True
+                else:
+                    # If city is specified, use it normally
+                    city_encoded = model_artifacts['city_encoder'].transform([city])[0]
+                    is_district_center = (city == district)
+
+                property_type_encoded = model_artifacts['property_type_encoder'].transform([property_type])[0]
+            except ValueError as ve:
+                print(f"Encoding error: {str(ve)}")
+                return JsonResponse({
+                    'error': 'Invalid district, city, or property type value',
+                    'success': False
+                })
 
             # Prepare data for prediction
-            input_data = np.array([[area, bedrooms, bathrooms]])
-            predicted_price = model.predict(input_data)[0]
+            input_data = np.array([[
+                area, 
+                bedrooms, 
+                bathrooms, 
+                district_encoded,
+                city_encoded,
+                property_type_encoded
+            ]])
 
-            # Return the predicted price
-            return JsonResponse({'predicted_price': f"{predicted_price:.2f}"})
+            # Make prediction
+            predicted_price = model_artifacts['model'].predict(input_data)[0]
+
+            # Apply district center premium (increase price by 15% for district centers)
+            if is_district_center:
+                predicted_price *= 1.15  # 15% premium for district centers
+
+            # Return the predicted price with additional context
+            return JsonResponse({
+                'predicted_price': f"{predicted_price:.2f}",
+                'is_district_center': is_district_center,
+                'location_type': 'District Center' if is_district_center else 'City/Town',
+                'success': True
+            })
 
         except Exception as e:
-            # Handle any errors during prediction
-            return JsonResponse({'error': str(e)})
+            print(f"Prediction error: {str(e)}")
+            return JsonResponse({
+                'error': f"Prediction error: {str(e)}",
+                'success': False
+            })
 
     return render(request, 'predict_price.html')
 
@@ -2083,60 +2182,110 @@ def view_payments(request):
 
 
 
+import os
 import pdfplumber
 import pytesseract
-import logging
-import torch
-import os
+import google.generativeai as genai
+from django.shortcuts import render
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from PIL import Image
+from io import BytesIO
 
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'  # Adjust path if different
+# Configure Tesseract OCR
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+# Configure Gemini AI
+genai.configure(api_key="AIzaSyDb0525SEM5LY_DXTC0-q0DsqrXR40wBPU")  # Replace with your API key
+
+def extract_text_from_pdf(pdf_file):
+    """Extract text from a PDF using pdfplumber and OCR as fallback"""
+    extracted_text = ""
+
+    try:
+        with pdfplumber.open(pdf_file) as pdf:
+            for page in pdf.pages:
+                text = page.extract_text()
+                if text:
+                    extracted_text += text + "\n"
+                else:
+                    # Use OCR if text extraction fails
+                    image = page.to_image().original
+                    ocr_text = pytesseract.image_to_string(image)
+                    extracted_text += ocr_text + "\n"
+    except Exception as e:
+        return f"Error extracting text: {str(e)}"
+
+    return extracted_text.strip()
+
+def analyze_text_with_gemini(text):
+    """Use Google Gemini AI to analyze extracted text and extract key components"""
+    prompt = f"""
+    Analyze the following document text and identify these key components:
+    1. Property Description
+    2. Landlord Details
+    3. Tenant Details
+    4. Rent Amount
+    5. Lease Term
+    6. Security Deposit
+    7. Signatures
+    8. Dates
+
+    Return the extracted components in a structured JSON format.
+    
+    Document Text:
+    {text}
+    """
+
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    response = model.generate_content(prompt)
+
+    return response.text if response else "Error processing with Gemini"
 
 def zzz(request):
     if request.method == 'POST':
         pdf_file = request.FILES.get('pdf_file')
+
         if not pdf_file:
             return render(request, 'zzz.html', {'error': 'No PDF file provided'})
 
         try:
-            text = ""
-            with pdfplumber.open(pdf_file) as pdf:
-                for page in pdf.pages:
-                    page_text = page.extract_text()
-                    if page_text:
-                        text += page_text
-                    else:
-                        page_image = page.to_image().original
-                        page_text = pytesseract.image_to_string(page_image)
-                        text += page_text
+            # Extract text from PDF
+            extracted_text = extract_text_from_pdf(pdf_file)
 
-            if not text:
+            if not extracted_text:
                 return render(request, 'zzz.html', {'error': 'Failed to extract text from PDF'})
 
-            text_upper = text.upper()
+            # Analyze text using Gemini AI
+            gemini_response = analyze_text_with_gemini(extracted_text)
+
+            # Compliance Check
+            text_upper = extracted_text.upper()
             components = {
-                'property_description': any(word in text_upper for word in ['PROPERTY', 'PREMISES', 'LOCATED AT', 'ADDRESS']),
-                'landlord_details': any(word in text_upper for word in ['LANDLORD', 'LESSOR', 'OWNER']),
-                'tenant_details': any(word in text_upper for word in ['TENANT', 'LESSEE', 'RENTER']),
-                'rent_amount': any(word in text_upper for word in ['RENT', 'PAYMENT', 'MONTHLY', '$']),
-                'lease_term': any(word in text_upper for word in ['TERM', 'PERIOD', 'DURATION', 'LEASE PERIOD']),
-                'security_deposit': any(word in text_upper for word in ['DEPOSIT', 'SECURITY']),
-                'signatures': any(word in text_upper for word in ['SIGNATURE', 'SIGNED', 'EXECUTED']),
-                'dates': any(month in text_upper for month in [
+                'Property Description': any(word in text_upper for word in ['PROPERTY', 'PREMISES', 'LOCATED AT', 'ADDRESS']),
+                'Landlord Details': any(word in text_upper for word in ['LANDLORD', 'LESSOR', 'OWNER']),
+                'Tenant Details': any(word in text_upper for word in ['TENANT', 'LESSEE', 'RENTER']),
+                'Rent Amount': any(word in text_upper for word in ['RENT', 'PAYMENT', 'MONTHLY', '$']),
+                'Lease Term': any(word in text_upper for word in ['TERM', 'PERIOD', 'DURATION', 'LEASE PERIOD']),
+                'Security Deposit': any(word in text_upper for word in ['DEPOSIT', 'SECURITY']),
+                'Signatures': any(word in text_upper for word in ['SIGNATURE', 'SIGNED', 'EXECUTED']),
+                'Dates': any(month in text_upper for month in [
                     "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
                     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
-                ]) or any(str(year) in text for year in range(2020, 2025))
+                ]) or any(str(year) in text_upper for year in range(2020, 2025))
             }
 
             compliance_score = (sum(components.values()) / len(components)) * 100
             missing_components = [k for k, v in components.items() if not v]
             warnings = []
-            if not components['signatures']:
+            if not components['Signatures']:
                 warnings.append("No signatures detected")
-            if not components['dates']:
+            if not components['Dates']:
                 warnings.append("No dates detected")
 
             context = {
                 'success': True,
+                'extracted_text': extracted_text,
+                'gemini_response': gemini_response,
                 'compliance_score': compliance_score,
                 'missing_components': missing_components,
                 'warnings': warnings,
@@ -2146,10 +2295,190 @@ def zzz(request):
             return render(request, 'zzz.html', context)
 
         except Exception as e:
-            # Log the error and pass it to the template
             return render(request, 'zzz.html', {'error': str(e)})
 
     return render(request, 'zzz.html')
+
+import os
+import fitz  # PyMuPDF for PDF processing
+import pytesseract
+import pdfplumber
+import google.generativeai as genai
+from django.shortcuts import render
+from django.core.files.storage import default_storage
+from pdf2image import convert_from_path
+from django.http import FileResponse
+import re
+# import cv2
+import numpy as np
+
+# Configure Tesseract OCR
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+
+# Configure Gemini AI
+genai.configure(api_key="AIzaSyDb0525SEM5LY_DXTC0-q0DsqrXR40wBPU")  # Replace with a valid key
+
+def preprocess_image(image):
+    """Preprocess the image to improve OCR accuracy."""
+    gray = cv2.cvtColor(np.array(image), cv2.COLOR_RGB2GRAY)
+    thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
+    return thresh
+
+def extract_text_from_pdf_file(pdf_path):
+    """
+    Extracts text from a PDF file using PyPDF2.
+    """
+
+
+    try:
+        with open(pdf_path, 'rb') as file:
+            reader = PyPDF2.PdfReader(file)
+            text = ""
+            for page_num in range(len(reader.pages)):
+                page = reader.pages[page_num]
+                text += page.extract_text()
+            return text
+    except FileNotFoundError:
+        raise FileNotFoundError(f"PDF file not found at: {pdf_path}")
+    except PyPDF2.errors.PdfReadError:
+        raise ValueError("Invalid PDF file.")
+
+def clean_text(text):
+    """Remove unwanted characters and format text as a proper paragraph."""
+    text = re.sub(r'[*"_]', '', text)  # Remove *, _, and "
+    text = re.sub(r'\n+', ' ', text).strip()  # Convert newlines to spaces for a paragraph
+    return text
+
+def generate_rental_agreement(request):
+    """Generate a rental agreement using AI from an uploaded PDF with clean formatting."""
+    if request.method == "POST" and request.FILES.get("pdf_file"):
+        uploaded_file = request.FILES["pdf_file"]
+        file_path = default_storage.save("uploads/" + uploaded_file.name, uploaded_file)
+        absolute_file_path = default_storage.path(file_path)
+
+        # Extract text from PDF
+        extracted_text = extract_text_from_pdf(absolute_file_path)
+        
+        # Get missing components data from form
+        missing_components_data = {}
+        for key in request.POST:
+            if key.startswith('missing_data_'):
+                component_name = key.replace('missing_data_', '').replace('-', ' ').title()
+                missing_components_data[component_name] = request.POST[key]
+
+        # Add missing components to the extracted text
+        for component, data in missing_components_data.items():
+            if data:  # Only add if data was provided
+                extracted_text += f"\n\n{component}:\n{data}"
+
+        text_upper = extracted_text.upper()
+
+        # Identify key rental agreement components
+        components = {
+            "Property Description": any(word in text_upper for word in ['PROPERTY', 'PREMISES', 'LOCATED AT', 'ADDRESS']),
+            "Landlord Details": any(word in text_upper for word in ['LANDLORD', 'LESSOR', 'OWNER']),
+            "Tenant Details": any(word in text_upper for word in ['TENANT', 'LESSEE', 'RENTER']),
+            "Rent Amount": any(word in text_upper for word in ['RENT', 'PAYMENT', 'MONTHLY', '$']),
+            "Lease Term": any(word in text_upper for word in ['TERM', 'PERIOD', 'DURATION', 'LEASE PERIOD']),
+            "Security Deposit": any(word in text_upper for word in ['DEPOSIT', 'SECURITY']),
+            "Signatures": any(word in text_upper for word in ['SIGNATURE', 'SIGNED', 'EXECUTED']),
+            "Dates": any(month in text_upper for month in [
+                "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+                "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+            ]) or any(str(year) in text_upper for year in range(2020, 2030))
+        }
+
+        extracted_components = {key: value for key, value in components.items() if value}
+
+        # Include both extracted and manually added components
+        all_components = []
+        for key in components:
+            if key in extracted_components:
+                all_components.append(f"{key}: {extracted_text}")
+            elif key in missing_components_data:
+                all_components.append(f"{key}: {missing_components_data[key]}")
+
+        structured_text = "\n\n".join(all_components)
+
+        # Enhanced AI prompt for generating rental agreement
+        prompt = f"""
+        Below is extracted information from a rental agreement. Format it into a legally structured rental contract.
+
+        Ensure the output:
+        - Uses clear, professional legal language.
+        - Follows proper paragraph formatting (no bullet points or lists).
+        - Uses bold headings for key sections like Property Description, Landlord Details, Tenant Details, etc.
+        - Maintains correct spacing and sentence flow for a formal contract.
+
+        {structured_text}
+
+        Now generate the structured rental agreement.
+        """
+
+        try:
+            model = genai.GenerativeModel("gemini-2.0-flash")
+            response = model.generate_content(prompt)
+            raw_generated_text = response.text if response else "Error: Empty response from AI"
+
+            # Clean AI-generated text
+            generated_text = clean_text(raw_generated_text)
+        except Exception as e:
+            generated_text = f"Gemini API Error: {str(e)}"
+
+        context = {
+            "generated_text": generated_text,
+            "missing_components_data": missing_components_data  # Pass to template for verification
+        }
+        return render(request, "generate_rental.html", context)
+
+    return render(request, "generate_rental.html", {"error": "No file uploaded."})
+
+
+
+def download_generated_pdf(request):
+    """Generate a PDF file for the AI-generated agreement and return for download."""
+    generated_text = request.GET.get("text", "No agreement text found.")
+
+    output_pdf_path = "uploads/generated_agreement.pdf"
+    doc = fitz.open()
+    page = doc.new_page()
+
+    # Write text to the PDF
+    text_rect = fitz.Rect(50, 50, 550, 750)
+    page.insert_textbox(text_rect, generated_text, fontsize=12, fontname="helv")
+
+    doc.save(output_pdf_path)
+    doc.close()
+
+    return FileResponse(open(output_pdf_path, "rb"), as_attachment=True, filename="rental_agreement.pdf")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -2433,4 +2762,6 @@ def delete_post(request, post_id):
         messages.error(request, "Post not found.")
     
     return redirect('communityforum')
+
+
 

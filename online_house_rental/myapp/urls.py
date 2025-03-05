@@ -100,5 +100,7 @@ urlpatterns = [
 
   path('toggle_like/', views.toggle_like, name='toggle_like'),
   path('communityforum/delete/<int:post_id>/', views.delete_post, name='delete_post'),
+  path("generate_rental/", views.generate_rental_agreement, name="generate_rental_agreement"),
+  path("download_pdf/", views.download_generated_pdf, name="download_generated_pdf"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
