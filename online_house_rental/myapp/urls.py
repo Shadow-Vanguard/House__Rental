@@ -102,5 +102,6 @@ urlpatterns = [
   path('communityforum/delete/<int:post_id>/', views.delete_post, name='delete_post'),
   path("generate_rental/", views.generate_rental_agreement, name="generate_rental_agreement"),
   path("download_pdf/", views.download_generated_pdf, name="download_generated_pdf"),
+  path('generate_report/', views.generate_report, name='generate_report'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

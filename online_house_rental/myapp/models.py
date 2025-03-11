@@ -325,6 +325,10 @@ class ForumInteraction(models.Model):
         return f"Like by {self.user.name} on {self.post.title}"
 
 
-
+class PropertyView(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    property = models.ForeignKey(Property, on_delete=models.CASCADE)
+    view_count = models.IntegerField(default=1)
+    last_viewed = models.DateTimeField(auto_now=True)
 
         

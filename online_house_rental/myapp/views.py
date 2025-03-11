@@ -2190,6 +2190,8 @@ from django.shortcuts import render
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from PIL import Image
 from io import BytesIO
+from django.core.files.storage import default_storage
+
 
 # Configure Tesseract OCR
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -2241,6 +2243,47 @@ def analyze_text_with_gemini(text):
 
     return response.text if response else "Error processing with Gemini"
 
+def validate_rental_agreement(text):
+    """Use Gemini AI to validate if the document is a rental agreement"""
+    prompt = """
+    Analyze the following document text and determine if it is a rental/lease agreement.
+    Return ONLY "true" if it is a rental agreement, or "false" if it is not.
+    Consider these factors:
+    - Contains typical rental agreement sections (tenant details, property details, rent amount, etc.)
+    - Uses legal language common in rental agreements
+    - Has a structure consistent with rental agreements
+
+    Document Text:
+    {text}
+    """
+
+    try:
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        response = model.generate_content(prompt.format(text=text[:1000]))  # Send first 1000 chars for classification
+        result = response.text.strip().lower()
+        return result == "true"
+    except Exception as e:
+        print(f"API Error: {str(e)}")
+        # Fallback to basic keyword checking if API fails
+        return is_rental_agreement(text)
+
+def is_rental_agreement(text):
+    """Fallback method using keyword matching"""
+    text = text.upper()
+    essential_keywords = [
+        'RENTAL AGREEMENT',
+        'LEASE AGREEMENT',
+        'TENANCY AGREEMENT',
+        'LANDLORD',
+        'TENANT',
+        'RENT',
+        'LEASE',
+        'PROPERTY',
+        'PREMISES'
+    ]
+    keyword_count = sum(1 for keyword in essential_keywords if keyword in text)
+    return keyword_count >= 3
+
 def zzz(request):
     if request.method == 'POST':
         pdf_file = request.FILES.get('pdf_file')
@@ -2249,11 +2292,19 @@ def zzz(request):
             return render(request, 'zzz.html', {'error': 'No PDF file provided'})
 
         try:
+            # Save the uploaded file temporarily
+            file_path = default_storage.save("uploads/" + pdf_file.name, pdf_file)
+            request.session['current_pdf_path'] = file_path  # Store the path in session
+
             # Extract text from PDF
             extracted_text = extract_text_from_pdf(pdf_file)
+            request.session['extracted_text'] = extracted_text  # Store extracted text in session
 
-            if not extracted_text:
-                return render(request, 'zzz.html', {'error': 'Failed to extract text from PDF'})
+            # Validate document using AI
+            if not validate_rental_agreement(extracted_text):
+                return render(request, 'zzz.html', {
+                    'error': 'The uploaded document does not appear to be a rental agreement. Please upload a valid rental agreement document.'
+                })
 
             # Analyze text using Gemini AI
             gemini_response = analyze_text_with_gemini(extracted_text)
@@ -2289,7 +2340,8 @@ def zzz(request):
                 'compliance_score': compliance_score,
                 'missing_components': missing_components,
                 'warnings': warnings,
-                'found_components': {k: v for k, v in components.items() if v}
+                'found_components': {k: v for k, v in components.items() if v},
+                'pdf_name': pdf_file.name  # Add PDF name to context
             }
 
             return render(request, 'zzz.html', context)
@@ -2298,6 +2350,25 @@ def zzz(request):
             return render(request, 'zzz.html', {'error': str(e)})
 
     return render(request, 'zzz.html')
+
+def generate_rental_agreement(request):
+    """Generate a rental agreement using AI from an uploaded PDF with clean formatting."""
+    if request.method == "POST":
+        # Get the stored PDF path and extracted text from session
+        file_path = request.session.get('current_pdf_path')
+        extracted_text = request.session.get('extracted_text', '')
+
+        if not file_path or not extracted_text:
+            return render(request, "generate_rental.html", {"error": "No PDF data found. Please upload the document again."})
+
+        # Get missing components data from form
+        missing_components_data = {}
+        for key in request.POST:
+            if key.startswith('missing_data_'):
+                component_name = key.replace('missing_data_', '').replace('-', ' ').title()
+                missing_components_data[component_name] = request.POST[key]
+
+        # Rest of your existing generate_rental_agreement code...
 
 import os
 import fitz  # PyMuPDF for PDF processing
@@ -2351,14 +2422,14 @@ def clean_text(text):
 
 def generate_rental_agreement(request):
     """Generate a rental agreement using AI from an uploaded PDF with clean formatting."""
-    if request.method == "POST" and request.FILES.get("pdf_file"):
-        uploaded_file = request.FILES["pdf_file"]
-        file_path = default_storage.save("uploads/" + uploaded_file.name, uploaded_file)
-        absolute_file_path = default_storage.path(file_path)
+    if request.method == "POST":
+        # Get the stored PDF path and extracted text from session
+        file_path = request.session.get('current_pdf_path')
+        extracted_text = request.session.get('extracted_text', '')
 
-        # Extract text from PDF
-        extracted_text = extract_text_from_pdf(absolute_file_path)
-        
+        if not file_path or not extracted_text:
+            return render(request, "generate_rental.html", {"error": "No PDF data found. Please upload the document again."})
+
         # Get missing components data from form
         missing_components_data = {}
         for key in request.POST:
@@ -2422,14 +2493,19 @@ def generate_rental_agreement(request):
 
             # Clean AI-generated text
             generated_text = clean_text(raw_generated_text)
+            
+            # Store the generated text and missing components data in session
+            request.session['generated_text'] = generated_text
+            request.session['missing_components_data'] = missing_components_data
+           
+            context = {
+                "generated_text": generated_text,
+                "missing_components_data": missing_components_data,
+            }
+            return render(request, "generate_rental.html", context)
         except Exception as e:
             generated_text = f"Gemini API Error: {str(e)}"
-
-        context = {
-            "generated_text": generated_text,
-            "missing_components_data": missing_components_data  # Pass to template for verification
-        }
-        return render(request, "generate_rental.html", context)
+            return render(request, "generate_rental.html", {"error": generated_text})
 
     return render(request, "generate_rental.html", {"error": "No file uploaded."})
 
@@ -2451,6 +2527,96 @@ def download_generated_pdf(request):
     doc.close()
 
     return FileResponse(open(output_pdf_path, "rb"), as_attachment=True, filename="rental_agreement.pdf")
+
+
+
+from django.utils.safestring import mark_safe
+from django.shortcuts import render
+
+
+def generate_report(request):
+    """Generate a detailed report comparing original and AI-generated rental agreements."""
+    extracted_text = request.session.get('extracted_text', '')
+    missing_components_data = request.session.get('missing_components_data', {})
+    
+    if not extracted_text:
+        return render(request, "report.html", {"error": "No document data available. Please upload a document first."})
+
+    # Convert text to uppercase for analysis
+    text_upper = extracted_text.upper()
+    
+    # Identify existing components in the original text
+    original_components = {
+        'Property Description': any(word in text_upper for word in ['PROPERTY', 'PREMISES', 'LOCATED AT', 'ADDRESS']),
+        'Landlord Details': any(word in text_upper for word in ['LANDLORD', 'LESSOR', 'OWNER']),
+        'Tenant Details': any(word in text_upper for word in ['TENANT', 'LESSEE', 'RENTER']),
+        'Rent Amount': any(word in text_upper for word in ['RENT', 'PAYMENT', 'MONTHLY', '$']),
+        'Lease Term': any(word in text_upper for word in ['TERM', 'PERIOD', 'DURATION', 'LEASE PERIOD']),
+        'Security Deposit': any(word in text_upper for word in ['DEPOSIT', 'SECURITY']),
+        'Signatures': any(word in text_upper for word in ['SIGNATURE', 'SIGNED', 'EXECUTED']),
+        'Dates': any(month in text_upper for month in [
+            "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
+            "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
+        ])
+    }
+
+    # Identify missing components
+    missing_components = {component: not present for component, present in original_components.items()}
+
+    # Create AI prompt for generating a complete rental agreement
+    prompt = f"""
+    Generate a structured rental agreement using these components. For each component, use the original content if present, 
+    or add the provided missing information.Structure the agreement in this order:
+
+    1. RENTAL AGREEMENT TITLE AND DATE
+    2. PROPERTY DESCRIPTION
+    3. PARTIES TO THE AGREEMENT (LANDLORD AND TENANT DETAILS)
+    4. LEASE TERM
+    5. RENT AMOUNT
+    6. SECURITY DEPOSIT
+    7. SIGNATURES
+
+    Original Content:
+    {extracted_text}
+
+    Missing Components to Add:
+    {', '.join(f'{k}: {v}' for k, v in missing_components_data.items())}
+
+    Format Requirements:
+    - Write as continuous paragraphs without section headings
+    - Include all original content for existing components
+    - Integrate missing components seamlessly
+    - Maintain professional legal language but maintain readability
+    - Format as a proper rental agreement document
+    - When adding missing information, marked with [BOLD] markers
+    """
+
+    try:
+        model = genai.GenerativeModel("gemini-2.0-flash")
+        response = model.generate_content(prompt)
+        # Replace [BOLD] markers with HTML bold tags
+        ai_generated_agreement = response.text.replace('[BOLD]', '<strong class="added-component">').replace('[/BOLD]', '</strong>') if response else "Error generating agreement"
+    except Exception as e:
+        ai_generated_agreement = f"Error: {str(e)}"
+
+    # Prepare highlighted missing components
+    highlighted_additions = {}
+    for component, is_missing in missing_components.items():
+        if is_missing and component in missing_components_data:
+            value = missing_components_data[component]
+            highlighted_additions[component] = value
+
+    context = {
+        'missing_components': missing_components,
+        'highlighted_additions': highlighted_additions,
+        'generated_text': ai_generated_agreement,
+        'has_missing_components': any(missing_components.values()),
+        'has_additions': bool(highlighted_additions)
+    }
+    
+    return render(request, "report.html", context)
+
+
 
 
 
@@ -2762,6 +2928,9 @@ def delete_post(request, post_id):
         messages.error(request, "Post not found.")
     
     return redirect('communityforum')
+
+
+
 
 
 
