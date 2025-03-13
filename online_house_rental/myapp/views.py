@@ -2594,8 +2594,16 @@ def generate_report(request):
     try:
         model = genai.GenerativeModel("gemini-2.0-flash")
         response = model.generate_content(prompt)
-        # Replace [BOLD] markers with HTML bold tags
-        ai_generated_agreement = response.text.replace('[BOLD]', '<strong class="added-component">').replace('[/BOLD]', '</strong>') if response else "Error generating agreement"
+        ai_generated_agreement = response.text if response else "Error generating agreement"
+        
+        # Add highlighting for missing components
+        for component, value in missing_components_data.items():
+            if value:
+                component_class = component.lower().replace(' ', '')
+                highlight_html = f'<span class="missing-component-highlight {component_class}-highlight">{value}</span>'
+                ai_generated_agreement = ai_generated_agreement.replace(value, highlight_html)
+                
+        ai_generated_agreement = mark_safe(ai_generated_agreement)
     except Exception as e:
         ai_generated_agreement = f"Error: {str(e)}"
 
