@@ -307,6 +307,8 @@ def reset_password(request, token):
 def propertyview(request, property_id):
     property_instance = get_object_or_404(Property, id=property_id)
     user_id = request.session.get('user_id')
+    property_instance.view_count += 1
+    property_instance.save(update_fields=['view_count'])
     
     # Check if user has rented this property
     has_rented = False

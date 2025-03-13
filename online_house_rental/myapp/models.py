@@ -49,6 +49,7 @@ class Property(models.Model):
     terms_and_conditions = models.CharField(max_length=3000, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     is_rented = models.BooleanField(default=False)
+    view_count = models.IntegerField(default=0)
 
     def __str__(self):
         return self.property_name
