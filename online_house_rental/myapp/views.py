@@ -1838,8 +1838,7 @@ def household_items(request):
 
     
 import pdfplumber
-import torch
-model = torch.load("ml_model/ml_models/rental_price_model.pkl", map_location=torch.device("cpu"))
+
 import spacy
 import re
 def rental_compliance(request):
