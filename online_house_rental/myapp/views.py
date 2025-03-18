@@ -833,10 +833,6 @@ def rented_properties_view(request):
     rented_properties = RentalAgreement.objects.select_related('property', 'renter').all()
     return render(request, 'rented_properties.html', {'rented_properties': rented_properties})
 
-def rented_properties_view(request):
-    rented_properties = RentalAgreement.objects.select_related('property', 'renter').all()
-    return render(request, 'rented_properties.html', {'rented_properties': rented_properties})
-
 
 def buy_property(request, property_id):
     # Get the property object based on the ID from the URL

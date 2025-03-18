@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'online_house_rental.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rentalsystem',
+        'NAME': 'rental_project',
         'USER': 'root',
         'PASSWORD':'',
         'HOST': 'localhost',  # Set to your database host
