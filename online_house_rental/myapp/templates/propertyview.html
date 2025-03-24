@@ -375,14 +375,26 @@
                                         <i class="fas fa-star"></i> Leave Feedback
                                     </a>
                                 {% else %}
+                                    {% if property.propertyrental_set.exists %}
+                                        <button class="btn btn-secondary" disabled>
+                                            <i class="fas fa-ban"></i> Already Rented
+                                        </button>
+                                    {% else %}
+                                        <a href="{% url 'rental_agreement' property.id %}" class="btn btn-primary">
+                                            <i class="fas fa-key"></i> Rent Now
+                                        </a>
+                                    {% endif %}
+                                {% endif %}
+                            {% else %}
+                                {% if property.propertyrental_set.exists %}
                                     <button class="btn btn-secondary" disabled>
                                         <i class="fas fa-ban"></i> Already Rented
                                     </button>
+                                {% else %}
+                                    <a href="{% url 'rental_agreement' property.id %}" class="btn btn-primary">
+                                        <i class="fas fa-key"></i> Rent Now
+                                    </a>
                                 {% endif %}
-                            {% else %}
-                                <a href="{% url 'rental_agreement' property.id %}" class="btn btn-primary">
-                                    <i class="fas fa-key"></i> Rent Now
-                                </a>
                             {% endif %}
                         {% endif %}
                         

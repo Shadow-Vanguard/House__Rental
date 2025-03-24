@@ -411,15 +411,15 @@
   <section class="property-grid grid">
     <div class="container">
       <div class="row">
-        {# First, render properties with high view counts #}
         {% for property in properties %}
-          {% if property.view_count > 2 %}
-          <div class="col-md-4 most-viewed">
+          <div class="col-md-4 {% if property.view_count >= 5 %}most-viewed{% endif %}">
             <div class="card-box-a card-shadow">
               <div class="img-box-a">
+                {% if property.view_count >= 5 %}
                 <div class="most-viewed-badge">
                   <i class="fa fa-eye"></i> Most Viewed
                 </div>
+                {% endif %}
                 <img src="{% if property.images.first %}{{ property.images.first.image.url }}{% else %}{% static 'template_landingpage/img/default-property.jpg' %}{% endif %}" 
                      alt="{{ property.property_name }}" 
                      class="img-a img-fluid">
@@ -476,72 +476,6 @@
               </div>
             </div>
           </div>
-          {% endif %}
-        {% endfor %}
-
-        {# Then, render the remaining properties #}
-        {% for property in properties %}
-          {% if property.view_count <= 2 %}
-          <div class="col-md-4">
-            <div class="card-box-a card-shadow">
-              <div class="img-box-a">
-                <img src="{% if property.images.first %}{{ property.images.first.image.url }}{% else %}{% static 'template_landingpage/img/default-property.jpg' %}{% endif %}" 
-                     alt="{{ property.property_name }}" 
-                     class="img-a img-fluid">
-              </div>
-              <div class="card-overlay">
-                <div class="card-overlay-a-content">
-                  <div class="card-header-a">
-                    <h2 class="card-title-a">
-                      <a href="#">{{ property.property_name }}</a>
-                    </h2>
-                  </div>
-                  <div class="card-body-a">
-                    <!-- <div class="price-box d-flex">
-                      <span class="price-a">{{ property.listing_type|lower }} | $ {{ property.price }}</span>
-                    </div> -->
-                    <!-- <div class="price-box d-flex">
-                      {% if property.listing_type|lower == 'rent' %}
-                        <span class="price-a">Rent |  {{ property.monthly_rent }} / month</span>
-                      {% else %}
-                        <span class="price-a">Sale |  {{ property.price }}</span>
-                      {% endif %}
-                    </div>                   -->
-                    <div class="price-box d-flex">
-                      {% if property.listing_type|lower == 'both' %}
-                        <span class="price-a">Rent |  {{ property.monthly_rent }} / month</span>
-                        <span class="price-a ms-3">Sale |  {{ property.price }}</span>
-                      {% elif property.listing_type|lower == 'rent' %}
-                        <span class="price-a">Rent | {{ property.monthly_rent }} / month</span>
-                      {% else %}
-                        <span class="price-a">Sale |  {{ property.price }}</span>
-                      {% endif %}
-                    </div>                  
-                    <a href="{% url 'propertyview' property.id %}" class="link-a">Click here to view
-                      <span class="ion-ios-arrow-forward"></span>
-                    </a>
-                  </div>
-                  <div class="card-footer-a">
-                    <ul class="card-info d-flex justify-content-around">
-                      <li>
-                        <h4 class="card-info-title">Area</h4>
-                        <span>{{ property.area }} m<sup>2</sup></span>
-                      </li>
-                      <li>
-                        <h4 class="card-info-title">Beds</h4>
-                        <span>{{ property.beds }}</span>
-                      </li>
-                      <li>
-                        <h4 class="card-info-title">Baths</h4>
-                        <span>{{ property.baths }}</span>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          {% endif %}
         {% endfor %}
       </div>
     </div>
@@ -608,6 +542,7 @@
         });
     });
   </script>
+  
 
 
 

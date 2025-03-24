@@ -233,8 +233,6 @@
         <!-- Use static link to the image in static folder -->
         <img src="{% static 'image/cover.jpeg' %}" alt="Agreement Header Image"
              style="width: 100%; max-width: 800px; height: auto; max-height: 300px;" class="cover">
-
-
         <p>This agreement made on this <strong>{{ agreement.start_date|date:"d" }}</strong> day of 
             <strong>{{ agreement.start_date|date:"F" }}</strong>, {{ agreement.start_date|date:"Y" }}</p>
          <p>between <strong>{{ agreement.renter.name }}</strong>, with <strong>{{ agreement.renter.phone }}</strong> 

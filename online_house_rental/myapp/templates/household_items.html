@@ -220,8 +220,8 @@
                                             data-item-id="{{ item.id }}">
                                             <i class="fa fa-heart{% if item.id in wishlist_items %} text-danger{% endif %}"></i>
                                         </button>
+                                        <a href="{% url 'order_summary' %}?item_id={{ item.id }}" class="btn btn-primary btn-sm">Pay</a>
                                     {% endif %}
-                                    <a href="{% url 'order_summary' %}?item_id={{ item.id }}" class="btn btn-primary btn-sm">Pay</a>
                                 </div>
                             </div>
                         </div>

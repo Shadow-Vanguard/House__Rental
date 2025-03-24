@@ -2229,7 +2229,9 @@ def analyze_text_with_gemini(text):
     6. Security Deposit
     7. Signatures
     8. Dates
-
+    9. Late Payment Penalties
+    10. Eviction & Breach of Contract
+     
     Return the extracted components in a structured JSON format.
     
     Document Text:
@@ -2277,7 +2279,9 @@ def is_rental_agreement(text):
         'RENT',
         'LEASE',
         'PROPERTY',
-        'PREMISES'
+        'PREMISES',
+        'Late Payment Penalties',
+        'Eviction & Breach of Contract'
     ]
     keyword_count = sum(1 for keyword in essential_keywords if keyword in text)
     return keyword_count >= 3
@@ -2320,10 +2324,15 @@ def zzz(request):
                 'Dates': any(month in text_upper for month in [
                     "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
                     "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
-                ]) or any(str(year) in text_upper for year in range(2020, 2025))
+                ]) or any(str(year) in text_upper for year in range(2020, 2025)),
+                'Utility Bills Responsibility': any(word in text_upper for word in ['ELECTRICITY', 'WATER', 'INTERNET', 'GAS', 'UTILITIES']),
+    'Late Payment Penalties': any(word in text_upper for word in ['LATE FEE', 'PENALTY', 'OVERDUE', 'DELAYED PAYMENT']),
+    'Pet Policy': any(word in text_upper for word in ['PETS', 'ANIMALS', 'DOG', 'CAT', 'PET DEPOSIT']),
+    'Eviction & Breach of Contract': any(word in text_upper for word in ['EVICTION', 'TERMINATION', 'BREACH', 'NOTICE TO VACATE'])
+
             }
 
-            compliance_score = (sum(components.values()) / len(components)) * 100
+            compliance_score = round((sum(components.values()) / len(components)) * 100, 2)
             missing_components = [k for k, v in components.items() if not v]
             warnings = []
             if not components['Signatures']:
@@ -2454,7 +2463,12 @@ def generate_rental_agreement(request):
             "Dates": any(month in text_upper for month in [
                 "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
                 "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
-            ]) or any(str(year) in text_upper for year in range(2020, 2030))
+            ]) or any(str(year) in text_upper for year in range(2020, 2030)),
+            'Utility Bills Responsibility': any(word in text_upper for word in ['ELECTRICITY', 'WATER', 'INTERNET', 'GAS', 'UTILITIES']),
+    'Late Payment Penalties': any(word in text_upper for word in ['LATE FEE', 'PENALTY', 'OVERDUE', 'DELAYED PAYMENT']),
+    'Pet Policy': any(word in text_upper for word in ['PETS', 'ANIMALS', 'DOG', 'CAT', 'PET DEPOSIT']),
+    'Eviction & Breach of Contract': any(word in text_upper for word in ['EVICTION', 'TERMINATION', 'BREACH', 'NOTICE TO VACATE'])
+
         }
 
         extracted_components = {key: value for key, value in components.items() if value}
@@ -2555,7 +2569,12 @@ def generate_report(request):
         'Dates': any(month in text_upper for month in [
             "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE",
             "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"
-        ])
+        ]),
+        'Utility Bills Responsibility': any(word in text_upper for word in ['ELECTRICITY', 'WATER', 'INTERNET', 'GAS', 'UTILITIES']),
+    'Late Payment Penalties': any(word in text_upper for word in ['LATE FEE', 'PENALTY', 'OVERDUE', 'DELAYED PAYMENT']),
+    'Pet Policy': any(word in text_upper for word in ['PETS', 'ANIMALS', 'DOG', 'CAT', 'PET DEPOSIT']),
+    'Eviction & Breach of Contract': any(word in text_upper for word in ['EVICTION', 'TERMINATION', 'BREACH', 'NOTICE TO VACATE'])
+
     }
 
     # Identify missing components
@@ -2573,7 +2592,8 @@ def generate_report(request):
     5. RENT AMOUNT
     6. SECURITY DEPOSIT
     7. SIGNATURES
-
+    8. Late Payment Penalties
+    9. Eviction & Breach of Contract
     Original Content:
     {extracted_text}
 
@@ -2934,6 +2954,16 @@ def delete_post(request, post_id):
         messages.error(request, "Post not found.")
     
     return redirect('communityforum')
+
+
+
+def owner_payment(request):
+    # Get all payments
+    payments = Payment.objects.all().order_by('-payment_date')
+    context = {
+        'payments': payments
+    }
+    return render(request, 'owner_payment.html', context)
 
 
 

@@ -27,6 +27,7 @@ SECRET_KEY = 'django-insecure-algdv^m%t4tc2m21b=l+-@p4@&8ehvh#$gzd9b$!dosf*ptzr2
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS= ['https://607f-136-232-57-110.ngrok-free.app']
 
 
 # Application definition
@@ -75,16 +76,16 @@ WSGI_APPLICATION = 'online_house_rental.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/  #databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'rental_project',
-        'USER': 'root',
-        'PASSWORD':'',
-        'HOST': 'localhost',  # Set to your database host
-        'PORT': '3306'
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'rental_project',
+#         'USER': 'root',
+#         'PASSWORD':'',
+#         'HOST': 'localhost',  # Set to your database host
+#         'PORT': '3306'
+#     }
+# }
 
 # DATABASES = {
 #     'default': {
@@ -96,6 +97,17 @@ DATABASES = {
 #         'PORT': '3307'
 #     }
 # }
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'rentalsystem_ownfallen',
+        'USER': 'rentalsystem_ownfallen',
+        'PASSWORD':'1d39d5be0d0491fb0cc586fb24e5f60aee2f4401',
+        'HOST': 'r236o.h.filess.io',  # Set to your database host
+        'PORT': '61002'
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators

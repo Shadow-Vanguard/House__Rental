@@ -97,7 +97,7 @@ urlpatterns = [
   path("approve-meeting/<int:meeting_id>/", views.approve_meeting, name="approve_meeting"),
   path("reject-meeting/<int:meeting_id>/", views.reject_meeting, name="reject_meeting"),
   path("communityforum/", views.communityforum, name="communityforum"),
-
+  path('owner_payment',views.owner_payment,name='owner_payment'),
   path('toggle_like/', views.toggle_like, name='toggle_like'),
   path('communityforum/delete/<int:post_id>/', views.delete_post, name='delete_post'),
   path("generate_rental/", views.generate_rental_agreement, name="generate_rental_agreement"),
