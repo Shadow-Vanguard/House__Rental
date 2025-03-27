@@ -201,18 +201,18 @@ small {
             color: red;
         }
 
-        .signature-options {
+        /* .signature-options {
             margin-bottom: 20px;
         }
 
         .signature-option {
             margin-bottom: 15px;
-        }
+        } */
 
-        #signatureCanvas {
+        /* #signatureCanvas {
             background-color: white;
             cursor: pointer;
-        }
+        } */
     </style>
 </head>
 <body>
@@ -249,9 +249,8 @@ small {
             <span id="termsError" class="error-message"></span>
         </div>
                                                                                                                                                      
-        <div>
-            <label for="digital_signature">Digital Signature:</label>
-            <div class="signature-options">
+        <div>  
+            <!-- <div class="signature-options"> -->
                 <div class="signature-option">
                     <input type="radio" name="signature_type" id="upload_signature" value="upload" checked>
                     <label for="upload_signature">Upload Signature</label>
@@ -259,16 +258,6 @@ small {
                     <small>Please upload an image of your signature.</small>
                     <span id="signatureError" class="error-message"></span>
                 </div>
-                
-                <div class="signature-option">
-                    <input type="radio" name="signature_type" id="generate_signature" value="generate">
-                    <label for="generate_signature">Generate Signature</label>
-                    <input type="text" id="signature_name" name="signature_name" placeholder="Enter your full name" style="display: none;">
-                    <canvas id="signatureCanvas" style="display: none; border: 1px solid #ccc; margin-top: 10px;" width="400" height="100"></canvas>
-                    <input type="hidden" id="generated_signature" name="generated_signature">
-                </div>
-            </div>
-        </div>
 
         <button type="submit">Submit Agreement</button>
     </form>
@@ -403,7 +392,6 @@ small {
                 return;
             }
 
-            // Increased max file size to 10MB to accommodate scanned images
             if (file.size > 10 * 1024 * 1024) {
                 reject('Image size should be less than 10MB');
                 return;
@@ -429,9 +417,13 @@ small {
                     let darkPixels = 0;
                     let totalPixels = data.length / 4;
                     let hasContent = false;
+                    let backgroundPixels = 0;
+                    let edgePixels = 0;
+                    let connectedComponents = 0;
                     
-                    // More lenient brightness threshold (adjusted for paper backgrounds)
-                    const brightnessThreshold = 200; // Increased threshold for paper
+                    // Signature characteristics
+                    const brightnessThreshold = 200;
+                    const backgroundThreshold = 240;
                     
                     // Analyze image characteristics
                     for (let i = 0; i < data.length; i += 4) {
@@ -442,37 +434,67 @@ small {
                         // Average brightness
                         const brightness = (r + g + b) / 3;
                         
-                        // More lenient dark pixel detection
+                        // Dark pixel detection for signature content
                         if (brightness < brightnessThreshold) {
                             darkPixels++;
                             hasContent = true;
                         }
+                        
+                        // Background detection
+                        if (brightness > backgroundThreshold) {
+                            backgroundPixels++;
+                        }
                     }
                     
-                    // Calculate content percentage with more lenient thresholds
-                    const contentPercentage = (darkPixels / totalPixels) * 100;
+                    // Calculate aspect ratio
+                    const aspectRatio = img.width / img.height;
                     
-                    // Validation with adjusted thresholds
+                    // Calculate content percentage
+                    const contentPercentage = (darkPixels / totalPixels) * 100;
+                    const backgroundPercentage = (backgroundPixels / totalPixels) * 100;
+                    
+                    // Signature-specific validations
+                    
+                    // 1. Must have content
                     if (!hasContent) {
                         reject("No signature content detected");
                         return;
                     }
                     
-                    // Much more lenient content percentage thresholds
-                    if (contentPercentage < 0.1) {
+                    // 2. Content percentage check (signatures typically have sparse content)
+                    if (contentPercentage < 0.5) {
                         reject("Signature too light or unclear");
                         return;
                     }
                     
-                    // Increased upper threshold for darker signatures
-                    if (contentPercentage > 40) {
-                        reject("Image appears too dark or contains too much content");
+                    // 3. Signatures shouldn't be too dense with content
+                    if (contentPercentage > 30) {
+                        reject("This doesn't appear to be a signature (too much content)");
                         return;
                     }
                     
-                    // Basic dimension checks
-                    if (img.width < 50 || img.height < 20) {
+                    // 4. Signatures typically have a lot of background
+                    if (backgroundPercentage < 60) {
+                        reject("This doesn't appear to be a signature (not enough background)");
+                        return;
+                    }
+                    
+                    // 5. Aspect ratio check (signatures are typically wider than tall)
+                    if (aspectRatio < 1.2 && img.width > 200) {
+                        reject("This doesn't appear to be a signature (incorrect proportions)");
+                        return;
+                    }
+                    
+                    // 6. Basic dimension checks
+                    if (img.width < 100 || img.height < 30) {
                         reject("Image dimensions too small for a signature");
+                        return;
+                    }
+                    
+                    // 7. Check for rectangular/square images that might be photos
+                    const isSquarish = aspectRatio > 0.8 && aspectRatio < 1.2;
+                    if (isSquarish && img.width > 300 && contentPercentage > 15) {
+                        reject("This appears to be a photo, not a signature");
                         return;
                     }
                     
@@ -544,31 +566,7 @@ small {
         });
     });
 
-    document.getElementById('signature_name').addEventListener('input', function() {
-        const canvas = document.getElementById('signatureCanvas');
-        const ctx = canvas.getContext('2d');
-        const name = this.value;
-        
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
-        if (name.trim() === '') return;
-        
-        // Set font style for signature
-        ctx.font = 'italic bold 40px "Dancing Script", cursive';
-        ctx.fillStyle = '#000';
-        
-        // Center the signature
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        
-        // Draw the signature
-        ctx.fillText(name, canvas.width/2, canvas.height/2);
-        
-        // Store the signature data in hidden input
-        document.getElementById('generated_signature').value = canvas.toDataURL();
-    });
-
+   
     // Add this in the head section of your HTML
     const fontLink = document.createElement('link');
     fontLink.href = 'https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap';

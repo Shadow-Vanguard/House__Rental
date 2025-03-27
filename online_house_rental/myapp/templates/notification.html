@@ -214,7 +214,7 @@ h2 {
             <p><strong>Property Address:</strong> {{ agreement.property.address }}, {{ agreement.property.city }}, {{ agreement.property.state }}</p>
         </div>
         <div class="notification-footer">
-          <a href="{% url 'certificate' agreement.id %}" class="btn btn-view">View</a>
+          <a href="{% url 'certificate' agreement.id %}" class="btn btn-view">View Agreement</a>
           {% if agreement.status %}
           <a href="{% url 'buyer' %}?agreement_id={{ agreement.id }}" class="btn btn-pay">Pay</a>
           {% endif %}

@@ -6,81 +6,339 @@
     <title>Conversation about {{ property.property_name }}</title>
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <link href="{% static 'template_landingpage/img/favicon.png' %}" rel="icon">
-    <link href="https://fonts.googleapis.com/css2?family=Lora:wght@400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="{% static 'template_landingpage/lib/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { background-color: #e5ddd5; font-family: 'Roboto', sans-serif; color: #333; }
-        h2 { font-family: 'Lora', serif; color: #007bff; font-weight: bold; margin-bottom: 20px; text-align: center; }
-        .chat-box { max-width: 600px; margin: 0 auto; padding: 20px; border-radius: 10px; background: #fff; height: 400px; overflow-y: auto; display: flex; flex-direction: column; }
-        .user-message { background-color: #ffffff; border: 1px solid #000; border-radius: 20px 20px 0 20px; padding: 10px; margin: 10px 0; align-self: flex-end; }
-        .owner-message { background-color: #fff; border-radius: 20px 20px 20px 0; padding: 10px; margin: 10px 0; align-self: flex-start; border: 1px solid #ccc; }
-        form { max-width: 600px; margin: 20px auto; display: flex; flex-direction: column; }
-        textarea { padding: 10px; border: 1px solid #ccc; border-radius: 5px; resize: none; margin-bottom: 10px; }
-        button { padding: 10px; background-color: #007bff; color: #fff; border: none; border-radius: 5px; font-weight: bold; }
-        button:hover { background-color: #0056b3; }
-        .token-request-btn { background-color: #28a745; margin-top: 10px; color: white; }
-        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.4); padding-top: 60px; }
-        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 20px; border: 1px solid #888; width: 80%; }
-        .center {text-align: center;}
-        .back-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background-color: #555; /* Gray background */
+        :root {
+            --primary-color: #128C7E;
+            --secondary-color: #075E54;
+            --light-grey: #f0f2f5;
+            --border-color: #ddd;
+            --message-out: #dcf8c6;
+            --message-in: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-grey);
+            height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        .chat-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            height: 100vh;
+            display: grid;
+            grid-template-rows: 60px 1fr;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .chat-header {
+            background: var(--primary-color);
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
             color: white;
-            padding: 10px 15px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .chat-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .chat-header .property-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .property-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-main {
+            display: grid;
+            grid-template-rows: 1fr auto;
+            background: #e5ddd5;
+            background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABkAAAAZCAYAAADE6YVjAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAAOxAAADsQBlSsOGwAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAABoSURBVEiJ7dKxCYAwEEbhz6IjuYEjpHQDB3GGNKlSZRELsxYJBK0C8f0gXHX3uCSFk8wL0IGa5HpzPQBJ0k7mh9qStGYXtB7/ACwvkqSzGW4rX7IBJHd/xZlUb+kbhHDkPwAAAP//AwDZwhYf0d77nQAAAABJRU5ErkJggg==");
+        }
+
+        .chat-messages {
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .message {
+            max-width: 65%;
+            margin-bottom: 10px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-message {
+            margin-left: auto;
+        }
+
+        .message-content {
+            padding: 8px 12px;
+            border-radius: 7.5px;
+            position: relative;
+            word-wrap: break-word;
+        }
+
+        .user-message .message-content {
+            background: var(--message-out);
+            border-top-right-radius: 0;
+        }
+
+        .owner-message .message-content {
+            background: var(--message-in);
+            border-top-left-radius: 0;
+        }
+
+        .message-time {
+            font-size: 0.7rem;
+            color: #999;
+            margin-top: 2px;
+            align-self: flex-end;
+        }
+
+        .chat-input {
+            background: #f0f0f0;
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            background: white;
+            border-radius: 25px;
+            padding: 5px 15px;
+        }
+
+        textarea {
+            flex: 1;
+            border: none;
+            padding: 10px;
+            resize: none;
+            height: 40px;
+            background: transparent;
+            font-size: 0.95rem;
+        }
+
+        textarea:focus {
+            outline: none;
+        }
+
+        .send-button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .send-button:hover {
+            background: var(--secondary-color);
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            padding: 10px 20px;
+        }
+
+        .action-button {
+            padding: 8px 15px;
+            border: none;
             border-radius: 5px;
-            text-decoration: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .clear-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .token-btn {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Modal styling */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 25px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close-modal {
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-form input,
+        .modal-form textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+        }
+
+        .modal-form button {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
-    <!-- <a href="javascript:history.back()" class="back-btn">Back</a> -->
-    <h2>Conversation about {{ property.property_name }}</h2>
-    <div class="chat-box">
-        {% for message in messages %}
-            <div class="{% if message.sender == user %}user-message{% else %}owner-message{% endif %}">
-                <p>{{ message.message }}</p>
-            </div>
-        {% endfor %}
-    </div>
-    <form method="POST" action="{% url 'send_message' property.id %}">
-        {% csrf_token %}
-        <textarea name="message" rows="4" required placeholder="Type your message here..."></textarea>
-        <button type="submit">Send Message</button>
-    </form>
-    <form method="POST">
-        {% csrf_token %}
-        <input type="hidden" name="clear_messages" value="true">
-        <button type="submit" style="margin-bottom: 20px; background-color: #dc3545;">Clear Messages</button>
-    </form>
-        {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}
-                <div style="text-align: center;">
-                    <div style="text-align: center;">
-                        <p>If you're interested, make a token request</p>
-                    <button class="token-request-btn" id="tokenRequestBtn">Token Request</button>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div class="property-info">
+                <div class="property-avatar">
+                    <i class="fas fa-home"></i>
                 </div>
+                <h2>{{ property.property_name }}</h2>
+            </div>
+            <a href="javascript:history.back()" class="action-button">
+                <i class="fas fa-times"></i>
+            </a>
+        </div>
+        
+        <div class="chat-main">
+            <div class="chat-messages">
+                {% for message in messages %}
+                    <div class="message {% if message.sender == user %}user-message{% else %}owner-message{% endif %}">
+                        <div class="message-content">
+                            {{ message.message }}
+                        </div>
+                        <span class="message-time">12:00 PM</span>
+                    </div>
+                {% endfor %}
+            </div>
 
-        {% endif %}
-
-        <div id="tokenModal" class="modal">
-            <div class="modal-content">
-                <span id="closeModal" style="cursor:pointer; float:right;">&times;</span>
-                <h2>Token Request</h2>
-                <form method="POST" action="{% url 'conversation' property.id %}">
+            <div class="chat-input">
+                <form method="POST" action="{% url 'send_message' property.id %}">
                     {% csrf_token %}
-                    <input type="number" name="token_price" placeholder="Price" required>
-                    <textarea name="token_message" rows="4" required placeholder="Message"></textarea>
-                    <button type="submit">Send Token Request</button>
+                    <div class="input-container">
+                        <textarea name="message" placeholder="Type a message..." required></textarea>
+                        <button type="submit" class="send-button">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
-    <script>
-        document.getElementById('tokenRequestBtn').onclick = function() { document.getElementById('tokenModal').style.display = 'block'; }
-        document.getElementById('closeModal').onclick = function() { document.getElementById('tokenModal').style.display = 'none'; }
-        window.onclick = function(event) { if (event.target == document.getElementById('tokenModal')) { document.getElementById('tokenModal').style.display = 'none'; } }
+    </div>
 
-        document.querySelector('.modal-content form').addEventListener('submit', function(e) {
+    <div class="actions">
+        <form method="POST" style="margin: 0;">
+            {% csrf_token %}
+            <input type="hidden" name="clear_messages" value="true">
+            <button type="submit" class="action-button clear-btn">
+                <i class="fas fa-trash"></i> Clear Chat
+            </button>
+        </form>
+
+        {% if property.listing_type == 'Sale' or property.listing_type == 'Both' %}
+            <button class="action-button token-btn" id="tokenRequestBtn">
+                <i class="fas fa-key"></i> Request Token
+            </button>
+        {% endif %}
+    </div>
+
+    <div id="tokenModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Token Request</h3>
+                <span class="close-modal" id="closeModal">&times;</span>
+            </div>
+            <form method="POST" action="{% url 'conversation' property.id %}" class="modal-form">
+                {% csrf_token %}
+                <input type="number" name="token_price" placeholder="Enter price" required>
+                <textarea name="token_message" rows="4" placeholder="Enter your message" required></textarea>
+                <button type="submit">Send Request</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('tokenRequestBtn').onclick = function() { 
+            document.getElementById('tokenModal').style.display = 'block'; 
+        }
+        
+        document.getElementById('closeModal').onclick = function() { 
+            document.getElementById('tokenModal').style.display = 'none'; 
+        }
+        
+        window.onclick = function(event) { 
+            if (event.target == document.getElementById('tokenModal')) { 
+                document.getElementById('tokenModal').style.display = 'none'; 
+            } 
+        }
+
+        document.querySelector('.modal-form').addEventListener('submit', function(e) {
             const tokenPrice = parseFloat(document.querySelector('input[name="token_price"]').value);
             const errorDiv = document.createElement('div');
             errorDiv.style.color = 'red';
@@ -106,6 +364,15 @@
                 this.value = '';
             }
         });
+
+        const textarea = document.querySelector('textarea[name="message"]');
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        const chatMessages = document.querySelector('.chat-messages');
+        chatMessages.scrollTop = chatMessages.scrollHeight;
     </script>
 </body>
 </html>
